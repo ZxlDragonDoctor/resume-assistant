@@ -1,0 +1,23 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: resume-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resume_assistant
+    username: resume
+    password: resume123
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8853
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+  type-handlers-package: com.zxl.resume.resume.config
+  global-config:
+    db-config:
+      id-type: INPUT

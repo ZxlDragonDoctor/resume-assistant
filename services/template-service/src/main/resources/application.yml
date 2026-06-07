@@ -1,0 +1,21 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: template-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resume_assistant
+    username: resume
+    password: resume123
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8853
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: ASSIGN_UUID

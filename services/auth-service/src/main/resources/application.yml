@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resume_assistant
+    username: resume
+    password: resume123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8853
+
+jwt:
+  secret: "kXp2s5v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPd"
+  expiration: 86400000

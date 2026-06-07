@@ -1,0 +1,17 @@
+{
+  "name": "export-service",
+  "version": "1.0.0",
+  "description": "PDF/Word export service using Puppeteer",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "amqplib": "^2.0.1",
+    "express": "^4.19.2",
+    "handlebars": "^4.7.8",
+    "minio": "^8.0.0",
+    "puppeteer": "^22.8.0"
+  }
+}
