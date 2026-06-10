@@ -14,6 +14,7 @@ public class ResumeDetailResponse {
     private String fontFamily;
     private Integer fontSize;
     private String themeColor;
+    private Double lineSpacing;
     private String layoutConfig;
     private List<SectionResponse> sections;
 

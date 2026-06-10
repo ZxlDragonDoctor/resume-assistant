@@ -5,12 +5,14 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "amqplib": "^2.0.1",
     "express": "^4.19.2",
     "handlebars": "^4.7.8",
+    "marked": "^18.0.5",
     "minio": "^8.0.0",
     "puppeteer": "^22.8.0"
   }

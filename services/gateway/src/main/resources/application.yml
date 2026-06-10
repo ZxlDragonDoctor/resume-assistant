@@ -23,19 +23,25 @@ spring:
           uri: lb://file-service
           predicates:
             - Path=/api/files/**
+        - id: export-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/export/**
+          filters:
+            - SetPath=/export
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "http://localhost:5173"
+            allowedOrigins: "http://localhost:5173,http://localhost:5174"
             allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true
 
     nacos:
       discovery:
-        server-addr: localhost:8853
+        server-addr: localhost:4348
 
 jwt:
   secret: "kXp2s5v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPd"

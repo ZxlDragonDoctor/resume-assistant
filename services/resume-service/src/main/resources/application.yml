@@ -11,7 +11,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8853
+        server-addr: localhost:4348
 
 mybatis-plus:
   configuration:

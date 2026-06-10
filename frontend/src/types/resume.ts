@@ -32,6 +32,7 @@ export interface ResumeDetail {
   fontFamily: string;
   fontSize: number;
   themeColor: string;
+  lineSpacing?: number;
   layoutConfig: string;
   sections: ResumeSection[];
 }

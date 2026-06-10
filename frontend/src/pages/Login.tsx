@@ -1,4 +1,4 @@
-  import { useState } from 'react';
+import { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -33,40 +33,56 @@ export default function Login() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      minHeight: 'calc(100vh - 56px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'linear-gradient(135deg, #f0f4ff 0%, #f5f0ff 100%)',
+      padding: 24,
     }}>
-      <Card style={{ width: 420, borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
+      <Card style={{
+        width: 420, borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
+        border: '1px solid #f0f0f0',
+      }} bodyStyle={{ padding: '40px 32px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Title level={2} style={{ margin: 0 }}>📄 简历助手</Title>
-          <Text type="secondary">{isRegister ? '创建新账号' : '登录继续'}</Text>
+          <Title level={2} style={{
+            margin: 0, marginBottom: 8,
+            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
+            晓龙简历
+          </Title>
+          <Text type="secondary" style={{ fontSize: 14 }}>
+            {isRegister ? '创建账号，开始制作简历' : '登录继续制作简历'}
+          </Text>
         </div>
 
         <Form onFinish={handleSubmit} layout="vertical" size="large">
           {isRegister && (
             <Form.Item name="name" rules={[{ required: true, message: '请输入姓名' }]}>
-              <Input prefix={<UserOutlined />} placeholder="姓名" />
+              <Input prefix={<UserOutlined />} placeholder="姓名" style={{ borderRadius: 10 }} />
             </Form.Item>
           )}
           <Form.Item name="email" rules={[{ required: true, type: 'email', message: '请输入有效邮箱' }]}>
-            <Input prefix={<MailOutlined />} placeholder="邮箱" />
+            <Input prefix={<MailOutlined />} placeholder="邮箱" style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="password" rules={[{ required: true, min: 6, message: '密码至少6位' }]}>
-            <Input.Password prefix={<LockOutlined />} placeholder="密码" />
+            <Input.Password prefix={<LockOutlined />} placeholder="密码" style={{ borderRadius: 10 }} />
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={loading}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              loading={loading}
+              style={{ height: 44, borderRadius: 10, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', border: 'none' }}
+            >
               {isRegister ? '注册' : '登录'}
             </Button>
           </Form.Item>
         </Form>
 
         <div style={{ textAlign: 'center' }}>
-          <Button type="link" onClick={() => setIsRegister(!isRegister)}>
+          <Button type="link" onClick={() => setIsRegister(!isRegister)} style={{ color: '#64748b' }}>
             {isRegister ? '已有账号？去登录' : '没有账号？去注册'}
           </Button>
         </div>

@@ -12,6 +12,7 @@ import {
 import { PlusOutlined, DeleteOutlined, BulbOutlined, MenuOutlined } from '@ant-design/icons';
 import { resumeApi } from '../../services/api';
 import SortableSection from './SortableSection';
+import { useResumeStore } from '../../stores/resumeStore';
 import type { ResumeSection } from '../../types/resume';
 
 const { Text } = Typography;
@@ -22,6 +23,8 @@ const SECTION_LABELS: Record<string, string> = {
   education: '教育背景',
   projects: '项目经历',
   skills: '专业技能',
+  awards: '竞赛获奖',
+  certificates: '证书',
 };
 
 const SECTION_TYPES = [
@@ -30,6 +33,8 @@ const SECTION_TYPES = [
   { value: 'education', label: '教育背景' },
   { value: 'projects', label: '项目经历' },
   { value: 'skills', label: '专业技能' },
+  { value: 'awards', label: '竞赛获奖' },
+  { value: 'certificates', label: '证书' },
 ];
 
 interface Props {
@@ -75,8 +80,9 @@ export default function SectionList({ resumeId, sections, onRefresh }: Props) {
       if (sectionType === 'skills') data.data = JSON.stringify({ items: [''] });
       if (sectionType === 'summary') data.data = JSON.stringify({ content: '' });
       if (sectionType === 'projects') data.data = JSON.stringify({ name: '', role: '', startDate: '', endDate: '', bullets: [''] });
+      if (sectionType === 'awards' || sectionType === 'certificates') data.data = JSON.stringify({ items: [] });
 
-      await resumeApi.addSection(resumeId, data);
+      await resumeApi.addSection(resumeId, data as any);
       onRefresh();
       message.success('已添加');
     } catch {
@@ -87,11 +93,7 @@ export default function SectionList({ resumeId, sections, onRefresh }: Props) {
 
   const handleDeleteSection = async (sectionId: string) => {
     try {
-      await resumeApi.updateSection(sectionId, {
-        sectionType: sections.find(s => s.id === sectionId)?.sectionType || 'custom',
-        sortOrder: 0,
-        data: '{}',
-      });
+      await resumeApi.deleteSection(sectionId);
       onRefresh();
       message.success('已删除');
     } catch {
@@ -102,6 +104,9 @@ export default function SectionList({ resumeId, sections, onRefresh }: Props) {
   const handleSectionDataChange = async (sectionId: string, data: any) => {
     const section = sections.find(s => s.id === sectionId);
     if (!section) return;
+    // Update store immediately for real-time preview
+    useResumeStore.getState().updateSectionLocal(sectionId, data);
+    // Save to API in background
     try {
       await resumeApi.updateSection(sectionId, {
         sectionType: section.sectionType,

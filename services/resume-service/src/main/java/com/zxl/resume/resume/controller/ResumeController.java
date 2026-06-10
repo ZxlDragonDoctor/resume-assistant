@@ -68,6 +68,13 @@ public class ResumeController {
         return R.ok();
     }
 
+    @DeleteMapping("/sections/{sectionId}")
+    public R<Void> deleteSection(@PathVariable UUID sectionId,
+                                 @UserId UUID userId) {
+        resumeService.deleteSection(sectionId, userId);
+        return R.ok();
+    }
+
     @PostMapping("/{id}/sections/reorder")
     public R<Void> reorder(@PathVariable UUID id,
                            @UserId UUID userId,

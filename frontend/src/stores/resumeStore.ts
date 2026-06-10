@@ -10,6 +10,8 @@ interface ResumeStore {
   fetchResume: (id: string) => Promise<void>;
   createResume: (title: string) => Promise<void>;
   deleteResume: (id: string) => Promise<void>;
+  deleteSection: (sectionId: string) => Promise<void>;
+  updateSectionLocal: (sectionId: string, newData: any) => void;
   updateResume: (id: string, data: Record<string, unknown>) => Promise<void>;
   setCurrentResume: (resume: ResumeDetail | null) => void;
 }
@@ -47,6 +49,27 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
   deleteResume: async (id: string) => {
     await resumeApi.delete(id);
     await get().fetchResumes();
+  },
+
+  deleteSection: async (sectionId: string) => {
+    await resumeApi.deleteSection(sectionId);
+    const current = get().currentResume;
+    if (current) {
+      await get().fetchResume(current.id);
+    }
+  },
+
+  updateSectionLocal: (sectionId: string, newData: any) => {
+    const current = get().currentResume;
+    if (!current) return;
+    const dataStr = typeof newData === 'string' ? newData : JSON.stringify(newData);
+    const updatedSections = current.sections.map(s => {
+      if (s.id === sectionId) {
+        return { ...s, data: dataStr as any };
+      }
+      return s;
+    });
+    set({ currentResume: { ...current, sections: updatedSections } });
   },
 
   updateResume: async (id: string, data: Record<string, unknown>) => {

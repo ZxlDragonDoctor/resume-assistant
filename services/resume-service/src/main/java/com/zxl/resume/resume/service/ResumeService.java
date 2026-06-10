@@ -48,6 +48,7 @@ public class ResumeService {
         resp.setFontFamily(resume.getFontFamily());
         resp.setFontSize(resume.getFontSize());
         resp.setThemeColor(resume.getThemeColor());
+        resp.setLineSpacing(resume.getLineSpacing());
         resp.setLayoutConfig(resume.getLayoutConfig());
 
         List<ResumeSection> sections = sectionMapper.findByResumeIdOrdered(id);
@@ -131,14 +132,31 @@ public class ResumeService {
             throw new IllegalArgumentException("简历不存在");
         }
         if (updates.containsKey("title")) resume.setTitle((String) updates.get("title"));
-        if (updates.containsKey("templateId")) resume.setTemplateId(UUID.fromString((String) updates.get("templateId")));
+        if (updates.containsKey("templateId") && updates.get("templateId") != null) resume.setTemplateId(UUID.fromString((String) updates.get("templateId")));
         if (updates.containsKey("targetJob")) resume.setTargetJob((String) updates.get("targetJob"));
         if (updates.containsKey("targetCompany")) resume.setTargetCompany((String) updates.get("targetCompany"));
         if (updates.containsKey("fontFamily")) resume.setFontFamily((String) updates.get("fontFamily"));
         if (updates.containsKey("fontSize")) resume.setFontSize((Integer) updates.get("fontSize"));
         if (updates.containsKey("themeColor")) resume.setThemeColor((String) updates.get("themeColor"));
+        if (updates.containsKey("lineSpacing") && updates.get("lineSpacing") != null) {
+            Object val = updates.get("lineSpacing");
+            if (val instanceof Number) resume.setLineSpacing(((Number) val).doubleValue());
+        }
         if (updates.containsKey("layoutConfig")) resume.setLayoutConfig((String) updates.get("layoutConfig"));
         resumeMapper.updateById(resume);
+    }
+
+    @Transactional
+    public void deleteSection(UUID sectionId, UUID userId) {
+        ResumeSection section = sectionMapper.selectById(sectionId);
+        if (section == null) {
+            throw new IllegalArgumentException("章节不存在");
+        }
+        Resume resume = resumeMapper.selectById(section.getResumeId());
+        if (resume == null || !resume.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("无权操作");
+        }
+        sectionMapper.deleteById(sectionId);
     }
 
     @Transactional

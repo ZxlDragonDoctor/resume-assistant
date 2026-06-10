@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useResumeStore } from '../stores/resumeStore';
 import {
-  Layout, Card, Button, Row, Col, Typography, Modal, Input, message, Spin, Empty, Popconfirm,
+  Card, Button, Row, Col, Typography, Modal, Input, message, Spin, Empty, Popconfirm,
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, EditOutlined, FileTextOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 export default function Dashboard() {
@@ -38,55 +37,64 @@ export default function Dashboard() {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-      <Header style={{ background: '#fff', padding: '0 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e8e8e8' }}>
-        <Title level={4} style={{ margin: 0 }}>📄 简历助手</Title>
-        <Text type="secondary" style={{ cursor: 'pointer' }} onClick={() => {
-          localStorage.removeItem('token');
-          navigate('/login');
-        }}>退出</Text>
-      </Header>
-      <Content style={{ padding: '32px 40px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <Title level={3} style={{ margin: 0 }}>我的简历</Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} size="large">
-            新建简历
-          </Button>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+        <div>
+          <Title level={3} style={{ margin: 0, color: '#0f172a' }}>我的简历</Title>
+          <Text type="secondary" style={{ fontSize: 14 }}>共 {resumes.length} 份简历</Text>
         </div>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setModalOpen(true)}
+          style={{ height: 40, borderRadius: 10, padding: '0 20px', background: 'linear-gradient(135deg, #2563eb, #7c3aed)', border: 'none' }}
+        >
+          新建简历
+        </Button>
+      </div>
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 80 }}><Spin size="large" /></div>
-        ) : resumes.length === 0 ? (
-          <Empty description="还没有简历，点击上方按钮创建" style={{ padding: 80 }} />
-        ) : (
-          <Row gutter={[20, 20]}>
-            {resumes.map((r) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={r.id}>
-                <Card
-                  hoverable
-                  actions={[
-                    <EditOutlined key="edit" onClick={() => navigate(`/editor/${r.id}`)} />,
-                    <Popconfirm title="确定删除？" onConfirm={() => handleDelete(r.id)} key="delete">
-                      <DeleteOutlined style={{ color: '#ff4d4f' }} />
-                    </Popconfirm>,
-                  ]}
-                >
-                  <Card.Meta
-                    avatar={<FileTextOutlined style={{ fontSize: 28, color: '#2563eb' }} />}
-                    title={r.title}
-                    description={
-                      <div>
-                        <div>更新于 {formatDate(r.updatedAt)}</div>
-                        {r.targetJob && <Text type="secondary">目标岗位：{r.targetJob}</Text>}
-                      </div>
-                    }
-                  />
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
-      </Content>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 80 }}><Spin size="large" /></div>
+      ) : resumes.length === 0 ? (
+        <div style={{
+          textAlign: 'center', padding: 80, background: '#fff', borderRadius: 16,
+          border: '2px dashed #e2e8f0',
+        }}>
+          <FileTextOutlined style={{ fontSize: 48, color: '#94a3b8', marginBottom: 16 }} />
+          <div style={{ fontSize: 16, color: '#64748b', marginBottom: 8 }}>还没有简历</div>
+          <Text type="secondary" style={{ display: 'block', marginBottom: 20 }}>点击上方按钮创建你的第一份简历</Text>
+          <Button type="primary" onClick={() => setModalOpen(true)}>创建简历</Button>
+        </div>
+      ) : (
+        <Row gutter={[20, 20]}>
+          {resumes.map((r) => (
+            <Col xs={24} sm={12} md={8} lg={6} key={r.id}>
+              <Card
+                hoverable
+                style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #f0f0f0' }}
+                bodyStyle={{ padding: 20 }}
+                actions={[
+                  <EditOutlined key="edit" onClick={() => navigate(`/editor/${r.id}`)} style={{ color: '#2563eb' }} />,
+                  <Popconfirm title="确定删除？" onConfirm={() => handleDelete(r.id)} key="delete">
+                    <DeleteOutlined style={{ color: '#ff4d4f' }} />
+                  </Popconfirm>,
+                ]}
+              >
+                <Card.Meta
+                  avatar={<FileTextOutlined style={{ fontSize: 28, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }} />}
+                  title={<span style={{ fontSize: 15, fontWeight: 500 }}>{r.title}</span>}
+                  description={
+                    <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                      <div>更新于 {formatDate(r.updatedAt)}</div>
+                      {r.targetJob && <div style={{ marginTop: 4, color: '#64748b' }}>目标：{r.targetJob}</div>}
+                    </div>
+                  }
+                />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
 
       <Modal
         title="新建简历"
@@ -95,6 +103,7 @@ export default function Dashboard() {
         onCancel={() => { setModalOpen(false); setNewTitle(''); }}
         okText="创建"
         cancelText="取消"
+        okButtonProps={{ style: { borderRadius: 8 } }}
       >
         <Input
           placeholder="请输入简历名称"
@@ -102,8 +111,9 @@ export default function Dashboard() {
           onChange={(e) => setNewTitle(e.target.value)}
           onPressEnter={handleCreate}
           autoFocus
+          style={{ borderRadius: 8 }}
         />
       </Modal>
-    </Layout>
+    </div>
   );
 }

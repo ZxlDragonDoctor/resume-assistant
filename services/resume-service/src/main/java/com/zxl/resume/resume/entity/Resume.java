@@ -1,9 +1,9 @@
 package com.zxl.resume.resume.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.zxl.resume.common.mybatis.JsonbTypeHandler;
 import lombok.Data;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.UUID;
 
 @Data
@@ -35,7 +35,10 @@ public class Resume {
     @TableField("theme_color")
     private String themeColor;
 
-    @TableField("layout_config")
+    @TableField("line_spacing")
+    private Double lineSpacing;
+
+    @TableField(value = "layout_config", typeHandler = JsonbTypeHandler.class)
     private String layoutConfig;
 
     @TableField("is_public")

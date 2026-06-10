@@ -15,7 +15,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8853
+        server-addr: localhost:4348
 
 jwt:
   secret: "kXp2s5v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPd"

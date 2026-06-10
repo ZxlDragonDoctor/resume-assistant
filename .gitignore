@@ -21,3 +21,15 @@ venv/
 *.egg-info/
 .DS_Store
 Thumbs.db
+
+# Temp files
+output_*.pdf
+check_*.py
+fix_*.py
+effective_pom
+err.log
+out.log
+
+# Docker volumes
+pgdata/
+minio_data/

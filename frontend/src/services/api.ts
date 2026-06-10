@@ -49,6 +49,8 @@ export const resumeApi = {
     sortOrder: number;
     data: string;
   }) => api.put(`/resumes/sections/${sectionId}`, data),
+  deleteSection: (sectionId: string) =>
+    api.delete(`/resumes/sections/${sectionId}`),
   reorderSections: (resumeId: string, order: { id: string }[]) =>
     api.post(`/resumes/${resumeId}/sections/reorder`, order),
 };
@@ -77,6 +79,15 @@ export const aiApi = {
     api.post('/ai/ats-score', {
       job_description: jobDescription,
       resume_content: resumeContent,
+    }),
+};
+
+export const exportApi = {
+  exportPdf: (resumeData: Record<string, unknown>) =>
+    api.post('/export/direct', { resumeData }, {
+      baseURL: '',
+      responseType: 'blob',
+      timeout: 60000,
     }),
 };
 

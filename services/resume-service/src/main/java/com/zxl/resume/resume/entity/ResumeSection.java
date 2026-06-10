@@ -23,6 +23,7 @@ public class ResumeSection {
     @TableField("is_visible")
     private Boolean isVisible;
 
+    @TableField(typeHandler = com.zxl.resume.common.mybatis.JsonbTypeHandler.class)
     private String data;
 
     @TableField(value = "created_at", fill = FieldFill.INSERT)
