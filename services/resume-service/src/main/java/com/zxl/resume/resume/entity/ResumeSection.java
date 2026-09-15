@@ -23,6 +23,9 @@ public class ResumeSection {
     @TableField("is_visible")
     private Boolean isVisible;
 
+    /** 模块在页面中的排布方式：single-column / two-column / sidebar */
+    private String layout;
+
     @TableField(typeHandler = com.zxl.resume.common.mybatis.JsonbTypeHandler.class)
     private String data;
 

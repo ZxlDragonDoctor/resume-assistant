@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -17,8 +18,14 @@ public class TemplateController {
     private final TemplateService templateService;
 
     @GetMapping
-    public R<List<Template>> list() {
-        return R.ok(templateService.listAll());
+    public R<List<Template>> list(@RequestParam(required = false) String category,
+                                  @RequestParam(required = false) String keyword) {
+        return R.ok(templateService.list(category, keyword));
+    }
+
+    @GetMapping("/categories")
+    public R<List<Map<String, Object>>> categories() {
+        return R.ok(templateService.categories());
     }
 
     @GetMapping("/{id}")

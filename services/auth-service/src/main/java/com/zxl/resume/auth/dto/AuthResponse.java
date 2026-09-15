@@ -10,5 +10,6 @@ public class AuthResponse {
     private UUID userId;
     private String name;
     private String email;
+    private String avatarUrl;
     private long expiresIn;
 }

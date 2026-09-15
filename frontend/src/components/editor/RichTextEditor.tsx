@@ -4,7 +4,8 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { brand, fontFamily, fontSize, neutral, radius, semantic, text } from '../../styles/tokens';
 
 interface Props {
   value: string;
@@ -15,22 +16,39 @@ interface Props {
 
 const Btn = ({ onClick, active, children, title, style }: {
   onClick: () => void; active?: boolean; children: React.ReactNode; title?: string; style?: React.CSSProperties;
-}) => (
-  <button type="button" onClick={onClick} title={title}
-    style={{
-      padding: '3px 8px', border: '1px solid transparent', borderRadius: 4, cursor: 'pointer',
-      background: active ? '#e0e7ff' : 'transparent', color: active ? '#2563eb' : '#475569',
-      fontSize: 13, fontWeight: active ? 600 : 400, lineHeight: 1, ...style,
-    }}
-    onMouseEnter={(e) => { if (!active) (e.target as HTMLElement).style.background = '#f1f5f9'; }}
-    onMouseLeave={(e) => { if (!active) (e.target as HTMLElement).style.background = 'transparent'; }}
-  >
-    {children}
-  </button>
+}) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" onClick={onClick} title={title}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        padding: '3px 8px',
+        border: `1px solid ${active ? brand.primaryBorder : 'transparent'}`,
+        borderRadius: radius.xs,
+        cursor: 'pointer',
+        background: active ? brand.primarySoft : hover ? neutral[100] : 'transparent',
+        color: active ? brand.primary : text.secondary,
+        fontSize: fontSize.base,
+        fontWeight: active ? 600 : 400,
+        lineHeight: 1,
+        transition: 'background 0.15s ease, color 0.15s ease',
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Sep = () => (
+  <span style={{ width: 1, height: 20, background: neutral[200], margin: '0 4px', display: 'inline-block' }} />
 );
 
-const Sep = () => <span style={{ width: 1, height: 20, background: '#e2e8f0', margin: '0 4px', display: 'inline-block' }} />;
-
+/**
+ * TipTap 富文本编辑器。用于描述类字段（工作职责、项目亮点等）。
+ * 视觉常量全部取自设计令牌。
+ */
 export default function RichTextEditor({ value, onChange, placeholder, minHeight = 200 }: Props) {
   const editor = useEditor({
     extensions: [
@@ -55,10 +73,10 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   if (!editor) return null;
 
   return (
-    <div style={{ border: '1px solid #d9d9d9', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ border: `1px solid ${neutral[200]}`, borderRadius: radius.md, overflow: 'hidden' }}>
       <div style={{
         display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2,
-        padding: '6px 8px', borderBottom: '1px solid #e8e8e8', background: '#fafafa',
+        padding: '6px 8px', borderBottom: `1px solid ${neutral[200]}`, background: neutral[50],
       }}>
         <select
           value={editor.isActive('heading', { level: 1 }) ? 'h1' :
@@ -69,7 +87,11 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
             if (v === 'p') editor.chain().focus().setParagraph().run();
             else editor.chain().focus().toggleHeading({ level: parseInt(v[1]) as 1|2|3 }).run();
           }}
-          style={{ padding: '2px 4px', borderRadius: 4, border: '1px solid #d9d9d9', fontSize: 12, outline: 'none' }}
+          style={{
+            padding: '3px 6px', borderRadius: radius.xs, border: `1px solid ${neutral[200]}`,
+            fontSize: fontSize.sm, color: text.secondary, background: neutral[0],
+            outline: 'none', cursor: 'pointer',
+          }}
         >
           <option value="p">正文</option>
           <option value="h1">标题 1</option>
@@ -103,21 +125,36 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         <Btn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} title="清除格式">✕</Btn>
       </div>
 
-      <EditorContent editor={editor} style={{ padding: '8px 12px', minHeight, fontSize: 14, lineHeight: 1.8 }} />
+      <EditorContent
+        editor={editor}
+        style={{ padding: '10px 12px', minHeight, fontSize: fontSize.md, lineHeight: 1.8, color: text.secondary, background: neutral[0] }}
+      />
 
       <style>{`
         .ProseMirror { outline: none; min-height: ${minHeight}px; }
         .ProseMirror p { margin: 4px 0; }
-        .ProseMirror h1 { font-size: 22px; margin: 10px 0 6px; font-weight: 600; }
-        .ProseMirror h2 { font-size: 18px; margin: 8px 0 4px; font-weight: 600; }
-        .ProseMirror h3 { font-size: 16px; margin: 6px 0 4px; font-weight: 600; }
+        .ProseMirror h1 { font-size: 22px; margin: 10px 0 6px; font-weight: 600; color: ${text.primary}; }
+        .ProseMirror h2 { font-size: 18px; margin: 8px 0 4px; font-weight: 600; color: ${text.primary}; }
+        .ProseMirror h3 { font-size: 16px; margin: 6px 0 4px; font-weight: 600; color: ${text.primary}; }
         .ProseMirror ul, .ProseMirror ol { padding-left: 20px; margin: 4px 0; }
         .ProseMirror li { margin: 2px 0; }
-        .ProseMirror pre { background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin: 8px 0; overflow-x: auto; }
-        .ProseMirror code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 13px; color: #e11d48; }
-        .ProseMirror blockquote { border-left: 3px solid #2563eb; padding-left: 12px; color: #64748b; margin: 8px 0; }
+        .ProseMirror pre {
+          background: ${neutral[50]}; padding: 8px 12px; border-radius: ${radius.sm}px;
+          border: 1px solid ${neutral[200]}; margin: 8px 0; overflow-x: auto;
+        }
+        .ProseMirror code {
+          background: ${neutral[100]}; padding: 1px 4px; border-radius: ${radius.xs}px;
+          font-size: 13px; font-family: ${fontFamily.mono}; color: ${brand.secondary};
+        }
+        .ProseMirror pre code { background: none; padding: 0; }
+        .ProseMirror blockquote {
+          border-left: 3px solid ${brand.primaryBorder}; padding-left: 12px;
+          color: ${text.tertiary}; margin: 8px 0;
+        }
+        .ProseMirror mark { background: ${semantic.highlight}; padding: 0 2px; border-radius: 2px; }
         .ProseMirror p.is-editor-empty:first-child::before {
-          color: #adb5bd; content: attr(data-placeholder); float: left; height: 0; pointer-events: none;
+          color: ${text.placeholder}; content: attr(data-placeholder);
+          float: left; height: 0; pointer-events: none;
         }
       `}</style>
     </div>

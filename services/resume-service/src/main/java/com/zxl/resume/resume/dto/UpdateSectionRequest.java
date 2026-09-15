@@ -14,6 +14,8 @@ public class UpdateSectionRequest {
 
     private Boolean isVisible;
 
+    private String layout;
+
     @NotNull
     private String data;
 }

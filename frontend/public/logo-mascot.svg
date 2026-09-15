@@ -1,0 +1,101 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="晓龙简历 泡泡龙吉祥物">
+  <title>晓龙简历 · 泡泡龙</title>
+  <desc>手持简历的泡泡龙吉祥物，配色取自品牌令牌 #4F46E5 → #7C3AED</desc>
+
+  <defs>
+    <linearGradient id="xlBody" x1="114" y1="168" x2="398" y2="438" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <linearGradient id="xlHorn" x1="184" y1="146" x2="232" y2="182" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEF2FF"/>
+      <stop offset="1" stop-color="#C7D2FE"/>
+    </linearGradient>
+
+    <radialGradient id="xlSheen" cx="0.5" cy="0.5" r="0.5">
+      <stop stop-color="#FFFFFF" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="xlDocShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#4F46E5" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- 地面投影 -->
+  <ellipse cx="256" cy="462" rx="132" ry="20" fill="#4F46E5" fill-opacity="0.10"/>
+
+  <!-- 尾巴 -->
+  <path d="M352 396 C404 408 444 386 452 350" stroke="url(#xlBody)" stroke-width="26" stroke-linecap="round"/>
+  <path d="M452 322 C463 334 463 352 452 362 C441 352 441 334 452 322 Z" fill="url(#xlBody)"/>
+
+  <!-- 翅膀 -->
+  <path d="M170 292 C136 286 104 264 88 236 C118 236 148 254 170 276 Z" fill="#C7D2FE"/>
+  <path d="M156 284 C132 280 110 264 100 246 C122 246 142 258 158 274 Z" fill="#E0E7FF" fill-opacity="0.85"/>
+  <path d="M342 292 C376 286 408 264 424 236 C394 236 364 254 342 276 Z" fill="#C7D2FE"/>
+  <path d="M356 284 C380 280 402 264 412 246 C390 246 370 258 354 274 Z" fill="#E0E7FF" fill-opacity="0.85"/>
+
+  <!-- 龙角 -->
+  <path d="M218 184 C206 170 194 158 184 150 C198 156 214 168 230 179 Z" fill="url(#xlHorn)"/>
+  <path d="M294 184 C306 170 318 158 328 150 C314 156 298 168 282 179 Z" fill="url(#xlHorn)"/>
+
+  <!-- 身体 -->
+  <path d="M256 168 C338 168 398 234 398 312 C398 386 338 438 256 438 C174 438 114 386 114 312 C114 234 174 168 256 168 Z" fill="url(#xlBody)"/>
+
+  <!-- 顶部柔光 -->
+  <ellipse cx="206" cy="234" rx="100" ry="70" fill="url(#xlSheen)"/>
+
+  <!-- 腮红 -->
+  <ellipse cx="166" cy="296" rx="24" ry="14" fill="#C7D2FE" fill-opacity="0.85"/>
+  <ellipse cx="346" cy="296" rx="24" ry="14" fill="#C7D2FE" fill-opacity="0.85"/>
+
+  <!-- 眼睛 -->
+  <ellipse cx="212" cy="266" rx="21" ry="25" fill="#312E81"/>
+  <ellipse cx="300" cy="266" rx="21" ry="25" fill="#312E81"/>
+  <circle cx="220" cy="256" r="8.5" fill="#FFFFFF"/>
+  <circle cx="205" cy="276" r="4.5" fill="#FFFFFF" fill-opacity="0.75"/>
+  <circle cx="308" cy="256" r="8.5" fill="#FFFFFF"/>
+  <circle cx="293" cy="276" r="4.5" fill="#FFFFFF" fill-opacity="0.75"/>
+
+  <!-- 嘴 -->
+  <path d="M236 298 Q256 316 276 298" stroke="#312E81" stroke-width="7" stroke-linecap="round" fill="none"/>
+
+  <!-- 手臂 -->
+  <path d="M150 352 C150 390 166 410 188 412" stroke="url(#xlBody)" stroke-width="40" stroke-linecap="round"/>
+  <path d="M362 352 C362 390 346 410 324 412" stroke="url(#xlBody)" stroke-width="40" stroke-linecap="round"/>
+
+  <!-- 简历 -->
+  <rect x="190" y="320" width="132" height="124" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" filter="url(#xlDocShadow)"/>
+  <circle cx="214" cy="346" r="14" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+  <circle cx="214" cy="341.5" r="4.3" fill="#A5B4FC"/>
+  <path d="M205.5 357.5 Q214 348 222.5 357.5 Z" fill="#A5B4FC"/>
+  <rect x="238" y="338" width="62" height="9" rx="4.5" fill="#4F46E5"/>
+  <rect x="238" y="352" width="42" height="6" rx="3" fill="#C7D2FE"/>
+  <rect x="206" y="372" width="100" height="2" rx="1" fill="#E2E8F0"/>
+  <rect x="206" y="381" width="100" height="7" rx="3.5" fill="#E2E8F0"/>
+  <rect x="206" y="394" width="84" height="7" rx="3.5" fill="#E2E8F0"/>
+  <rect x="206" y="407" width="92" height="7" rx="3.5" fill="#E2E8F0"/>
+  <rect x="206" y="420" width="64" height="7" rx="3.5" fill="#E2E8F0"/>
+  <rect x="296" y="418" width="4" height="11" rx="2" fill="#7C3AED"/>
+
+  <!-- 手 -->
+  <circle cx="188" cy="412" r="21" fill="url(#xlBody)"/>
+  <circle cx="324" cy="412" r="21" fill="url(#xlBody)"/>
+
+  <!-- 泡泡 -->
+  <circle cx="96" cy="132" r="30" fill="#A5B4FC" fill-opacity="0.34"/>
+  <circle cx="86" cy="121" r="7" fill="#FFFFFF" fill-opacity="0.85"/>
+  <circle cx="428" cy="176" r="22" fill="#A5B4FC" fill-opacity="0.34"/>
+  <circle cx="421" cy="168" r="5" fill="#FFFFFF" fill-opacity="0.85"/>
+  <circle cx="152" cy="68" r="15" fill="#A5B4FC" fill-opacity="0.34"/>
+  <circle cx="147" cy="62" r="3.4" fill="#FFFFFF" fill-opacity="0.85"/>
+  <circle cx="400" cy="82" r="12" fill="#A5B4FC" fill-opacity="0.34"/>
+  <circle cx="396" cy="77" r="2.7" fill="#FFFFFF" fill-opacity="0.85"/>
+  <circle cx="62" cy="262" r="16" fill="#A5B4FC" fill-opacity="0.34"/>
+  <circle cx="57" cy="256" r="3.6" fill="#FFFFFF" fill-opacity="0.85"/>
+
+  <!-- 星芒 -->
+  <path d="M120 187 C121.6 194 124 196.4 131 198 C124 199.6 121.6 202 120 209 C118.4 202 116 199.6 109 198 C116 196.4 118.4 194 120 187 Z" fill="#A5B4FC" fill-opacity="0.9"/>
+  <path d="M468 289 C469.3 294.1 471 295.8 476 297 C471 298.2 469.3 299.9 468 305 C466.7 299.9 465 298.2 460 297 C465 295.8 466.7 294.1 468 289 Z" fill="#A5B4FC" fill-opacity="0.9"/>
+</svg>

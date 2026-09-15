@@ -14,7 +14,8 @@ spring:
         server-addr: localhost:4348
 
 minio:
-  endpoint: http://localhost:9000
+  # 端口与 docker-compose.yml 的 minio 服务映射保持一致（宿主 9100 → 容器 9000）。
+  endpoint: http://localhost:9100
   access-key: minioadmin
   secret-key: minioadmin123
   bucket: resume-files

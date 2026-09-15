@@ -25,6 +25,8 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    private String phone;
+
     private String provider;
 
     @Column(name = "provider_id")

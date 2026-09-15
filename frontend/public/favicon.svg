@@ -1,0 +1,27 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="晓龙简历">
+  <title>晓龙简历</title>
+  <desc>16px 优化版：去掉泡泡与细节，加粗五官保证小尺寸可读</desc>
+
+  <defs>
+    <linearGradient id="xlFaviconGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="40" height="40" rx="11" fill="url(#xlFaviconGrad)"/>
+
+  <!-- 龙角 -->
+  <path d="M13.8 14 L10.4 10 L16.8 12.2 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M26.2 14 L29.6 10 L23.2 12.2 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 龙头 -->
+  <rect x="8.8" y="12.8" width="22.4" height="18" rx="9" fill="#FFFFFF"/>
+
+  <!-- 眼睛（加粗） -->
+  <ellipse cx="15.8" cy="21.4" rx="2" ry="2.4" fill="#4338CA"/>
+  <ellipse cx="24.2" cy="21.4" rx="2" ry="2.4" fill="#4338CA"/>
+
+  <!-- 嘴（加粗） -->
+  <path d="M17.4 25.9 Q20 27.8 22.6 25.9" stroke="#4338CA" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>

@@ -33,9 +33,11 @@ services:
 
   minio:
     image: minio/minio:latest
+    # 宿主端口故意避开 9000/9001 —— 部分本机环境已用该端口运行其它 MinIO 实例。
+    # 若需改回默认，同步修改 services/file-service/src/main/resources/application.yml 的 minio.endpoint。
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9100:9000"
+      - "9101:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123

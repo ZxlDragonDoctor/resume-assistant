@@ -41,8 +41,19 @@ public class Resume {
     @TableField(value = "layout_config", typeHandler = JsonbTypeHandler.class)
     private String layoutConfig;
 
+    @TableField("share_token")
+    private String shareToken;
+
+    @TableField("share_enabled")
+    private Boolean shareEnabled;
+
     @TableField("is_public")
     private Boolean isPublic;
+
+    @TableField("view_count")
+    private Integer viewCount;
+
+    private String status;
 
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private Instant createdAt;

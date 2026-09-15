@@ -1,10 +1,23 @@
-fastapi==0.110.0
-uvicorn[standard]==0.29.0
-pydantic==2.7.1
-httpx==0.27.0
-redis==5.0.4
-celery==5.4.0
-langchain==0.2.1
-langchain-community==0.2.1
-langchain-openai==0.1.8
-python-multipart==0.0.9
+# AI Service Dependencies
+# ---------------------------------------------------------------------------
+# 版本策略：使用「兼容区间」而非硬锁定。
+# 原因：本项目初版锁定的是 2024 年初的版本，其中 pydantic 2.7.x 在
+# Python 3.13 上没有预编译 wheel，pip 会退回源码编译并要求 Rust 工具链，
+# 导致安装失败。改用区间后 pip 可直接选取带 wheel 的新版本。
+# ---------------------------------------------------------------------------
+
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29,<1.0
+pydantic>=2.7,<3.0
+python-dotenv>=1.0,<2.0
+
+# LLM
+langchain>=0.2,<1.0
+langchain-community>=0.2,<1.0
+langchain-openai>=0.1.8,<1.0
+
+# 以下依赖当前代码尚未使用（预留给异步任务 / 文件上传）。
+# 保留声明以便后续扩展，同时避免在受限环境中引入不必要的编译负担。
+httpx>=0.27,<1.0
+redis>=5.0,<6.0
+python-multipart>=0.0.9,<1.0

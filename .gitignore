@@ -30,6 +30,19 @@ effective_pom
 err.log
 out.log
 
+# 个人简历 / 含真实个人信息的导出物 —— 一律不要提交
+*.pdf
+*.docx
+*.doc
+个人简历*
+简历*
+resume_export*
+我的简历*
+
+# 本地记忆与工作日志（可能含真实姓名、路径等个人信息）
+.workbuddy-ai/
+.idea/
+
 # Docker volumes
 pgdata/
 minio_data/

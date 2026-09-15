@@ -1,0 +1,38 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="晓龙简历">
+  <title>晓龙简历</title>
+  <desc>泡泡龙品牌标：圆角渐变底 + 白色泡泡龙头</desc>
+
+  <defs>
+    <linearGradient id="xlBrandGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 圆角底板 -->
+  <rect width="40" height="40" rx="11" fill="url(#xlBrandGrad)"/>
+
+  <!-- 泡泡 -->
+  <circle cx="32.4" cy="12" r="1.9" fill="#FFFFFF" fill-opacity="0.42"/>
+  <circle cx="29.6" cy="7.4" r="1.15" fill="#FFFFFF" fill-opacity="0.28"/>
+
+  <!-- 龙角（先画，根部被龙头盖住） -->
+  <path d="M13.8 14 L10.6 10.4 L16.6 12.2 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"/>
+  <path d="M26.2 14 L29.4 10.4 L23.4 12.2 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"/>
+
+  <!-- 龙头 -->
+  <rect x="9.2" y="13" width="21.6" height="17.6" rx="8.8" fill="#FFFFFF"/>
+
+  <!-- 腮红 -->
+  <ellipse cx="13.1" cy="24.4" rx="1.9" ry="1.3" fill="#C7D2FE"/>
+  <ellipse cx="26.9" cy="24.4" rx="1.9" ry="1.3" fill="#C7D2FE"/>
+
+  <!-- 眼睛 -->
+  <ellipse cx="15.9" cy="21.3" rx="1.75" ry="2.05" fill="#4338CA"/>
+  <ellipse cx="24.1" cy="21.3" rx="1.75" ry="2.05" fill="#4338CA"/>
+  <circle cx="16.5" cy="20.5" r="0.55" fill="#FFFFFF"/>
+  <circle cx="23.5" cy="20.5" r="0.55" fill="#FFFFFF"/>
+
+  <!-- 嘴 -->
+  <path d="M17.8 25.7 Q20 27.3 22.2 25.7" stroke="#4338CA" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+</svg>

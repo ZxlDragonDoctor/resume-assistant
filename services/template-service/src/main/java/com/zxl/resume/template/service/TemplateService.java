@@ -1,12 +1,17 @@
 package com.zxl.resume.template.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zxl.resume.template.entity.Template;
 import com.zxl.resume.template.repository.TemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -14,8 +19,18 @@ public class TemplateService {
 
     private final TemplateMapper templateMapper;
 
-    public List<Template> listAll() {
-        return templateMapper.selectList(null);
+    /** 按分类筛选模板；category 为空时返回全部启用中的模板 */
+    public List<Template> list(String category, String keyword) {
+        LambdaQueryWrapper<Template> q = new LambdaQueryWrapper<Template>()
+                .ne(Template::getIsActive, false)
+                .orderByAsc(Template::getSortOrder);
+        if (StringUtils.hasText(category) && !"all".equalsIgnoreCase(category)) {
+            q.eq(Template::getCategory, category);
+        }
+        if (StringUtils.hasText(keyword)) {
+            q.and(w -> w.like(Template::getName, keyword).or().like(Template::getDescription, keyword));
+        }
+        return templateMapper.selectList(q);
     }
 
     public Template getById(UUID id) {
@@ -25,4 +40,30 @@ public class TemplateService {
         }
         return template;
     }
+
+    /** 分类列表 + 每个分类的模板数量，用于模板库的筛选侧栏 */
+    public List<Map<String, Object>> categories() {
+        List<Template> all = list(null, null);
+        Map<String, Long> counts = all.stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.getCategory() == null ? "other" : t.getCategory(),
+                        LinkedHashMap::new, Collectors.counting()));
+        return counts.entrySet().stream().map(e -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("key", e.getKey());
+            m.put("label", CATEGORY_LABELS.getOrDefault(e.getKey(), e.getKey()));
+            m.put("count", e.getValue());
+            return m;
+        }).collect(Collectors.toList());
+    }
+
+    private static final Map<String, String> CATEGORY_LABELS = Map.of(
+            "modern", "简约现代",
+            "classic", "经典稳重",
+            "creative", "创意设计",
+            "technical", "技术研发",
+            "academic", "学术科研",
+            "business", "商务金融",
+            "other", "其他"
+    );
 }

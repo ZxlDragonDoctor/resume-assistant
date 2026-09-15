@@ -1,0 +1,201 @@
+/* ==================================================================
+   页面级样式
+   ------------------------------------------------------------------
+   仅用于「无法用内联样式表达」的场景：媒体查询、伪元素、
+   以及需要 :hover / :focus 等状态选择器的交互效果。
+   ================================================================== */
+
+/* ---------------- 登录页 ---------------- */
+@media (max-width: 900px) {
+  .login-split {
+    grid-template-columns: 1fr !important;
+  }
+  /* 窄屏下隐藏品牌区，让表单占满 */
+  .login-split > div:first-child {
+    display: none !important;
+  }
+}
+
+/* ---------------- 模板卡片 ---------------- */
+.template-card {
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+  border-color: #c7d2fe !important;
+}
+
+.template-card:hover .template-card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.template-card-actions {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------- 简历列表卡片 ---------------- */
+.resume-card {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.resume-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1) !important;
+  border-color: #c7d2fe !important;
+}
+
+.resume-card:hover .resume-card-overlay {
+  opacity: 1;
+}
+
+.resume-card-overlay {
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+/* ---------------- 模块栏条目 ---------------- */
+.section-item {
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.section-item:hover {
+  background: #f8fafc;
+}
+
+.section-item.is-active {
+  background: #eef2ff;
+  border-right-color: #4f46e5 !important;
+}
+
+.section-item.is-active .section-item-label {
+  color: #4338ca;
+  font-weight: 500;
+}
+
+/* 拖拽中的占位观感 */
+.section-item.is-dragging {
+  opacity: 0.45;
+  background: #eef2ff;
+}
+
+/* ---------------- 模块工具条 ---------------- */
+.section-toolbar {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.section-item:hover .section-toolbar,
+.section-item.is-active .section-toolbar {
+  opacity: 1;
+}
+
+/* ---------------- 弹窗 / 抽屉内的表单分组 ---------------- */
+.form-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ---------------- 颜色选择器 ---------------- */
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.color-swatch:hover {
+  transform: scale(1.12);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.color-swatch.is-selected {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4f46e5;
+}
+
+/* ---------------- 滑杆 ---------------- */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4f46e5;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(79, 70, 229, 0.4);
+  transition: transform 0.14s ease;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #4f46e5;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+/* ---------------- ATS 评分环 ---------------- */
+.score-ring {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------- 空状态 ---------------- */
+.empty-illustration {
+  opacity: 0.9;
+}
+
+/* ---------------- 缩放容器 ---------------- */
+.preview-zoom-container {
+  transition: transform 0.2s ease;
+}
+
+/* ---------------- 顶部工具条分隔符 ---------------- */
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: #e2e8f0;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ---------------- 滚动阴影提示 ---------------- */
+.scroll-shadow {
+  position: relative;
+}
+
+.scroll-shadow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.04));
+}

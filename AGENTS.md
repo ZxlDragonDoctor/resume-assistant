@@ -24,7 +24,9 @@ resume-assistant/            ← monorepo root
 docker compose up -d          # start all: postgres, redis, rabbitmq, minio, nacos
 ```
 
-Wait for Nacos to be ready at http://localhost:8848 before starting services.
+Wait for Nacos to be ready at http://localhost:4348 before starting services.
+(Note: docker-compose maps host `4348` → container `8848`. The host port is 4348,
+and all service configs use `localhost:4348`.)
 
 ### Java services (in order)
 ```bash
@@ -68,7 +70,7 @@ Open http://localhost:5173 and log in / register.
 | Editor | TipTap 2 | ProseMirror JSON output |
 | DnD | @dnd-kit 6/8 | Sortable preset |
 | PDF | Puppeteer 22 | Isolated Node.js service |
-| AI | Python FastAPI + LangChain 0.2 | DeepSeek / OpenAI |
+| AI | Python FastAPI + LangChain 0.2 | 通义千问 / DeepSeek / OpenAI |
 | Queue | RabbitMQ 3.13 | Export/AI async tasks |
 | Cache | Redis 7 | Sessions |
 | File | MinIO | S3-compatible |

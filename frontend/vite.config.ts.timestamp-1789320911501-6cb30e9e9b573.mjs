@@ -1,0 +1,33 @@
+// vite.config.ts
+import { defineConfig } from "file:///D:/idea_java_project/ResumeAssistant/frontend/node_modules/vite/dist/node/index.js";
+import react from "file:///D:/idea_java_project/ResumeAssistant/frontend/node_modules/@vitejs/plugin-react/dist/index.js";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+var vite_config_default = defineConfig({
+  plugins: [react()],
+  /**
+   * 依赖预构建缓存放到项目外。
+   * 原因：`node_modules/.vite` 在部分受管控的执行环境里会被批量删除守卫拦截
+   * （dev server 启动时需要清理该目录），导致 Vite 无法启动。
+   * 放到系统临时目录后既不占用项目体积，也规避了该问题。
+   * 如需恢复默认行为，删除本项即可。
+   */
+  cacheDir: join(tmpdir(), "resume-assistant-vite"),
+  server: {
+    port: 5173,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
+      "/export": {
+        target: "http://localhost:8085",
+        changeOrigin: true
+      }
+    }
+  }
+});
+export {
+  vite_config_default as default
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidml0ZS5jb25maWcudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9kaXJuYW1lID0gXCJEOlxcXFxpZGVhX2phdmFfcHJvamVjdFxcXFxSZXN1bWVBc3Npc3RhbnRcXFxcZnJvbnRlbmRcIjtjb25zdCBfX3ZpdGVfaW5qZWN0ZWRfb3JpZ2luYWxfZmlsZW5hbWUgPSBcIkQ6XFxcXGlkZWFfamF2YV9wcm9qZWN0XFxcXFJlc3VtZUFzc2lzdGFudFxcXFxmcm9udGVuZFxcXFx2aXRlLmNvbmZpZy50c1wiO2NvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9pbXBvcnRfbWV0YV91cmwgPSBcImZpbGU6Ly8vRDovaWRlYV9qYXZhX3Byb2plY3QvUmVzdW1lQXNzaXN0YW50L2Zyb250ZW5kL3ZpdGUuY29uZmlnLnRzXCI7aW1wb3J0IHsgZGVmaW5lQ29uZmlnIH0gZnJvbSAndml0ZSc7XG5pbXBvcnQgcmVhY3QgZnJvbSAnQHZpdGVqcy9wbHVnaW4tcmVhY3QnO1xuaW1wb3J0IHsgdG1wZGlyIH0gZnJvbSAnbm9kZTpvcyc7XG5pbXBvcnQgeyBqb2luIH0gZnJvbSAnbm9kZTpwYXRoJztcblxuZXhwb3J0IGRlZmF1bHQgZGVmaW5lQ29uZmlnKHtcbiAgcGx1Z2luczogW3JlYWN0KCldLFxuICAvKipcbiAgICogXHU0RjlEXHU4RDU2XHU5ODg0XHU2Nzg0XHU1RUZBXHU3RjEzXHU1QjU4XHU2NTNFXHU1MjMwXHU5ODc5XHU3NkVFXHU1OTE2XHUzMDAyXG4gICAqIFx1NTM5Rlx1NTZFMFx1RkYxQWBub2RlX21vZHVsZXMvLnZpdGVgIFx1NTcyOFx1OTBFOFx1NTIwNlx1NTNEN1x1N0JBMVx1NjNBN1x1NzY4NFx1NjI2N1x1ODg0Q1x1NzNBRlx1NTg4M1x1OTFDQ1x1NEYxQVx1ODhBQlx1NjI3OVx1OTFDRlx1NTIyMFx1OTY2NFx1NUI4OFx1NTM2Qlx1NjJFNlx1NjIyQVxuICAgKiBcdUZGMDhkZXYgc2VydmVyIFx1NTQyRlx1NTJBOFx1NjVGNlx1OTcwMFx1ODk4MVx1NkUwNVx1NzQwNlx1OEJFNVx1NzZFRVx1NUY1NVx1RkYwOVx1RkYwQ1x1NUJGQ1x1ODFGNCBWaXRlIFx1NjVFMFx1NkNENVx1NTQyRlx1NTJBOFx1MzAwMlxuICAgKiBcdTY1M0VcdTUyMzBcdTdDRkJcdTdFREZcdTRFMzRcdTY1RjZcdTc2RUVcdTVGNTVcdTU0MEVcdTY1RTJcdTRFMERcdTUzNjBcdTc1MjhcdTk4NzlcdTc2RUVcdTRGNTNcdTc5RUZcdUZGMENcdTRFNUZcdTg5QzRcdTkwN0ZcdTRFODZcdThCRTVcdTk1RUVcdTk4OThcdTMwMDJcbiAgICogXHU1OTgyXHU5NzAwXHU2MDYyXHU1OTBEXHU5RUQ4XHU4QkE0XHU4ODRDXHU0RTNBXHVGRjBDXHU1MjIwXHU5NjY0XHU2NzJDXHU5ODc5XHU1MzczXHU1M0VGXHUzMDAyXG4gICAqL1xuICBjYWNoZURpcjogam9pbih0bXBkaXIoKSwgJ3Jlc3VtZS1hc3Npc3RhbnQtdml0ZScpLFxuICBzZXJ2ZXI6IHtcbiAgICBwb3J0OiA1MTczLFxuICAgIHByb3h5OiB7XG4gICAgICAnL2FwaSc6IHtcbiAgICAgICAgdGFyZ2V0OiAnaHR0cDovL2xvY2FsaG9zdDo4MDgwJyxcbiAgICAgICAgY2hhbmdlT3JpZ2luOiB0cnVlLFxuICAgICAgfSxcbiAgICAgICcvZXhwb3J0Jzoge1xuICAgICAgICB0YXJnZXQ6ICdodHRwOi8vbG9jYWxob3N0OjgwODUnLFxuICAgICAgICBjaGFuZ2VPcmlnaW46IHRydWUsXG4gICAgICB9LFxuICAgIH0sXG4gIH0sXG59KTtcbiJdLAogICJtYXBwaW5ncyI6ICI7QUFBaVUsU0FBUyxvQkFBb0I7QUFDOVYsT0FBTyxXQUFXO0FBQ2xCLFNBQVMsY0FBYztBQUN2QixTQUFTLFlBQVk7QUFFckIsSUFBTyxzQkFBUSxhQUFhO0FBQUEsRUFDMUIsU0FBUyxDQUFDLE1BQU0sQ0FBQztBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsRUFRakIsVUFBVSxLQUFLLE9BQU8sR0FBRyx1QkFBdUI7QUFBQSxFQUNoRCxRQUFRO0FBQUEsSUFDTixNQUFNO0FBQUEsSUFDTixPQUFPO0FBQUEsTUFDTCxRQUFRO0FBQUEsUUFDTixRQUFRO0FBQUEsUUFDUixjQUFjO0FBQUEsTUFDaEI7QUFBQSxNQUNBLFdBQVc7QUFBQSxRQUNULFFBQVE7QUFBQSxRQUNSLGNBQWM7QUFBQSxNQUNoQjtBQUFBLElBQ0Y7QUFBQSxFQUNGO0FBQ0YsQ0FBQzsiLAogICJuYW1lcyI6IFtdCn0K

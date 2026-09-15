@@ -7,19 +7,29 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     private final SecretKey key;
+
+    /** 无需鉴权的路径前缀 */
+    private static final List<String> PUBLIC_PREFIXES = List.of(
+            "/api/auth/",
+            "/api/public/",
+            "/api/templates"
+    );
 
     public JwtAuthGlobalFilter(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -29,14 +39,13 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
-        if (path.startsWith("/api/auth/")) {
+        if (isPublic(path)) {
             return chain.filter(exchange);
         }
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return unauthorized(exchange);
         }
 
         String token = authHeader.substring(7);
@@ -53,9 +62,21 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
                     .build();
             return chain.filter(mutated);
         } catch (Exception e) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return unauthorized(exchange);
         }
+    }
+
+    private boolean isPublic(String path) {
+        return PUBLIC_PREFIXES.stream().anyMatch(path::startsWith);
+    }
+
+    /** 返回统一格式的 401 响应体，便于前端拦截器统一处理 */
+    private Mono<Void> unauthorized(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        byte[] body = "{\"code\":401,\"message\":\"登录状态已过期，请重新登录\"}".getBytes(StandardCharsets.UTF_8);
+        DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(body);
+        return exchange.getResponse().writeWith(Mono.just(buffer));
     }
 
     @Override

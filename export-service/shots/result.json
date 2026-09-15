@@ -1,0 +1,86 @@
+{
+  "email": "e2e_1789486891557@test.com",
+  "results": [
+    {
+      "name": "首页渲染出内容",
+      "pass": true,
+      "detail": "1267 字符"
+    },
+    {
+      "name": "首页含核心卖点",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "登录页渲染出表单",
+      "pass": true,
+      "detail": "2 个 input"
+    },
+    {
+      "name": "切换到注册模式",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "填写注册表单",
+      "pass": true,
+      "detail": "昵称:true 邮箱:true 密码:true"
+    },
+    {
+      "name": "注册成功并进入应用",
+      "pass": true,
+      "detail": "/dashboard"
+    },
+    {
+      "name": "工作台渲染",
+      "pass": true,
+      "detail": "216 字符"
+    },
+    {
+      "name": "点击「新建简历」按钮",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "弹窗中点击「创建并编辑」",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "编辑器渲染 A4 纸张",
+      "pass": true,
+      "detail": "布局 794x1123 / 视觉 354 @0.4458x"
+    },
+    {
+      "name": "纸张布局宽度为 A4 标准 (794px)",
+      "pass": true,
+      "detail": "布局 794px / 视觉 354px @0.4458x"
+    },
+    {
+      "name": "编辑器左栏有模块列表",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "编辑器有样式/AI 面板",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "点击模块后出现内容编辑器",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "「新增模块」下拉框正常展开",
+      "pass": true,
+      "detail": "菜单项 9 个"
+    },
+    {
+      "name": "控制台无严重错误",
+      "pass": true,
+      "detail": "干净"
+    }
+  ],
+  "consoleErrors": []
+}

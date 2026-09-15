@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "postinstall": "npx puppeteer browsers install chrome",
+    "test:contract": "node scripts/contract-test.mjs"
   },
   "dependencies": {
     "amqplib": "^2.0.1",

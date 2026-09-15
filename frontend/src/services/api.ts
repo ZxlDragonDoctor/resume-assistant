@@ -1,94 +1,293 @@
-import axios from 'axios';
+/**
+ * API 客户端
+ * ------------------------------------------------------------------
+ * 统一封装：JWT 自动注入、响应解包、401 自动登出、错误提示。
+ * 所有接口返回 Promise<T>（已解包 R<T>.data），业务层无需再判 code。
+ */
+import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { message } from 'antd';
+import type {
+  AiHealth,
+  AiTextResponse,
+  ApiResponse,
+  AtsScoreResponse,
+  AuthResponse,
+  InterviewQuestionsResponse,
+  JdParseResponse,
+  LayoutConfig,
+  Resume,
+  ResumeDetail,
+  ResumeStats,
+  ResumeVersion,
+  SectionType,
+  SkillMatchResponse,
+  Template,
+  TemplateCategory,
+  UserProfile,
+} from '../types/resume';
 
-const api = axios.create({
+const TOKEN_KEY = 'resume_token';
+const USER_KEY = 'resume_user';
+
+export const auth = {
+  getToken: () => localStorage.getItem(TOKEN_KEY),
+  setToken: (token: string) => localStorage.setItem(TOKEN_KEY, token),
+  getUser: (): UserProfile | null => {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as UserProfile;
+    } catch {
+      return null;
+    }
+  },
+  setUser: (user: UserProfile) => localStorage.setItem(USER_KEY, JSON.stringify(user)),
+  clear: () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  },
+};
+
+// ------------------------------------------------------------------
+// Axios 实例
+// ------------------------------------------------------------------
+
+const http: AxiosInstance = axios.create({
   baseURL: '/api',
-  timeout: 15000,
+  timeout: 30000,
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+http.interceptors.request.use((config) => {
+  const token = auth.getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-api.interceptors.response.use(
-  (res) => res.data,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+/**
+ * export-service 专用实例。
+ *
+ * 注意：export-service（:8085）是独立的 Node 服务，**不在网关的 /api 路由下**，
+ * 因此不能复用 baseURL='/api' 的 http 实例 —— 否则请求会变成 /api/export/direct，
+ * 被网关拦下返回 401，永远到不了导出服务。
+ * Vite 已配置 '/export' → localhost:8085 代理，故这里 baseURL 留空。
+ * 该服务无需 JWT，但带上也无害。
+ */
+const exportHttp: AxiosInstance = axios.create({
+  timeout: 90000,
+});
+
+http.interceptors.response.use(
+  (res) => res,
+  (err: AxiosError<ApiResponse<unknown>>) => {
+    const status = err.response?.status;
+    const body = err.response?.data;
+
+    if (status === 401) {
+      auth.clear();
+      // 避免在登录页重复跳转
+      if (!window.location.pathname.startsWith('/login')) {
+        message.warning('登录状态已过期，请重新登录');
+        window.location.href = '/login';
+      }
+      return Promise.reject(err);
+    }
+
+    // 后端统一返回 {code, message}，优先展示业务 message
+    const bizMessage = body?.message;
+    if (bizMessage) {
+      message.error(bizMessage);
+    } else if (err.code === 'ECONNABORTED') {
+      message.error('请求超时，请检查服务是否已启动');
+    } else if (!err.response) {
+      message.error('无法连接到服务，请确认网关已启动（端口 8080）');
+    } else {
+      message.error('请求失败，请稍后重试');
     }
     return Promise.reject(err);
   }
 );
 
+/** 解包 R<T>，返回 data */
+async function unwrap<T>(promise: Promise<{ data: ApiResponse<T> }>): Promise<T> {
+  const res = await promise;
+  return res.data?.data as T;
+}
+
+// ==================================================================
+// 认证
+// ==================================================================
+
 export const authApi = {
   login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+    unwrap<AuthResponse>(http.post('/auth/login', { email, password })),
+
   register: (email: string, password: string, name: string) =>
-    api.post('/auth/register', { email, password, name }),
+    unwrap<AuthResponse>(http.post('/auth/register', { email, password, name })),
+
+  me: () => unwrap<UserProfile>(http.get('/auth/me')),
+
+  updateProfile: (data: Partial<UserProfile>) =>
+    unwrap<UserProfile>(http.patch('/auth/me', data)),
+
+  changePassword: (oldPassword: string, newPassword: string) =>
+    unwrap<void>(http.post('/auth/change-password', { oldPassword, newPassword })),
 };
+
+// ==================================================================
+// 简历
+// ==================================================================
 
 export const resumeApi = {
-  list: () => api.get('/resumes'),
-  detail: (id: string) => api.get(`/resumes/${id}`),
+  list: () => unwrap<Resume[]>(http.get('/resumes')),
+
+  stats: () => unwrap<ResumeStats>(http.get('/resumes/stats')),
+
+  detail: (id: string) => unwrap<ResumeDetail>(http.get(`/resumes/${id}`)),
+
   create: (title: string, templateId?: string) =>
-    api.post('/resumes', { title, templateId }),
-  delete: (id: string) => api.delete(`/resumes/${id}`),
-  update: (id: string, data: Record<string, unknown>) =>
-    api.patch(`/resumes/${id}`, data),
-  addSection: (resumeId: string, data: {
-    sectionType: string;
-    sortOrder: number;
-    data: string;
-  }) => api.post(`/resumes/${resumeId}/sections`, data),
-  updateSection: (sectionId: string, data: {
-    sectionType: string;
-    sortOrder: number;
-    data: string;
-  }) => api.put(`/resumes/sections/${sectionId}`, data),
-  deleteSection: (sectionId: string) =>
-    api.delete(`/resumes/sections/${sectionId}`),
+    unwrap<Resume>(http.post('/resumes', { title, templateId })),
+
+  duplicate: (id: string) =>
+    unwrap<{ id: string }>(http.post(`/resumes/${id}/duplicate`)),
+
+  remove: (id: string) => unwrap<void>(http.delete(`/resumes/${id}`)),
+
+  update: (id: string, data: Partial<LayoutConfig> & Record<string, unknown>) =>
+    unwrap<void>(http.patch(`/resumes/${id}`, data)),
+
+  // ---- 分享 ----
+  enableShare: (id: string) =>
+    unwrap<{ shareToken: string; shareEnabled: boolean }>(http.post(`/resumes/${id}/share`)),
+
+  disableShare: (id: string) => unwrap<void>(http.delete(`/resumes/${id}/share`)),
+
+  getShared: (token: string) => unwrap<ResumeDetail>(http.get(`/public/resumes/${token}`)),
+
+  // ---- 模块 ----
+  addSection: (
+    resumeId: string,
+    payload: { sectionType: SectionType | string; sortOrder: number; data: string; layout?: string }
+  ) => unwrap(http.post(`/resumes/${resumeId}/sections`, payload)),
+
+  updateSection: (
+    sectionId: string,
+    payload: { sectionType: string; sortOrder: number; data: string; isVisible?: boolean; layout?: string }
+  ) => unwrap<void>(http.put(`/resumes/sections/${sectionId}`, payload)),
+
+  toggleSection: (sectionId: string) =>
+    unwrap<void>(http.patch(`/resumes/sections/${sectionId}/visibility`)),
+
+  deleteSection: (sectionId: string) => unwrap<void>(http.delete(`/resumes/sections/${sectionId}`)),
+
   reorderSections: (resumeId: string, order: { id: string }[]) =>
-    api.post(`/resumes/${resumeId}/sections/reorder`, order),
+    unwrap<void>(http.post(`/resumes/${resumeId}/sections/reorder`, order)),
+
+  // ---- 版本 ----
+  versions: (id: string) => unwrap<ResumeVersion[]>(http.get(`/resumes/${id}/versions`)),
+
+  createVersion: (id: string, label: string, description?: string) =>
+    unwrap<ResumeVersion>(http.post(`/resumes/${id}/versions`, { label, description })),
+
+  restoreVersion: (id: string, versionId: string) =>
+    unwrap<void>(http.post(`/resumes/${id}/versions/${versionId}/restore`)),
+
+  deleteVersion: (id: string, versionId: string) =>
+    unwrap<void>(http.delete(`/resumes/${id}/versions/${versionId}`)),
 };
 
+// ==================================================================
+// 模板
+// ==================================================================
+
 export const templateApi = {
-  list: () => api.get('/templates'),
-  detail: (id: string) => api.get(`/templates/${id}`),
+  list: (category?: string, keyword?: string) =>
+    unwrap<Template[]>(
+      http.get('/templates', { params: { category, keyword } })
+    ),
+
+  categories: () => unwrap<TemplateCategory[]>(http.get('/templates/categories')),
+
+  detail: (id: string) => unwrap<Template>(http.get(`/templates/${id}`)),
 };
+
+// ==================================================================
+// 文件
+// ==================================================================
 
 export const fileApi = {
   upload: (file: File) => {
     const form = new FormData();
     form.append('file', file);
-    return api.post('/files/upload', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return unwrap<{ url: string; objectName: string; size: number }>(
+      http.post('/files/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+    );
+  },
+
+  uploadAvatar: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return unwrap<{ url: string }>(
+      http.post('/files/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+    );
   },
 };
 
+// ==================================================================
+// AI
+// ==================================================================
+
 export const aiApi = {
+  health: () => unwrap<AiHealth>(http.get('/ai/health')),
+
   optimizeBullet: (content: string, jobTitle?: string) =>
-    api.post('/ai/optimize-bullet', { content, job_title: jobTitle }),
+    unwrap<AiTextResponse>(http.post('/ai/optimize-bullet', { content, job_title: jobTitle })),
+
   generateSummary: (resumeInfo: string) =>
-    api.post('/ai/generate-summary', { resume_info: resumeInfo }),
+    unwrap<AiTextResponse>(http.post('/ai/generate-summary', { resume_info: resumeInfo })),
+
   atsScore: (jobDescription: string, resumeContent: string) =>
-    api.post('/ai/ats-score', {
-      job_description: jobDescription,
-      resume_content: resumeContent,
-    }),
+    unwrap<AtsScoreResponse>(
+      http.post('/ai/ats-score', { job_description: jobDescription, resume_content: resumeContent })
+    ),
+
+  parseJd: (jobDescription: string) =>
+    unwrap<JdParseResponse>(http.post('/ai/parse-jd', { job_description: jobDescription })),
+
+  matchSkills: (resumeContent: string, jobDescription: string) =>
+    unwrap<SkillMatchResponse>(
+      http.post('/ai/match-skills', { resume_content: resumeContent, job_description: jobDescription })
+    ),
+
+  interviewQuestions: (jobTitle: string, resumeContent: string) =>
+    unwrap<InterviewQuestionsResponse>(
+      http.post('/ai/interview-questions', { job_title: jobTitle, resume_content: resumeContent })
+    ),
 };
+
+// ==================================================================
+// 导出
+// ==================================================================
 
 export const exportApi = {
-  exportPdf: (resumeData: Record<string, unknown>) =>
-    api.post('/export/direct', { resumeData }, {
-      baseURL: '',
+  /** 同步导出 PDF 并触发下载 */
+  downloadPdf: async (resumeData: unknown, templateConfig?: unknown) => {
+    const res = await exportHttp.post('/export/direct', { resumeData, templateConfig }, {
       responseType: 'blob',
-      timeout: 60000,
-    }),
+      timeout: 90000,
+    });
+    return res.data as Blob;
+  },
+
+  /** 返回 PDF Blob 供内嵌预览（未实现则回退到前端预览） */
+  previewPdf: async (resumeData: unknown, templateConfig?: unknown) => {
+    const res = await exportHttp.post('/export/preview', { resumeData, templateConfig }, {
+      responseType: 'blob',
+      timeout: 90000,
+    });
+    return res.data as Blob;
+  },
 };
 
-export default api;
+export default http;

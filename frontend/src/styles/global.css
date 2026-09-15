@@ -1,0 +1,396 @@
+/* ==================================================================
+   全局样式
+   ------------------------------------------------------------------
+   1. 设计令牌的 CSS 变量映射（供原生 CSS / 第三方组件复用）
+   2. 基础 reset 与排版规范
+   3. 通用工具类与滚动条美化
+   4. 简历预览与打印样式
+   ================================================================== */
+
+:root {
+  /* ---- 品牌 ---- */
+  --brand-primary: #4f46e5;
+  --brand-primary-hover: #6366f1;
+  --brand-primary-active: #4338ca;
+  --brand-primary-soft: #eef2ff;
+  --brand-primary-border: #c7d2fe;
+  --brand-secondary: #7c3aed;
+  --brand-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+
+  /* ---- 语义 ---- */
+  --c-success: #10b981;
+  --c-success-soft: #ecfdf5;
+  --c-warning: #f59e0b;
+  --c-warning-soft: #fffbeb;
+  --c-danger: #ef4444;
+  --c-danger-soft: #fef2f2;
+  --c-info: #0ea5e9;
+  --c-info-soft: #f0f9ff;
+
+  /* ---- 中性 ---- */
+  --n-0: #ffffff;
+  --n-50: #f8fafc;
+  --n-100: #f1f5f9;
+  --n-200: #e2e8f0;
+  --n-300: #cbd5e1;
+  --n-400: #94a3b8;
+  --n-500: #64748b;
+  --n-600: #475569;
+  --n-700: #334155;
+  --n-800: #1e293b;
+  --n-900: #0f172a;
+
+  /* ---- 表面 ---- */
+  --surface-page: #f7f8fb;
+  --surface-card: #ffffff;
+  --surface-sunken: #f1f5f9;
+  --border-subtle: #eef1f6;
+  --border-default: #e2e8f0;
+
+  /* ---- 阴影 ---- */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.09), 0 4px 10px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 24px 48px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.06);
+  --shadow-paper: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 32px rgba(15, 23, 42, 0.1);
+
+  /* ---- 圆角 ---- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-pill: 999px;
+
+  /* ---- 动效 ---- */
+  --t-fast: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================================================================
+   Reset
+   ================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--n-800);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--n-900);
+  line-height: 1.35;
+}
+
+p { margin: 0; }
+
+a {
+  color: var(--brand-primary);
+  text-decoration: none;
+  transition: var(--t-fast);
+}
+a:hover { color: var(--brand-primary-hover); }
+
+img { max-width: 100%; display: block; }
+
+button { font-family: inherit; }
+
+/* ==================================================================
+   滚动条
+   ================================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d3dae4;
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b6c0cd;
+  background-clip: content-box;
+}
+
+/* 编辑器侧栏等紧凑区域使用更细的滚动条 */
+.thin-scroll::-webkit-scrollbar { width: 6px; }
+.thin-scroll::-webkit-scrollbar-thumb { border: 1px solid transparent; }
+
+/* ==================================================================
+   Ant Design 外观微调
+   ================================================================== */
+
+/* 让 Card 默认更克制 */
+.ant-card {
+  border-radius: var(--r-lg);
+}
+
+/* 输入类控件聚焦时用品牌色描边，替代默认蓝色 */
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 3px var(--brand-primary-border) !important;
+}
+
+/* 按钮的按下反馈 */
+.ant-btn:not(:disabled):active {
+  transform: translateY(0.5px);
+}
+
+/* Tooltip 更柔和 */
+.ant-tooltip-inner {
+  font-size: 12px;
+  border-radius: var(--r-sm);
+  padding: 5px 9px;
+}
+
+/* Modal / Drawer 圆角 */
+.ant-modal-content,
+.ant-drawer-content {
+  border-radius: var(--r-xl);
+}
+
+/* ==================================================================
+   通用工具类
+   ================================================================== */
+
+.text-gradient {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-gradient-bg {
+  background: var(--brand-gradient);
+}
+
+.surface-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.hover-lift {
+  transition: var(--t-base);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-primary-border);
+}
+
+/* ==================================================================
+   动画
+   ================================================================== */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.animate-in {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade {
+  animation: fadeIn 0.3s ease both;
+}
+
+/* 骨架屏 */
+.skeleton {
+  background: linear-gradient(90deg, #eef1f6 25%, #f6f8fb 50%, #eef1f6 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--r-sm);
+}
+
+/* 尊重用户的「减少动效」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================================================================
+   简历预览
+   ================================================================== */
+
+.resume-paper {
+  width: 794px;              /* A4 @96dpi */
+  min-height: 1123px;
+  background: #fff;
+  box-shadow: var(--shadow-paper);
+  position: relative;
+}
+
+/* 预览区的 Markdown 渲染样式 */
+.resume-rich h1,
+.resume-rich h2,
+.resume-rich h3,
+.resume-rich h4 {
+  margin: 8px 0 4px;
+  font-weight: 600;
+  color: var(--n-900);
+}
+.resume-rich p { margin: 3px 0; }
+.resume-rich ul,
+.resume-rich ol { padding-left: 18px; margin: 3px 0; }
+.resume-rich li { margin: 1px 0; }
+.resume-rich code {
+  background: var(--n-100);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #e11d48;
+}
+.resume-rich pre {
+  background: var(--n-50);
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--n-200);
+  margin: 6px 0;
+  overflow-x: auto;
+}
+.resume-rich pre code { background: none; padding: 0; color: var(--n-700); }
+.resume-rich blockquote {
+  border-left: 3px solid var(--brand-primary);
+  padding-left: 10px;
+  margin: 6px 0;
+  color: var(--n-500);
+}
+.resume-rich strong { font-weight: 600; color: var(--n-900); }
+.resume-rich a { color: var(--brand-primary); }
+.resume-rich table { border-collapse: collapse; width: 100%; margin: 6px 0; }
+.resume-rich th,
+.resume-rich td { border: 1px solid var(--n-200); padding: 4px 8px; text-align: left; }
+.resume-rich th { background: var(--n-50); font-weight: 600; }
+.resume-rich hr { border: none; border-top: 1px solid var(--n-200); margin: 8px 0; }
+
+/* 打印：只保留简历本体 */
+@media print {
+  body * { visibility: hidden; }
+  .resume-paper,
+  .resume-paper * { visibility: visible; }
+  .resume-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-shadow: none;
+    width: 100%;
+  }
+}
+
+/* ==================================================================
+   TipTap 富文本编辑器
+   ================================================================== */
+
+.tiptap-editor .ProseMirror {
+  min-height: 180px;
+  outline: none;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--n-700);
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--n-400);
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap-editor .ProseMirror h1 { font-size: 22px; margin: 12px 0 6px; }
+.tiptap-editor .ProseMirror h2 { font-size: 18px; margin: 10px 0 5px; }
+.tiptap-editor .ProseMirror h3 { font-size: 16px; margin: 8px 0 4px; }
+.tiptap-editor .ProseMirror ul,
+.tiptap-editor .ProseMirror ol { padding-left: 22px; }
+.tiptap-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--brand-primary-border);
+  padding-left: 12px;
+  color: var(--n-500);
+  margin: 8px 0;
+}
+.tiptap-editor .ProseMirror code {
+  background: var(--n-100);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.tiptap-editor .ProseMirror strong { font-weight: 600; }
+
+/* ==================================================================
+   响应式：窄屏下编辑器改为上下堆叠
+   ================================================================== */
+
+@media (max-width: 1280px) {
+  .editor-workspace {
+    flex-direction: column !important;
+  }
+  .editor-preview-pane {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border-default) !important;
+  }
+}
