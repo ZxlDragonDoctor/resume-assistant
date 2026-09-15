@@ -1,0 +1,102 @@
+# ============================================================================
+# 阿里云小内存服务器专用覆盖配置
+# ----------------------------------------------------------------------------
+# 目标机器：2 vCPU / 1608MB RAM / 2047MB swap
+#
+# 为什么要这个文件？
+#   仓库根的 docker-compose.yml 面向「资源充足的容器主机」编写。
+#   这台机器内存只有 1.6GB，装不下默认配置（实测预算约 2.1GB）。
+#   本文件用 override 叠加在上面，只做两件事：
+#     1. 给每个容器设 mem_limit（防止单个服务吃光内存触发 OOM 杀进程）
+#     2. 把每个 JVM 的堆压到最小可行值（JAVA_OPTS 已在 Dockerfile 中参数化）
+#
+# 用法（必须两个文件一起）：
+#   docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
+#
+# 取舍说明：
+#   - Nacos 是内存大户（~350MB），但网关用 lb:// 依赖它做服务发现，无法去掉。
+#     已将堆压到 256MB。
+#   - 5 个 Spring Boot 服务各限 128m 堆 —— 对 CRUD 型服务足够，
+#     因为 SerialGC + 无大对象，且不缓存数据。
+#   - 导出服务限 320MB：Chromium 本身就要 150MB+，给太少会崩。
+#   - rabbitmq / redis 当前代码未实际使用（AGENTS.md 已说明是预留给异步任务），
+#     这里保留 redis（35MB 很便宜），rabbitmq 默认不启动以省 200MB。
+#     需要时：docker compose ... up -d rabbitmq
+# ============================================================================
+
+services:
+  postgres:
+    mem_limit: 220m
+    # pgvector 的默认 shared_buffers 偏大，小机器上压到 48MB
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=48MB"
+      - "-c"
+      - "max_connections=40"
+      - "-c"
+      - "work_mem=2MB"
+      - "-c"
+      - "maintenance_work_mem=24MB"
+      - "-c"
+      - "effective_cache_size=128MB"
+
+  redis:
+    mem_limit: 40m
+    command: redis-server --maxmemory 24mb --maxmemory-policy allkeys-lru
+
+  minio:
+    mem_limit: 130m
+
+  nacos:
+    mem_limit: 400m
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "false"
+      # 关键：Nacos 官方镜像读 JAVA_OPTIONS 控制 JVM 堆
+      JAVA_OPTIONS: "-Xms128m -Xmx256m -Xmn64m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC"
+
+  # ---------------- 应用服务：统一压堆 ----------------
+
+  gateway:
+    mem_limit: 200m
+    environment:
+      JAVA_OPTS: "-Xms64m -Xmx128m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai"
+
+  auth-service:
+    mem_limit: 180m
+    environment:
+      JAVA_OPTS: "-Xms64m -Xmx128m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai"
+      # JPA ddl-auto: update 在小内存下更省
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  resume-service:
+    mem_limit: 180m
+    environment:
+      JAVA_OPTS: "-Xms64m -Xmx128m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai"
+
+  template-service:
+    mem_limit: 160m
+    environment:
+      JAVA_OPTS: "-Xms48m -Xmx112m -XX:MaxMetaspaceSize=88m -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai"
+
+  file-service:
+    mem_limit: 160m
+    environment:
+      JAVA_OPTS: "-Xms48m -Xmx112m -XX:MaxMetaspaceSize=88m -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai"
+
+  ai-service:
+    mem_limit: 130m
+
+  export-service:
+    mem_limit: 340m
+    # Chromium 需要 /dev/shm；小内存机器上限调小些，配合 --disable-dev-shm-usage
+    shm_size: "256m"
+
+  frontend:
+    mem_limit: 40m
+
+  # rabbitmq 默认不启用（当前代码未使用，省 ~200MB）。
+  # 需要异步导出/任务队列时取消下面注释并 `up -d rabbitmq`。
+  # rabbitmq:
+  #   mem_limit: 220m
