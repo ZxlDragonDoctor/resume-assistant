@@ -25,19 +25,22 @@ ENV MODULE=${MODULE}
 WORKDIR /build
 
 # 先只拷贝 POM 结构，最大化利用 Docker 层缓存
+# 注意：构建上下文必须是**仓库根目录**（不是 services/），
+# 因为多模块父 pom.xml 在根目录，子模块要继承它。
 COPY pom.xml ./pom.xml
-COPY services/common/pom.xml         ./services/common/pom.xml
-COPY services/gateway/pom.xml        ./services/gateway/pom.xml
-COPY services/auth-service/pom.xml   ./services/auth-service/pom.xml
-COPY services/resume-service/pom.xml ./services/resume-service/pom.xml
+COPY services/common/pom.xml           ./services/common/pom.xml
+COPY services/gateway/pom.xml          ./services/gateway/pom.xml
+COPY services/auth-service/pom.xml     ./services/auth-service/pom.xml
+COPY services/resume-service/pom.xml   ./services/resume-service/pom.xml
 COPY services/template-service/pom.xml ./services/template-service/pom.xml
-COPY services/file-service/pom.xml   ./services/file-service/pom.xml
+COPY services/file-service/pom.xml     ./services/file-service/pom.xml
 
 # 预热依赖（失败不致命：部分插件无法离线解析，后续真正构建时会补齐）
 RUN mvn -B -pl services/${MODULE} -am dependency:go-offline -DskipTests || true
 
 # 再拷贝源码
-COPY services ./services
+COPY services/common           ./services/common
+COPY services/${MODULE}        ./services/${MODULE}
 
 # 构建目标模块（-am 会连带构建 services/common 并安装到本地仓库）
 RUN mvn -B clean package -pl services/${MODULE} -am -DskipTests \

@@ -109,8 +109,9 @@ services:
   # 网关：所有 /api/** 流量的统一入口
   gateway:
     build:
-      context: ./services
-      dockerfile: Dockerfile
+      # 上下文为仓库根目录：多模块父 pom.xml 在根目录，子模块需继承
+      context: .
+      dockerfile: services/Dockerfile
       args:
         MODULE: gateway
     environment:
@@ -132,8 +133,9 @@ services:
 
   auth-service:
     build:
-      context: ./services
-      dockerfile: Dockerfile
+      # 上下文为仓库根目录：多模块父 pom.xml 在根目录，子模块需继承
+      context: .
+      dockerfile: services/Dockerfile
       args:
         MODULE: auth-service
     environment:
@@ -153,8 +155,9 @@ services:
 
   resume-service:
     build:
-      context: ./services
-      dockerfile: Dockerfile
+      # 上下文为仓库根目录：多模块父 pom.xml 在根目录，子模块需继承
+      context: .
+      dockerfile: services/Dockerfile
       args:
         MODULE: resume-service
     environment:
@@ -174,8 +177,9 @@ services:
 
   template-service:
     build:
-      context: ./services
-      dockerfile: Dockerfile
+      # 上下文为仓库根目录：多模块父 pom.xml 在根目录，子模块需继承
+      context: .
+      dockerfile: services/Dockerfile
       args:
         MODULE: template-service
     environment:
@@ -195,8 +199,9 @@ services:
 
   file-service:
     build:
-      context: ./services
-      dockerfile: Dockerfile
+      # 上下文为仓库根目录：多模块父 pom.xml 在根目录，子模块需继承
+      context: .
+      dockerfile: services/Dockerfile
       args:
         MODULE: file-service
     environment:

@@ -1,0 +1,39 @@
+# ============================================================================
+# Java 服务构建上下文的排除项（上下文 = 仓库根目录）
+# ----------------------------------------------------------------------------
+# 为什么排除这么多？构建上下文是整个根目录，Docker 会把它整个发给 daemon。
+# frontend/node_modules（2 万+ 文件）、export-service/node_modules 若不打掉，
+# 每次构建都要多传几百 MB，构建时间成倍增加。
+# Java 构建只需要 pom.xml 与 services/。
+# ============================================================================
+
+# 与 Java 构建无关的整个目录
+frontend/
+export-service/
+ai-service/
+docs/
+*.pdf
+*.md
+
+# 构建产物与日志
+services/*/target/
+**/target/
+*.jar
+*.log
+
+# 本地记忆 / IDE / 系统
+.workbuddy-ai/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+tmp/
+.git/
+.gitignore
+
+# 容器编排文件（构建不需要）
+docker-compose.yml
+Dockerfile
+netlify.toml
+vercel.json
