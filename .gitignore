@@ -46,6 +46,8 @@ resume_export*
 # 端到端测试产生的截图与临时产物
 export-service/shots/
 export-service/tmp/
+frontend/tmp/
+tmp/
 
 # Docker volumes
 pgdata/
