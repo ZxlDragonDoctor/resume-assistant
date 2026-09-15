@@ -69,7 +69,7 @@ ResumeAssistant/
 ├── docs/
 │   ├── FRONTEND.md              # 前端设计系统规范
 │   └── sql/init.sql             # 建表 + 种子数据（6 个模板）
-└── docker-compose.yml           # PostgreSQL / Redis / RabbitMQ / MinIO / Nacos
+└── docker-compose.yml           # 全栈编排：基础设施 + 全部应用服务
 ```
 
 ## 快速启动
@@ -78,25 +78,33 @@ ResumeAssistant/
 
 Node.js 18+ · JDK 17+ · Maven 3.8+ · Docker · Python 3.11+
 
-### 1. 基础设施
-
-```bash
-docker compose up -d
-```
-
-启动 PostgreSQL、Redis、RabbitMQ、MinIO、Nacos。
-
-**若只想跑本项目必需的服务**（推荐，避免与其它本地服务抢占端口）：
+### 方式一：只起基础设施（本机开发服务，推荐）
 
 ```bash
 docker compose up -d postgres nacos minio
 ```
 
-> 当前 Java 服务只依赖 **PostgreSQL / Nacos / MinIO** 三者
-> —— 没有任何服务的 `application.yml` 配置了 Redis 或 RabbitMQ。
-> 它们是为后续异步任务预留的。
+只启动 **PostgreSQL / Nacos / MinIO**，然后按下面的「本地开发」分别用
+`mvn spring-boot:run` / `npm run dev` / `uvicorn` 启动各服务。
+这种方式**保留热重载**，适合日常改代码。
 
-启动后可用以下命令确认就绪（两个都应返回 `200`）：
+> 当前 Java 服务只依赖 **PostgreSQL / Nacos / MinIO** 三者
+> —— JSONB 简历数据、服务注册、模板与文件存储都已覆盖。
+> Redis / RabbitMQ 是为后续异步任务预留的。
+
+### 方式二：一键起全栈（容器部署，见 DEPLOY.md）
+
+```bash
+export OPENAI_API_KEY=sk-你的密钥
+docker compose up -d --build
+```
+
+构建并启动 **全部服务**（前端 + 5 个 Java 服务 + 导出 + AI + 5 个中间件）。
+访问 http://localhost:8000 。首次构建需下载依赖，耗时较长。
+
+> 完整的部署说明、免费托管方案与安全清单见 **[DEPLOY.md](./DEPLOY.md)**。
+
+启动基础设施后可用以下命令确认就绪（两个都应返回 `200`）：
 
 ```bash
 curl -o /dev/null -w "%{http_code}\n" http://localhost:4348/nacos/

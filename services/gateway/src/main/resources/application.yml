@@ -28,11 +28,13 @@ spring:
           predicates:
             - Path=/api/files/**
         - id: ai-service
-          uri: http://localhost:8086
+          # 本机开发默认 localhost:8086；容器部署时由环境变量 AI_SERVICE_URL 覆盖为 http://ai-service:8086
+          uri: ${AI_SERVICE_URL:http://localhost:8086}
           predicates:
             - Path=/api/ai/**
         - id: export-service
-          uri: http://localhost:8085
+          # 同上，容器内用 EXPORT_SERVICE_URL=http://export-service:8085
+          uri: ${EXPORT_SERVICE_URL:http://localhost:8085}
           predicates:
             - Path=/api/export/**
           filters:
@@ -42,7 +44,8 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "http://localhost:5173,http://localhost:5174"
+            # 本机默认放行 Vite dev server；部署时用 CORS_ALLOWED_ORIGINS 覆盖
+            allowedOrigins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174}
             allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true

@@ -1,4 +1,24 @@
+# ============================================================================
+# Resume Assistant —— 全栈容器编排
+# ----------------------------------------------------------------------------
+# 两层：
+#   基础设施层  postgres / redis / rabbitmq / minio / nacos  （原样保留）
+#   应用层      gateway / auth / resume / template / file / export / ai / frontend
+#
+# 覆盖策略（重要）：
+#   各服务的 application.yml 里写的是 localhost —— 本机开发用。
+#   容器内 localhost 指向容器自己，必然连不上别的服务。
+#   这里**不修改任何 yml**，而是通过环境变量覆盖：Spring Boot 采用
+#   宽松绑定（relaxed binding），环境变量 SPRING_DATASOURCE_URL 等价于
+#   spring.datasource.url，NACOS 地址同理。这样本机开发与容器部署
+#   共用同一份配置，不会互相污染。
+#
+# 启动顺序：nacos → 各服务（服务注册失败会重试，但 nacos 必须先在）
+# ============================================================================
+
 services:
+  # ========================= 基础设施 =========================
+
   postgres:
     image: pgvector/pgvector:pg16
     environment:
@@ -10,6 +30,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docs/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resume -d resume_assistant"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - resume-net
 
@@ -17,6 +42,11 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     networks:
       - resume-net
 
@@ -28,13 +58,19 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: resume
       RABBITMQ_DEFAULT_PASS: resume123
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
     networks:
       - resume-net
 
   minio:
     image: minio/minio:latest
     # 宿主端口故意避开 9000/9001 —— 部分本机环境已用该端口运行其它 MinIO 实例。
-    # 若需改回默认，同步修改 services/file-service/src/main/resources/application.yml 的 minio.endpoint。
+    # 容器之间用服务名 minio:9000 互访（见下方 file-service / export-service 的 env），
+    # 宿主端口只影响你在浏览器里访问控制台。
     ports:
       - "9100:9000"
       - "9101:9001"
@@ -44,6 +80,11 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
     networks:
       - resume-net
 
@@ -55,6 +96,187 @@ services:
     environment:
       MODE: standalone
       NACOS_AUTH_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8848/nacos/v1/console/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+    networks:
+      - resume-net
+
+  # ========================= 应用层 =========================
+
+  # 网关：所有 /api/** 流量的统一入口
+  gateway:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      args:
+        MODULE: gateway
+    environment:
+      # 服务发现指向容器内的 nacos
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      # 网关到 ai / export 的转发地址（application.yml 中已改为可覆盖）
+      AI_SERVICE_URL: http://ai-service:8086
+      EXPORT_SERVICE_URL: http://export-service:8085
+      # CORS 放行来源。容器部署时前端经 nginx 同源代理访问，通常用不到；
+      # 兼容直接访问 :8080 / :8000 调试的场景。
+      CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:5174,http://localhost:8000,http://localhost"
+    ports:
+      - "8080:8080"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  auth-service:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      args:
+        MODULE: auth-service
+    environment:
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_assistant
+      SPRING_DATASOURCE_USERNAME: resume
+      SPRING_DATASOURCE_PASSWORD: resume123
+    ports:
+      - "8081:8080"
+    depends_on:
+      nacos:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  resume-service:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      args:
+        MODULE: resume-service
+    environment:
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_assistant
+      SPRING_DATASOURCE_USERNAME: resume
+      SPRING_DATASOURCE_PASSWORD: resume123
+    ports:
+      - "8082:8080"
+    depends_on:
+      nacos:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  template-service:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      args:
+        MODULE: template-service
+    environment:
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_assistant
+      SPRING_DATASOURCE_USERNAME: resume
+      SPRING_DATASOURCE_PASSWORD: resume123
+    ports:
+      - "8083:8080"
+    depends_on:
+      nacos:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  file-service:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      args:
+        MODULE: file-service
+    environment:
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      # MinIO 在容器网络内的地址（注意端口是 9000，不是宿主的 9100）
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: resume-files
+    ports:
+      - "8084:8080"
+    depends_on:
+      nacos:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  # PDF 导出：自带 Chromium，必须独立容器
+  export-service:
+    build:
+      context: ./export-service
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8085
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: resume-exports
+      RMQ_URL: amqp://resume:resume123@rabbitmq:5672
+      GATEWAY_URL: http://gateway:8080
+    ports:
+      - "8085:8085"
+    # Chromium 需要更大的 /dev/shm，否则渲染大页面会崩
+    shm_size: "512m"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8086
+      # 从宿主机 .env / 部署平台 Secrets 注入；不写死，避免密钥进镜像与仓库
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      LLM_MODEL: ${LLM_MODEL:-qwen-max}
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8086:8086"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - resume-net
+
+  # 前端静态站 + nginx 反向代理（同源，免 CORS）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # 留空 = 使用相对路径，由 nginx 在服务端转发到各后端
+        VITE_API_BASE_URL: ""
+        VITE_EXPORT_BASE_URL: ""
+    ports:
+      - "8000:80"
+    depends_on:
+      - gateway
+      - ai-service
+      - export-service
     networks:
       - resume-net
 

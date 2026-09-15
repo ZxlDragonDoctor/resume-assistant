@@ -1,0 +1,12 @@
+# 构建上下文排除项
+node_modules/
+dist/
+build/
+tmp/
+shots/
+*.log
+out.log
+output*.log
+err*.log
+.DS_Store
+.git/

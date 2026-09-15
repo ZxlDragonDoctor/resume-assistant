@@ -1,0 +1,18 @@
+# 构建上下文排除项 —— 显著加快镜像构建、避免把本地产物打进镜像
+
+# 构建产物（镜像内会重新构建）
+target/
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# 本地日志
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 系统
+.DS_Store
+Thumbs.db

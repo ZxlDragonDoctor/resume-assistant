@@ -1,0 +1,10 @@
+# 构建上下文排除项
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.pytest_cache/
+.DS_Store
+.git/
