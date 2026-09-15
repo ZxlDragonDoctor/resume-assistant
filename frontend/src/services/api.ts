@@ -52,8 +52,22 @@ export const auth = {
 // Axios 实例
 // ------------------------------------------------------------------
 
+// ------------------------------------------------------------------
+// 后端地址（支持部署到静态托管）
+// ------------------------------------------------------------------
+/**
+ * 开发环境：留空走 Vite 代理（/api → localhost:8080，/export → localhost:8085）。
+ * 生产环境：通过 VITE_API_BASE_URL / VITE_EXPORT_BASE_URL 指定真实后端地址。
+ *
+ * 例如部署到 Vercel 时设置：
+ *   VITE_API_BASE_URL=https://your-gateway.example.com/api
+ *   VITE_EXPORT_BASE_URL=https://your-export.example.com
+ */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || '';
+const EXPORT_BASE = (import.meta.env.VITE_EXPORT_BASE_URL as string | undefined) || '';
+
 const http: AxiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: `${API_BASE}/api`,
   timeout: 30000,
 });
 
@@ -71,10 +85,11 @@ http.interceptors.request.use((config) => {
  * 注意：export-service（:8085）是独立的 Node 服务，**不在网关的 /api 路由下**，
  * 因此不能复用 baseURL='/api' 的 http 实例 —— 否则请求会变成 /api/export/direct，
  * 被网关拦下返回 401，永远到不了导出服务。
- * Vite 已配置 '/export' → localhost:8085 代理，故这里 baseURL 留空。
+ * 开发环境走 Vite 代理（'/export' → localhost:8085）；生产环境用 EXPORT_BASE。
  * 该服务无需 JWT，但带上也无害。
  */
 const exportHttp: AxiosInstance = axios.create({
+  baseURL: EXPORT_BASE,
   timeout: 90000,
 });
 

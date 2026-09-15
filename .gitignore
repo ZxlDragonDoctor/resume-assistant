@@ -43,6 +43,10 @@ resume_export*
 .workbuddy-ai/
 .idea/
 
+# 端到端测试产生的截图与临时产物
+export-service/shots/
+export-service/tmp/
+
 # Docker volumes
 pgdata/
 minio_data/
