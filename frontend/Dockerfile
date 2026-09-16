@@ -13,6 +13,11 @@
 # ---------- 阶段 1：构建 ----------
 FROM node:22-alpine AS builder
 
+# npm 与 Alpine 包源镜像。理由同其它服务：直连官方源从中国大陆
+# 极慢或超时。境外环境可用 --build-arg 置空回退。
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+ARG ALPINE_MIRROR=mirrors.tuna.tsinghua.edu.cn
+
 WORKDIR /app
 
 # 后端地址在构建期注入。默认留空 = 使用相对路径，
@@ -23,7 +28,8 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL} \
     VITE_EXPORT_BASE_URL=${VITE_EXPORT_BASE_URL}
 
 COPY package.json package-lock.json* ./
-RUN npm install --no-audit --no-fund
+RUN npm config set registry "$NPM_REGISTRY" \
+    && npm install --no-audit --no-fund
 
 COPY . .
 RUN npm run build
@@ -31,8 +37,14 @@ RUN npm run build
 # ---------- 阶段 2：托管 ----------
 FROM nginx:1.27-alpine
 
-# 时区
-RUN apk add --no-cache tzdata curl \
+ARG ALPINE_MIRROR
+
+# 时区（换源后再装，否则 apk 会挂在 dl-cdn.alpinelinux.org 上）
+RUN set -eux; \
+    if [ -n "$ALPINE_MIRROR" ]; then \
+      sed -i "s|dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
+    fi; \
+    apk add --no-cache tzdata curl \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
 

@@ -54,10 +54,32 @@ services:
   minio:
     mem_limit: 160m
 
-  # 当前业务代码未使用 RabbitMQ（导出/AI 走 HTTP 同步调用），
-  # 这里直接禁用，省下约 200MB —— 这对 1.6GB 的机器是决定性的。
+  # --------------------------------------------------------------------------
+  # 关于 RabbitMQ：本项目**当前代码并未使用**（导出/AI 走 HTTP 同步调用，
+  # 见 gateway 的路由配置），停掉它可省约 200MB —— 对 1.6GB 的机器是决定性的。
+  #
+  # 但**不能**用 `profiles: ["disabled"]` 来「关掉」它：
+  # profiles 会让该 service 在 compose 模型里彻底不存在，
+  # 于是 export-service 的 `depends_on: rabbitmq` 会直接报
+  #   service "export-service" depends on undefined service "rabbitmq"
+  # 整个 compose 项目连解析都过不了（启动和 build 都会失败）。
+  #
+  # 正确做法：保留服务定义（让 depends_on 有效），但让它以极小内存运行、
+  # 不映射任何宿主端口。占 60MB 左右，换来 compose 模型自洽。
+  # --------------------------------------------------------------------------
   rabbitmq:
-    profiles: ["disabled"]
+    mem_limit: 90m
+    ports: !override []
+    environment:
+      RABBITMQ_DEFAULT_USER: resume
+      RABBITMQ_DEFAULT_PASS: resume123
+      # 【不要设 RABBITMQ_VM_MEMORY_HIGH_WATERMARK】
+      # 3.13 已废弃该环境变量，设了会直接启动失败退出：
+      #   error: RABBITMQ_VM_MEMORY_HIGH_WATERMARK is set but deprecated
+      # 想调内存水位只能写 rabbitmq.conf（配置项 vm_memory_high_watermark）。
+      # 本机内存小，用配置文件方式；这里通过 mounted conf 生效。
+    volumes:
+      - ./docs/conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
 
   # --------------------------------------------------------------------------
   # 应用层：统一用「小堆 + SerialGC」
@@ -117,9 +139,21 @@ services:
     mem_limit: 340m
     # Chromium 需要较大 /dev/shm，否则会随机崩溃（默认 64MB 不够）
     shm_size: "256m"
+    build:
+      args:
+        # 实测 dl-cdn.alpinelinux.org 从本机**完全超时**，apk 会无限挂起
+        ALPINE_MIRROR: mirrors.tuna.tsinghua.edu.cn
 
   ai-service:
     mem_limit: 180m
+    build:
+      args:
+        PIP_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple
+        APT_MIRROR: mirrors.tuna.tsinghua.edu.cn
 
   frontend:
     mem_limit: 48m
+    build:
+      args:
+        NPM_REGISTRY: https://registry.npmmirror.com
+        ALPINE_MIRROR: mirrors.tuna.tsinghua.edu.cn

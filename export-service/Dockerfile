@@ -16,6 +16,17 @@
 
 FROM node:22-alpine
 
+# Alpine 包仓库镜像。默认走清华 —— 实测从中国大陆访问
+# dl-cdn.alpinelinux.org 会**完全超时**（连不上，apk 无限挂起），
+# 而清华/阿里云都是 ~0.1s 响应。不换源这一步根本跑不完。
+ARG ALPINE_MIRROR=mirrors.tuna.tsinghua.edu.cn
+RUN set -eux; \
+    if [ -n "$ALPINE_MIRROR" ]; then \
+      # 主仓库 + community（font-noto-cjk 在 community 里）
+      sed -i "s|dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
+    fi; \
+    cat /etc/apk/repositories
+
 # Chromium 及其运行时依赖；字体（中文简历 PDF 必须，否则中文渲染成方框）
 RUN apk add --no-cache \
         chromium \

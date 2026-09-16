@@ -11,6 +11,23 @@
 
 FROM python:3.13-slim
 
+# 包源镜像 —— 与 Maven/Alpine 同理：从中国大陆直连官方源
+# (pypi.org / deb.debian.org) 会非常慢甚至超时，构建时间不可控。
+# 这里默认走国内镜像，境外环境可通过 --build-arg 置空回退官方源。
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG APT_MIRROR=mirrors.tuna.tsinghua.edu.cn
+
+RUN set -eux; \
+    if [ -n "$APT_MIRROR" ]; then \
+      # 基础镜像的 sources.list 是 deb822 格式（/etc/apt/sources.list.d/debian.sources）
+      if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list.d/debian.sources; \
+      fi; \
+      if [ -f /etc/apt/sources.list ]; then \
+        sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list; \
+      fi; \
+    fi
+
 # 避免 .pyc、stdout 缓冲（便于 docker logs 实时看日志）
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -20,7 +37,7 @@ WORKDIR /app
 
 # 先装依赖（单独一层，利用缓存）
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -i "$PIP_INDEX_URL" -r requirements.txt
 
 COPY app ./app
 
