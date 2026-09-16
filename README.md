@@ -119,7 +119,7 @@ Puppeteer 无头 Chrome 渲染 A4 PDF（794 × 1123 px），
 
 ```mermaid
 graph TB
-    Browser(["🌐 浏览器"])
+    Browser(["浏览器"])
 
     subgraph Edge["边缘层"]
         NGX["nginx<br/>TLS 终止 · 同源反代"]
