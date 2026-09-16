@@ -164,6 +164,70 @@ docker-compose up -d --build
 若要对外提供 HTTPS，推荐在前端容器前再挂一层反向代理
 （如 Caddy / Nginx Proxy Manager / 宝塔面板）自动签发证书。
 
+---
+
+## ⚠️ 在「国内服务器」上构建必读
+
+**这一节是实测踩出来的，跳过会浪费大量时间。**
+
+本项目从中国大陆的服务器上构建时，**最大的障碍不是代码，而是拉不到包**。
+三处官方源基本不可用，已在各 Dockerfile 中默认改为国内镜像
+（全部是 `ARG`，境外环境可传空值回退官方源）：
+
+| 生态 | 官方源实测表现 | 默认已改用 | 所在文件 |
+|---|---|---|---|
+| Maven | `repo.maven.apache.org` **仅 25~60 KB/s** | `maven.aliyun.com/repository/public` | `services/Dockerfile` |
+| Alpine | `dl-cdn.alpinelinux.org` **完全超时** | `mirrors.tuna.tsinghua.edu.cn` | `export-service/`、`frontend/` |
+| PyPI | pypi.org 慢 | `pypi.tuna.tsinghua.edu.cn` | `ai-service/Dockerfile` |
+| npm | registry.npmjs.org 慢 | `registry.npmmirror.com` | `frontend/Dockerfile` |
+
+效果对比：改之前单个 Java 模块十几分钟都跑不完；
+改之后 5 个 Java 服务合计约 **3.5 分钟**全部构建完。
+
+回退到官方源（境外环境）：
+
+```bash
+docker compose build \
+  --build-arg MAVEN_MIRROR= \
+  --build-arg ALPINE_MIRROR= \
+  --build-arg PIP_INDEX_URL=https://pypi.org/simple
+```
+
+### 三个必须避开的坑
+
+1. **`--mount=type=cache,target=/root/.m2` 会遮蔽镜像内的 `/root/.m2`。**
+   所以把 `settings.xml` 写到 `/root/.m2/settings.xml` **等于没写**，
+   Maven 仍会去官方 central。必须放 `/opt/maven-settings.xml` 并用
+   `mvn -s /opt/maven-settings.xml` 显式指定。
+
+2. **RabbitMQ 3.13 已废弃 `RABBITMQ_VM_MEMORY_HIGH_WATERMARK`。**
+   设置后容器**直接启动失败退出**（`error: deprecated environment variables
+   detected`）。内存水位只能写配置文件，见 `docs/conf/rabbitmq.conf`。
+
+3. **compose 的 `profiles` 不能用来「关掉」被依赖的服务。**
+   给 rabbitmq 加 `profiles: ["disabled"]` 会让 `export-service` 的
+   `depends_on` 直接报 `depends on undefined service`，整个项目连解析都过不了。
+   （另外 `export-service/src/index.js` 确实在用 amqplib，
+   **RabbitMQ 不能省略**；只想减端口用 `ports: !override []`。）
+
+### 低内存主机（≤2GB）
+
+用 `docker-compose.server.yml` 覆盖层：
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
+```
+
+它做了这些事：给每个容器设 `mem_limit`、各 Java 服务用小堆 + SerialGC、
+关掉不需要的宿主端口映射。
+
+- **Nacos 必须用 `JVM_XMS/JVM_XMX/JVM_XMN/JVM_MS/JVM_MMS`** ——
+  官方镜像的 `docker-startup.sh` **不读 `JAVA_OPTIONS`**，
+  写错变量名会被静默忽略，Nacos 会沿用默认 `-Xms1g -Xmx1g`，
+  在小容器里疯狂 GC 卡死。
+- **构建务必串行**。并行构建会同时跑多个 Maven（每个约 500MB），
+  直接打爆小内存机器。参考串行构建脚本的思路（见下）。
+
 ### 上线前检查清单
 
 - [ ] `JWT_SECRET` 已从默认值改为随机强密钥（`services/*/src/main/resources/application.yml`）
