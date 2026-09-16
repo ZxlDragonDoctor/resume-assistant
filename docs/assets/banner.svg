@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" fill="none" role="img" aria-label="晓龙简历 · 在线简历工作台">
+  <title>晓龙简历 · 在线简历工作台</title>
+  <desc>项目主视觉：品牌渐变底 + 泡泡龙标 + 项目名与一句话定位</desc>
+
+  <defs>
+    <!-- 背景渐变：与 tokens.ts 的 brand.gradient 同源 (#4F46E5 → #7C3AED) -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="0.55" stop-color="#5B3FE0"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <!-- 右上角光晕 -->
+    <radialGradient id="glow" cx="0.78" cy="0.12" r="0.75">
+      <stop offset="0" stop-color="#A78BFA" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#A78BFA" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 左下角光晕 -->
+    <radialGradient id="glow2" cx="0.08" cy="0.95" r="0.7">
+      <stop offset="0" stop-color="#818CF8" stop-opacity="0.40"/>
+      <stop offset="1" stop-color="#818CF8" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 简历纸张的柔和阴影 -->
+    <filter id="paperShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1E1B4B" flood-opacity="0.30"/>
+    </filter>
+
+    <linearGradient id="xlBrandGrad" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <linearGradient id="headLineFade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1280" height="420" fill="url(#bg)"/>
+  <rect width="1280" height="420" fill="url(#glow)"/>
+  <rect width="1280" height="420" fill="url(#glow2)"/>
+
+  <!-- 细网格纹理，增加质感（不抢主体） -->
+  <g opacity="0.07" stroke="#FFFFFF" stroke-width="1">
+    <path d="M0 60H1280M0 140H1280M0 220H1280M0 300H1280M0 380H1280"/>
+    <path d="M120 0V420M320 0V420M520 0V420M720 0V420M920 0V420M1120 0V420"/>
+  </g>
+
+  <!-- ================= 左侧：品牌标 + 文案 ================= -->
+
+  <!-- 品牌标（沿用 public/logo.svg 的几何，放大到 96×96） -->
+  <g transform="translate(88, 96)">
+    <rect width="96" height="96" rx="26" fill="#FFFFFF" fill-opacity="0.16"/>
+    <rect x="3" y="3" width="90" height="90" rx="24" fill="#FFFFFF" fill-opacity="0.14"/>
+    <!-- 泡泡龙 -->
+    <g transform="translate(28, 26) scale(1.0)">
+      <circle cx="32.4" cy="12" r="1.9" fill="#FFFFFF" fill-opacity="0.42"/>
+      <circle cx="29.6" cy="7.4" r="1.15" fill="#FFFFFF" fill-opacity="0.28"/>
+      <path d="M13.8 14 L10.6 10.4 L16.6 12.2 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M26.2 14 L29.4 10.4 L23.4 12.2 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"/>
+      <rect x="9.2" y="13" width="21.6" height="17.6" rx="8.8" fill="#FFFFFF"/>
+      <ellipse cx="13.1" cy="24.4" rx="1.9" ry="1.3" fill="#C7D2FE"/>
+      <ellipse cx="26.9" cy="24.4" rx="1.9" ry="1.3" fill="#C7D2FE"/>
+      <ellipse cx="15.9" cy="21.3" rx="1.75" ry="2.05" fill="#4338CA"/>
+      <ellipse cx="24.1" cy="21.3" rx="1.75" ry="2.05" fill="#4338CA"/>
+      <circle cx="16.5" cy="20.5" r="0.55" fill="#FFFFFF"/>
+      <circle cx="23.5" cy="20.5" r="0.55" fill="#FFFFFF"/>
+      <path d="M17.8 25.7 Q20 27.3 22.2 25.7" stroke="#4338CA" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+
+  <!-- 项目名 -->
+  <text x="216" y="150" font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',-apple-system,sans-serif"
+        font-size="54" font-weight="700" fill="#FFFFFF" letter-spacing="1">晓龙简历</text>
+
+  <!-- 英文名 / 项目代号 -->
+  <text x="218" y="186" font-family="'SF Mono','JetBrains Mono',Consolas,monospace"
+        font-size="17" font-weight="500" fill="#C7D2FE" letter-spacing="3.2">RESUME ASSISTANT</text>
+
+  <!-- 分隔线 -->
+  <rect x="218" y="208" width="360" height="2" rx="1" fill="url(#headLineFade)"/>
+
+  <!-- 一句话定位 -->
+  <text x="88" y="272" font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',-apple-system,sans-serif"
+        font-size="25" font-weight="600" fill="#FFFFFF" letter-spacing="0.5">免费 · 开源的在线简历工作台</text>
+
+  <text x="88" y="308" font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',-apple-system,sans-serif"
+        font-size="17" font-weight="400" fill="#DDD6FE">模块化编辑 · 所见即所得导出 · AI 只出建议不代笔</text>
+
+  <!-- 底部技术标签 -->
+  <g font-family="'SF Mono','JetBrains Mono',Consolas,monospace" font-size="14" font-weight="500">
+    <g fill="#FFFFFF" fill-opacity="0.14" stroke="#FFFFFF" stroke-opacity="0.28">
+      <rect x="88"  y="340" width="118" height="34" rx="17"/>
+      <rect x="216" y="340" width="112" height="34" rx="17"/>
+      <rect x="338" y="340" width="132" height="34" rx="17"/>
+      <rect x="480" y="340" width="104" height="34" rx="17"/>
+      <rect x="594" y="340" width="106" height="34" rx="17"/>
+    </g>
+    <g fill="#EDE9FE">
+      <text x="110" y="362">React 18</text>
+      <text x="238" y="362">Spring Boot</text>
+      <text x="360" y="362">PostgreSQL</text>
+      <text x="502" y="362">TipTap 2</text>
+      <text x="616" y="362">Puppeteer</text>
+    </g>
+  </g>
+
+  <!-- ================= 右侧：简历纸张示意 ================= -->
+  <g transform="translate(830, 62) rotate(-4)" filter="url(#paperShadow)">
+    <!-- 纸张 -->
+    <rect width="330" height="300" rx="10" fill="#FFFFFF"/>
+
+    <!-- 头部色块 -->
+    <rect x="0" y="0" width="330" height="74" rx="10" fill="url(#xlBrandGrad)"/>
+    <rect x="0" y="60" width="330" height="14" fill="url(#xlBrandGrad)"/>
+
+    <!-- 头像 -->
+    <circle cx="46" cy="40" r="20" fill="#FFFFFF" fill-opacity="0.92"/>
+    <circle cx="46" cy="34" r="7" fill="#4F46E5"/>
+    <path d="M34 52 a12 12 0 0 1 24 0" fill="#4F46E5"/>
+
+    <!-- 姓名条 -->
+    <rect x="80" y="26" width="112" height="13" rx="6.5" fill="#FFFFFF" fill-opacity="0.95"/>
+    <rect x="80" y="47" width="72" height="9" rx="4.5" fill="#FFFFFF" fill-opacity="0.55"/>
+
+    <!-- 左侧栏 -->
+    <g fill="#E2E8F0">
+      <rect x="26" y="96" width="58" height="9" rx="4.5"/>
+      <rect x="26" y="114" width="88" height="6" rx="3"/>
+      <rect x="26" y="128" width="76" height="6" rx="3"/>
+      <rect x="26" y="142" width="82" height="6" rx="3"/>
+      <rect x="26" y="166" width="48" height="9" rx="4.5"/>
+      <rect x="26" y="184" width="84" height="6" rx="3"/>
+      <rect x="26" y="198" width="66" height="6" rx="3"/>
+      <rect x="26" y="222" width="52" height="9" rx="4.5"/>
+      <rect x="26" y="240" width="80" height="6" rx="3"/>
+      <rect x="26" y="254" width="70" height="6" rx="3"/>
+    </g>
+
+    <!-- 右侧主栏 -->
+    <rect x="140" y="96" width="76" height="10" rx="5" fill="#4F46E5"/>
+    <rect x="140" y="114" width="164" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="140" y="128" width="152" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="140" y="142" width="160" height="6" rx="3" fill="#CBD5E1"/>
+
+    <rect x="140" y="170" width="62" height="10" rx="5" fill="#4F46E5"/>
+    <rect x="140" y="188" width="158" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="140" y="202" width="140" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="140" y="216" width="164" height="6" rx="3" fill="#CBD5E1"/>
+
+    <rect x="140" y="244" width="54" height="10" rx="5" fill="#7C3AED"/>
+    <rect x="140" y="262" width="150" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="140" y="276" width="126" height="6" rx="3" fill="#CBD5E1"/>
+  </g>
+
+  <!-- 点缀：悬浮的小气泡 -->
+  <g fill="#FFFFFF" fill-opacity="0.22">
+    <circle cx="1206" cy="86" r="9"/>
+    <circle cx="1180" cy="150" r="5"/>
+    <circle cx="1236" cy="196" r="6"/>
+    <circle cx="1164" cy="330" r="7"/>
+  </g>
+</svg>
