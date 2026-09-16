@@ -16,8 +16,16 @@
 #      改代码时不必重新下载全部依赖。
 # ============================================================================
 
+# 基础镜像通过 ARG 暴露，便于在「镜像仓库拉不动」的环境里改用本地已有的等价镜像：
+#   docker build --build-arg MAVEN_IMAGE=<本地已有 tag> --build-arg JRE_IMAGE=<本地已有 tag> ...
+ARG MAVEN_IMAGE=maven:3.9-eclipse-temurin-17
+ARG JRE_IMAGE=eclipse-temurin:17-jre-alpine
+# 运行阶段是 alpine 还是 debian：决定用 apk 还是 apt 装 curl/tzdata。
+# 一定要和 JRE_IMAGE 的真实发行版一致，否则包管理器会直接失败。
+ARG JRE_FLAVOR=alpine
+
 # ---------- 阶段 1：构建 ----------
-FROM maven:3.9-eclipse-temurin-17 AS builder
+FROM ${MAVEN_IMAGE} AS builder
 
 ARG MODULE
 ENV MODULE=${MODULE}
@@ -47,10 +55,18 @@ RUN mvn -B clean package -pl services/${MODULE} -am -DskipTests \
     && cp services/${MODULE}/target/*.jar /build/app.jar
 
 # ---------- 阶段 2：运行 ----------
-FROM eclipse-temurin:17-jre-alpine
+FROM ${JRE_IMAGE}
 
-# curl 用于容器健康检查
-RUN apk add --no-cache curl tzdata \
+ARG JRE_FLAVOR
+# curl 用于容器健康检查；时区设为 Asia/Shanghai。
+# 按发行版二选一，互斥判断保证不同基础镜像都能落地。
+RUN if [ "$JRE_FLAVOR" = "alpine" ]; then \
+        apk add --no-cache curl tzdata; \
+    else \
+        apt-get update \
+        && apt-get install -y --no-install-recommends curl ca-certificates tzdata \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
 

@@ -72,8 +72,8 @@ services:
     # 容器之间用服务名 minio:9000 互访（见下方 file-service / export-service 的 env），
     # 宿主端口只影响你在浏览器里访问控制台。
     ports:
-      - "9100:9000"
-      - "9101:9001"
+      - "9010:9000"
+      - "9011:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
@@ -81,7 +81,11 @@ services:
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      # 注意：不能用 `mc ready local` —— minio/minio 镜像里**没有** mc 命令
+      # （mc 属于独立的 minio/mc 镜像），否则会永远报 unhealthy。
+      # 改用 bash 的 /dev/tcp 探测 9000 端口存活 —— 该镜像不一定带 curl/wget，
+      # 但一定有 bash，这是最不依赖外部工具的做法。
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000'"]
       interval: 15s
       timeout: 10s
       retries: 8
