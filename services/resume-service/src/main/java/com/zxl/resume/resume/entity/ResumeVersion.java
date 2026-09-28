@@ -1,8 +1,10 @@
 package com.zxl.resume.resume.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zxl.resume.common.mybatis.JsonbTypeHandler;
 import lombok.Data;
 
 import java.time.Instant;
@@ -26,6 +28,7 @@ public class ResumeVersion {
     private String label;
 
     /** 完整简历快照（含 sections），由 Jackson 序列化为 JSONB */
+    @TableField(typeHandler = JsonbTypeHandler.class)
     private String snapshot;
 
     private String description;

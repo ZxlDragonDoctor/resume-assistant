@@ -55,7 +55,8 @@ public class ResumeService {
     public ResumeDetailResponse getSharedDetail(String token) {
         Resume resume = resumeMapper.findByShareToken(token);
         if (resume == null) {
-            throw new IllegalArgumentException("分享链接无效或已关闭");
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "分享链接无效或已关闭");
         }
         resumeMapper.incrementViewCount(resume.getId());
         return toDetail(resume);

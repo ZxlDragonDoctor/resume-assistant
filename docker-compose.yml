@@ -126,7 +126,7 @@ services:
       EXPORT_SERVICE_URL: http://export-service:8085
       # CORS 放行来源。容器部署时前端经 nginx 同源代理访问，通常用不到；
       # 兼容直接访问 :8080 / :8000 调试的场景。
-      CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:5174,http://localhost:8000,http://localhost"
+      CORS_ALLOWED_ORIGINS: "https://www.zxldragon.fun,https://zxldragon.fun,http://localhost:5173,http://localhost:5174,http://localhost:8000,http://localhost"
     ports:
       - "8080:8080"
     depends_on:
@@ -210,7 +210,8 @@ services:
         MODULE: file-service
     environment:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
-      # MinIO 在容器网络内的地址（注意端口是 9000，不是宿主的 9100）
+      # MinIO 对外 URL（浏览器访问用）；容器内网地址见 MINIO_ENDPOINT（minio:9000）
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9010}
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123

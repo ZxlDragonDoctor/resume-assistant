@@ -26,7 +26,8 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     /** 无需鉴权的路径前缀 */
     private static final List<String> PUBLIC_PREFIXES = List.of(
-            "/api/auth/",
+            "/api/auth/register",
+            "/api/auth/login",
             "/api/public/",
             "/api/templates"
     );
