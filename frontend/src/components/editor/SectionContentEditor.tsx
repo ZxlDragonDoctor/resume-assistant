@@ -126,22 +126,24 @@ function AiButton({ onClick, tip }: { onClick: () => void; tip?: string }) {
   );
 }
 
-/** 时间区间输入：两个 YYYY-MM 文本框，中间一个连接符 */
+/** 时间区间输入：起止日期均可自由选择；「至今」只是可选开关，不占用结束日期框 */
 function DateRange({
   start,
   end,
+  current,
   onChange,
   allowPresent = false,
 }: {
   start?: string;
   end?: string;
+  current?: boolean;
   onChange: (patch: { startDate?: string; endDate?: string; current?: boolean }) => void;
   allowPresent?: boolean;
 }) {
   const [editing, setEditing] = useState<'start' | 'end' | null>(null);
-  const [draft, setDraft] = useState('');
 
-  const isPresent = allowPresent && !end;
+  // 「至今」由 current 显式标记，不再用「结束日期为空」推断
+  const isPresent = allowPresent && Boolean(current) && !end;
 
   /** 用 antd 的 DatePicker 太重，这里用原生 month input：轻、准、无依赖 */
   const renderInput = (which: 'start' | 'end') => {
@@ -155,7 +157,13 @@ function DateRange({
           autoFocus
           defaultValue={toMonthInput(value)}
           onBlur={(e) => {
-            onChange(which === 'start' ? { startDate: fromMonthInput(e.target.value) } : { endDate: fromMonthInput(e.target.value) });
+            const next = fromMonthInput(e.target.value);
+            if (which === 'start') {
+              onChange({ startDate: next });
+            } else {
+              // 填了结束日期就退出「至今」
+              onChange({ endDate: next, current: false });
+            }
             setEditing(null);
           }}
           onKeyDown={(e) => {
@@ -177,10 +185,7 @@ function DateRange({
 
     return (
       <button
-        onClick={() => {
-          setDraft(value || '');
-          setEditing(which);
-        }}
+        onClick={() => setEditing(which)}
         style={{
           border: 'none',
           borderBottom: `1px dashed ${neutral[300]}`,
@@ -193,7 +198,7 @@ function DateRange({
           textAlign: 'left',
         }}
       >
-        {value || (which === 'start' ? '开始时间' : isPresent ? '至今' : '结束时间')}
+        {value || (which === 'start' ? '开始时间' : '结束时间')}
       </button>
     );
   };
@@ -205,6 +210,7 @@ function DateRange({
       {isPresent ? (
         <button
           onClick={() => onChange({ endDate: '', current: false })}
+          title="改为填写结束日期"
           style={{
             border: 'none',
             background: brand.primarySoft,
@@ -220,14 +226,18 @@ function DateRange({
       ) : (
         renderInput('end')
       )}
-      {allowPresent && !isPresent && (
-        <Tooltip title="设为「至今」" mouseEnterDelay={0.35}>
+      {allowPresent && (
+        <Tooltip title={isPresent ? '改为填写结束日期' : '设为「至今」'} mouseEnterDelay={0.35}>
           <button
-            onClick={() => onChange({ endDate: '', current: true })}
+            onClick={() =>
+              isPresent
+                ? onChange({ endDate: end || '', current: false })
+                : onChange({ endDate: '', current: true })
+            }
             style={{
-              border: `1px dashed ${neutral[200]}`,
-              background: 'transparent',
-              color: neutral[400],
+              border: `1px ${isPresent ? 'solid' : 'dashed'} ${isPresent ? brand.primaryBorder : neutral[200]}`,
+              background: isPresent ? brand.primarySoft : 'transparent',
+              color: isPresent ? brand.primary : neutral[400],
               borderRadius: radius.xs,
               padding: '1px 6px',
               fontSize: 11,
@@ -1205,6 +1215,7 @@ function ExperienceEditor({
               <DateRange
                 start={item.startDate}
                 end={item.endDate}
+                current={item.current}
                 allowPresent
                 onChange={(patch) => onChange(patchItem(data, index, patch))}
               />
@@ -1359,6 +1370,8 @@ function EducationEditor({
               <DateRange
                 start={item.startDate}
                 end={item.endDate}
+                current={item.current}
+                allowPresent
                 onChange={(patch) => onChange(patchItem(data, index, patch))}
               />
             </div>

@@ -381,16 +381,27 @@ button { font-family: inherit; }
 .tiptap-editor .ProseMirror strong { font-weight: 600; }
 
 /* ==================================================================
-   响应式：窄屏下编辑器改为上下堆叠
+   响应式：窄屏下保证「实时预览」始终可见
+   ------------------------------------------------------------------
+   旧方案在 <1280px 把工作区改成纵向堆叠，再叠上 overflow:hidden，
+   预览会被裁出视口、完全看不到。这里改为：
+     - 始终横向三区，预览占中间可伸缩区
+     - 侧栏可收起（由 Editor 内联宽度控制）
+     - 极窄屏允许横向滚动，而不是裁掉
    ================================================================== */
 
-@media (max-width: 1280px) {
+@media (max-width: 1400px) {
+  .editor-preview-pane {
+    min-width: 280px !important;
+  }
+}
+
+@media (max-width: 1100px) {
   .editor-workspace {
-    flex-direction: column !important;
+    overflow-x: auto !important;
   }
   .editor-preview-pane {
-    width: 100% !important;
-    border-left: none !important;
-    border-top: 1px solid var(--border-default) !important;
+    min-width: 300px !important;
+    flex: 1 1 320px !important;
   }
 }

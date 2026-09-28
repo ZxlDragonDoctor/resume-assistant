@@ -27,6 +27,8 @@ import {
   EyeOutlined,
   HistoryOutlined,
   LoadingOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   MoreOutlined,
   PhoneOutlined,
   RedoOutlined,
@@ -108,6 +110,33 @@ export default function Editor() {
   );
   const [templateConfig, setTemplateConfig] = useState<TemplateConfig | undefined>();
   const [notFound, setNotFound] = useState(false);
+
+  // ---- 响应式布局：小屏始终保住实时预览 ----
+  const [vw, setVw] = useState(() =>
+    typeof window === 'undefined' ? 1440 : window.innerWidth
+  );
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // 宽度阈值：1440+ 三栏全开；1100–1439 收窄；<1100 侧栏可收起，预览优先
+  const isNarrow = vw < 1400;
+  const isVeryNarrow = vw < 1100;
+  // 极窄屏默认收起侧栏，优先露出预览；用户仍可手动展开
+  useEffect(() => {
+    if (isVeryNarrow) {
+      setLeftOpen(false);
+      setRightOpen(false);
+    }
+  }, [isVeryNarrow]);
+
+  const leftWidth = !leftOpen ? 0 : isVeryNarrow ? 200 : isNarrow ? 200 : 232;
+  const rightWidth = !rightOpen ? 0 : isNarrow ? 280 : 320;
 
   /** 正在编辑的内容（本地草稿），用于防抖保存 */
   const draftRef = useRef<{ sectionId: string; data: Record<string, unknown> } | null>(null);
@@ -549,6 +578,30 @@ export default function Editor() {
 
         <span style={{ flex: 1 }} />
 
+        {/* 窄屏面板开关：优先保证预览可见 */}
+        {(isNarrow || !leftOpen || !rightOpen) && (
+          <>
+            <Tooltip title={leftOpen ? '收起模块列表' : '展开模块列表'} mouseEnterDelay={0.4}>
+              <button
+                onClick={() => setLeftOpen((v) => !v)}
+                style={{ ...textBtn, color: leftOpen ? brand.primary : neutral[500] }}
+              >
+                <MenuFoldOutlined style={{ fontSize: 13, transform: leftOpen ? 'none' : 'rotate(180deg)' }} />
+                {!isNarrow && '模块'}
+              </button>
+            </Tooltip>
+            <Tooltip title={rightOpen ? '收起样式/AI 面板' : '展开样式/AI 面板'} mouseEnterDelay={0.4}>
+              <button
+                onClick={() => setRightOpen((v) => !v)}
+                style={{ ...textBtn, color: rightOpen ? brand.primary : neutral[500] }}
+              >
+                <MenuUnfoldOutlined style={{ fontSize: 13, transform: rightOpen ? 'none' : 'rotate(180deg)' }} />
+                {!isNarrow && '面板'}
+              </button>
+            </Tooltip>
+          </>
+        )}
+
         {/* 右侧操作 */}
         <Tooltip title="分享只读链接" mouseEnterDelay={0.4}>
           <button onClick={() => setShareOpen(true)} style={{ ...textBtn, position: 'relative' }}>
@@ -638,22 +691,30 @@ export default function Editor() {
       {/* ============ 工作区 ============ */}
       <div
         className="editor-workspace"
-        style={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'hidden' }}
+        style={{
+          flex: 1,
+          display: 'flex',
+          minHeight: 0,
+          overflow: isVeryNarrow ? 'auto' : 'hidden',
+          overflowX: isVeryNarrow ? 'auto' : 'hidden',
+        }}
       >
         {/* ---------- 左：模块管理 ---------- */}
-        <aside style={{ width: 232, flexShrink: 0, minHeight: 0 }}>
-          <SectionSidebar
-            sections={sections}
-            selectedId={selectedId}
-            onSelect={handleSelect}
-            onAdd={handleAddSection}
-            onReorder={(ids) => reorderSections(ids).catch(() => undefined)}
-            onToggleVisible={(sid) => toggleSectionVisible(sid).catch(() => undefined)}
-            onDuplicate={(sid) => duplicateSection(sid).catch(() => undefined)}
-            onDelete={handleDelete}
-            onJumpToBasic={handleJumpToBasic}
-          />
-        </aside>
+        {leftOpen && (
+          <aside style={{ width: leftWidth, flexShrink: 0, minHeight: 0, overflow: 'hidden' }}>
+            <SectionSidebar
+              sections={sections}
+              selectedId={selectedId}
+              onSelect={handleSelect}
+              onAdd={handleAddSection}
+              onReorder={(ids) => reorderSections(ids).catch(() => undefined)}
+              onToggleVisible={(sid) => toggleSectionVisible(sid).catch(() => undefined)}
+              onDuplicate={(sid) => duplicateSection(sid).catch(() => undefined)}
+              onDelete={handleDelete}
+              onJumpToBasic={handleJumpToBasic}
+            />
+          </aside>
+        )}
 
         {/* ---------- 中：编辑区 ---------- */}
         <main
@@ -740,12 +801,12 @@ export default function Editor() {
           )}
         </main>
 
-        {/* ---------- 中偏右：预览 ---------- */}
+        {/* ---------- 中偏右：预览（始终可见） ---------- */}
         <section
           className="editor-preview-pane"
           style={{
             flex: '1 1 38%',
-            minWidth: 320,
+            minWidth: isVeryNarrow ? 300 : isNarrow ? 280 : 320,
             display: 'flex',
             flexDirection: 'column',
             background: neutral[100],
@@ -755,14 +816,15 @@ export default function Editor() {
             resume={current}
             templateConfig={templateConfig}
             focusSectionId={selectedId}
-            initialScale={0.8}
+            initialScale={isNarrow ? 0.72 : 0.8}
           />
         </section>
 
         {/* ---------- 右：样式 / AI / 版本 ---------- */}
+        {rightOpen && (
         <aside
           style={{
-            width: 320,
+            width: rightWidth,
             flexShrink: 0,
             background: '#fff',
             borderLeft: `1px solid ${neutral[150]}`,
@@ -869,6 +931,7 @@ export default function Editor() {
             )}
           </div>
         </aside>
+        )}
       </div>
 
       {/* ============ 弹层 ============ */}
