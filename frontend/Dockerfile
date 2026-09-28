@@ -42,9 +42,11 @@ ARG ALPINE_MIRROR
 # 时区（换源后再装，否则 apk 会挂在 dl-cdn.alpinelinux.org 上）
 RUN set -eux; \
     if [ -n "$ALPINE_MIRROR" ]; then \
-      sed -i "s|dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
+      sed -i "s|dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories || true; \
     fi; \
     apk add --no-cache tzdata curl \
+      || (sed -i "s|${ALPINE_MIRROR}|dl-cdn.alpinelinux.org|g" /etc/apk/repositories \
+          && apk add --no-cache tzdata curl) \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
 

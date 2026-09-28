@@ -100,3 +100,9 @@ Open http://localhost:5173 and log in / register.
 - **Export service** launches headless Chrome via Puppeteer. Make sure Chromium is installed (or set `PUPPETEER_SKIP_DOWNLOAD=false` in npm install)
 - **Frontend** `.prettierrc` / ESLint not configured — no lint step
 - **Old v1 scaffold** (`src/`) has been removed; old `pom.xml` replaced by new multi-module pom
+
+## Templates & sample content
+- `docs/sql/init.sql` seeds **12 templates** (categories: modern/classic/creative/technical/academic/business/product/design/graduate/data/education/medical).
+- Existing DBs: run `docs/sql/add-templates.sql`.
+- `ResumeService.create` calls `seedSampleSections(resumeId, templateId)` — picks a **category-specific sample resume** (tech/business/product/academic/graduate/data/medical) so every new resume is editable immediately.
+- Sample names/contacts are fictional placeholders only.
