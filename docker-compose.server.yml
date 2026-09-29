@@ -71,8 +71,8 @@ services:
     mem_limit: 90m
     ports: !override []
     environment:
-      RABBITMQ_DEFAULT_USER: resume
-      RABBITMQ_DEFAULT_PASS: resume123
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-resume}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-resume123}
       # 【不要设 RABBITMQ_VM_MEMORY_HIGH_WATERMARK】
       # 3.13 已废弃该环境变量，设了会直接启动失败退出：
       #   error: RABBITMQ_VM_MEMORY_HIGH_WATERMARK is set but deprecated

@@ -55,4 +55,6 @@ spring:
         server-addr: localhost:4348
 
 jwt:
-  secret: "kXp2s5v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPd"
+  # 本机开发默认值仅用于 localhost；生产必须用环境变量 JWT_SECRET 注入随机强密钥。
+  # 生成示例：openssl rand -base64 48
+  secret: ${JWT_SECRET:local-dev-jwt-secret-change-me-before-deploy-0123456789}

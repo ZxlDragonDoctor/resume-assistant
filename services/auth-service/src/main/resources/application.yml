@@ -5,9 +5,9 @@ spring:
   application:
     name: auth-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/resume_assistant
-    username: resume
-    password: resume123
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/resume_assistant}
+    username: ${DB_USERNAME:resume}
+    password: ${DB_PASSWORD:resume123}
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,5 +18,6 @@ spring:
         server-addr: localhost:4348
 
 jwt:
-  secret: "kXp2s5v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPd"
+  # 与 gateway 的 JWT_SECRET 必须一致；生产禁止使用默认值
+  secret: ${JWT_SECRET:local-dev-jwt-secret-change-me-before-deploy-0123456789}
   expiration: 86400000

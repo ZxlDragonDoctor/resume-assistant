@@ -23,8 +23,8 @@ services:
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: resume_assistant
-      POSTGRES_USER: resume
-      POSTGRES_PASSWORD: resume123
+      POSTGRES_USER: ${DB_USERNAME:-resume}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-resume123}
     ports:
       - "5432:5432"
     volumes:
@@ -56,8 +56,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: resume
-      RABBITMQ_DEFAULT_PASS: resume123
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-resume}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-resume123}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 15s
@@ -75,8 +75,8 @@ services:
       - "9010:9000"
       - "9011:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -121,6 +121,8 @@ services:
     environment:
       # 服务发现指向容器内的 nacos
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      # 与 auth-service 共用；生产必须在 .env 里设置随机强密钥
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-me-before-deploy-0123456789}
       # 网关到 ai / export 的转发地址（application.yml 中已改为可覆盖）
       AI_SERVICE_URL: http://ai-service:8086
       EXPORT_SERVICE_URL: http://export-service:8085
@@ -144,9 +146,10 @@ services:
         MODULE: auth-service
     environment:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-me-before-deploy-0123456789}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_assistant
-      SPRING_DATASOURCE_USERNAME: resume
-      SPRING_DATASOURCE_PASSWORD: resume123
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-resume}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-resume123}
     ports:
       - "8081:8080"
     depends_on:
@@ -167,8 +170,8 @@ services:
     environment:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_assistant
-      SPRING_DATASOURCE_USERNAME: resume
-      SPRING_DATASOURCE_PASSWORD: resume123
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-resume}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-resume123}
     ports:
       - "8082:8080"
     depends_on:
@@ -189,8 +192,8 @@ services:
     environment:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_assistant
-      SPRING_DATASOURCE_USERNAME: resume
-      SPRING_DATASOURCE_PASSWORD: resume123
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-resume}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-resume123}
     ports:
       - "8083:8080"
     depends_on:
@@ -213,8 +216,8 @@ services:
       # MinIO 对外 URL（浏览器访问用）；容器内网地址见 MINIO_ENDPOINT（minio:9000）
       MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9010}
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin123
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_BUCKET: resume-files
     ports:
       - "8084:8080"
@@ -236,10 +239,10 @@ services:
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin123
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_BUCKET: resume-exports
-      RMQ_URL: amqp://resume:resume123@rabbitmq:5672
+      RMQ_URL: amqp://${RABBITMQ_USER:-resume}:${RABBITMQ_PASSWORD:-resume123}@rabbitmq:5672
       GATEWAY_URL: http://gateway:8080
     ports:
       - "8085:8085"

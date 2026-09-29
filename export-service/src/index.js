@@ -25,8 +25,11 @@ const MINIO_PORT = parseInt(process.env.MINIO_PORT || '9000', 10);
 const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || 'minioadmin';
 const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY || 'minioadmin123';
 const MINIO_BUCKET = process.env.MINIO_BUCKET || 'resume-exports';
-
-const RMQ_URL = process.env.RMQ_URL || 'amqp://resume:resume123@localhost:5672';
+const RMQ_USER = process.env.RABBITMQ_USER || process.env.RMQ_USER || 'resume';
+const RMQ_PASSWORD = process.env.RABBITMQ_PASSWORD || process.env.RMQ_PASSWORD || 'resume123';
+const RMQ_URL =
+  process.env.RMQ_URL ||
+  `amqp://${RMQ_USER}:${RMQ_PASSWORD}@${process.env.RMQ_HOST || 'localhost'}:5672`;
 const QUEUE = 'export_tasks';
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8080';
 

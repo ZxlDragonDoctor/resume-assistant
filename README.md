@@ -245,7 +245,7 @@ docker compose up -d postgres nacos minio
 ### 方式二：一键起全栈（容器部署）
 
 ```bash
-export OPENAI_API_KEY=sk-你的密钥   # 可选，不填则走本地规则引擎
+cp .env.example .env            # 可选：改 JWT_SECRET / 填大模型密钥
 docker compose up -d --build
 ```
 

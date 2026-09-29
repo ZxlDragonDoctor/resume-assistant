@@ -5,9 +5,9 @@ spring:
   application:
     name: resume-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/resume_assistant
-    username: resume
-    password: resume123
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/resume_assistant}
+    username: ${DB_USERNAME:resume}
+    password: ${DB_PASSWORD:resume123}
   cloud:
     nacos:
       discovery:

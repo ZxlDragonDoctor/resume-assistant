@@ -76,10 +76,10 @@ vercel --prod
 ### 本地一键起全栈
 
 ```bash
-# 1. 准备 AI 密钥（不提交进仓库）
-export OPENAI_API_KEY=sk-你的密钥
-export OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-export LLM_MODEL=qwen-max
+# 1. 复制并填写环境变量（不提交进仓库）
+cp .env.example .env
+#    编辑 .env：至少改 JWT_SECRET，并按需填 OPENAI_API_KEY
+#    生成 JWT 密钥：openssl rand -base64 48
 
 # 2. 构建并启动全部服务
 docker-compose up -d --build
@@ -132,6 +132,9 @@ docker-compose ps
 |---|---|
 | `SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR` | `spring.cloud.nacos.discovery.server-addr` |
 | `SPRING_DATASOURCE_URL` | `spring.datasource.url` |
+| `JWT_SECRET` | `jwt.secret` |
+| `DB_USERNAME` / `DB_PASSWORD` | `spring.datasource.username` / `password` |
+| `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` | `minio.access-key` / `secret-key` |
 | `MINIO_ENDPOINT` | `minio.endpoint` |
 
 这样本机开发与容器部署共用同一份配置，互不污染。
@@ -157,7 +160,8 @@ docker-compose ps
 ```bash
 # 在服务器上
 git clone <你的仓库地址> && cd ResumeAssistant
-export OPENAI_API_KEY=sk-你的密钥
+cp .env.example .env
+# 编辑 .env：JWT_SECRET 用 openssl rand -base64 48 生成，按需填 OPENAI_API_KEY
 docker-compose up -d --build
 ```
 
@@ -230,9 +234,9 @@ docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
 
 ### 上线前检查清单
 
-- [ ] `JWT_SECRET` 已从默认值改为随机强密钥（`services/*/src/main/resources/application.yml`）
-- [ ] 数据库密码、MinIO 密码、RabbitMQ 密码已改为强密码
-- [ ] `OPENAI_API_KEY` 通过平台 Secrets 注入，**不写进镜像、不提交仓库**
+- [ ] 复制 `.env.example` 为 `.env`，`JWT_SECRET` 已改为随机强密钥（禁止使用仓库默认值）
+- [ ] `DB_PASSWORD`、`MINIO_ROOT_PASSWORD`、`RABBITMQ_PASSWORD` 已改为强密码
+- [ ] `OPENAI_API_KEY` 通过平台 Secrets / `.env` 注入，**不写进镜像、不提交仓库**
 - [ ] Nacos 已开启鉴权（`NACOS_AUTH_ENABLE=true`）并修改默认账号
 - [ ] `CORS_ALLOWED_ORIGINS` 只放行你的真实前端域名
 - [ ] 仓库已设为 **Private**（若历史提交中含个人信息，见下方说明）
