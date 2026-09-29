@@ -22,23 +22,23 @@ public class TemplateService {
 
     /** 用户把当前简历样式保存为自定义模板 */
     public Template create(String name, String description, String category,
-                           List<String> tags, String config) {
+                           java.util.List<String> tags, String config) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("模板名称不能为空");
         }
-        Template t = new Template();
-        t.setId(UUID.randomUUID());
-        t.setName(name.trim());
-        t.setDescription(description == null ? "我的自定义模板" : description);
-        t.setCategory(category == null || category.isBlank() ? "custom" : category);
-        t.setTags(tags == null ? List.of("自定义") : tags);
-        t.setConfig(config == null || config.isBlank() ? "{}" : config);
-        t.setPreviewConfig("{}");
-        t.setIsPremium(false);
-        t.setIsActive(true);
-        t.setSortOrder(100);
-        templateMapper.insert(t);
-        return t;
+        String cfg = (config == null) ? "" : config.trim();
+        if (cfg.isEmpty() || !cfg.startsWith("{")) {
+            cfg = "{\"layout\":\"single-column\"}";
+        }
+        UUID id = UUID.randomUUID();
+        java.util.Map<String, Object> p = new java.util.LinkedHashMap<>();
+        p.put("id", id);
+        p.put("name", name.trim());
+        p.put("description", (description == null || description.isBlank()) ? "我的自定义模板" : description);
+        p.put("category", (category == null || category.isBlank()) ? "custom" : category);
+        p.put("config", cfg);
+        templateMapper.insertCustom(p);
+        return templateMapper.selectById(id);
     }
 
     /** 按分类筛选模板；category 为空时返回全部启用中的模板 */

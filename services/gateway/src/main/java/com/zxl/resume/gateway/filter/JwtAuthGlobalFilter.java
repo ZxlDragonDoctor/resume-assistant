@@ -28,8 +28,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_PREFIXES = List.of(
             "/api/auth/register",
             "/api/auth/login",
-            "/api/public/",
-            "/api/templates-noop"
+            "/api/public/"
     );
 
     public JwtAuthGlobalFilter(@Value("${jwt.secret}") String secret) {
@@ -71,7 +70,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     private boolean isPublic(String path, String method) {
         // 模板列表/详情可匿名浏览；创建自定义模板需要登录
-        if (path.startsWith("/api/templates-noop")) {
+        if (path.startsWith("/api/templates")) {
             return "GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method);
         }
         return PUBLIC_PREFIXES.stream().anyMatch(path::startsWith);

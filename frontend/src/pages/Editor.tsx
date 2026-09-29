@@ -807,7 +807,7 @@ export default function Editor() {
               onDelete={handleDelete}
               onJumpToBasic={handleJumpToBasic}
             />
-            {/* 右缘拉手：向左拖可收起，双击也可收起 */}
+            {/* 右缘拉手：向左拖可收起 */}
             <div
               title="向左拖拽收起模块列表"
               onMouseDown={(e) => {
