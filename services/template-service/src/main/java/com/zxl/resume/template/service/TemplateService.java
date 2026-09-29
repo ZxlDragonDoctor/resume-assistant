@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zxl.resume.template.entity.Template;
 import com.zxl.resume.template.repository.TemplateMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,27 +19,38 @@ import java.util.stream.Collectors;
 public class TemplateService {
 
     private final TemplateMapper templateMapper;
+    private final JdbcTemplate jdbcTemplate;
 
 
-    /** 用户把当前简历样式保存为自定义模板 */
+    /** 用户把当前简历样式保存为自定义模板（JdbcTemplate 显式类型，避免 jsonb 绑定问题） */
     public Template create(String name, String description, String category,
                            java.util.List<String> tags, String config) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("模板名称不能为空");
         }
-        String cfg = (config == null) ? "" : config.trim();
-        if (cfg.isEmpty() || !cfg.startsWith("{")) {
-            cfg = "{\"layout\":\"single-column\"}";
+        String json = (config == null) ? "" : config.trim();
+        if (json.isEmpty() || !json.startsWith("{")) {
+            json = "{\"layout\":\"single-column\"}";
         }
         UUID id = UUID.randomUUID();
-        java.util.Map<String, Object> p = new java.util.LinkedHashMap<>();
-        p.put("id", id);
-        p.put("name", name.trim());
-        p.put("description", (description == null || description.isBlank()) ? "我的自定义模板" : description);
-        p.put("category", (category == null || category.isBlank()) ? "custom" : category);
-        p.put("config", cfg);
-        templateMapper.insertCustom(p);
-        return templateMapper.selectById(id);
+        jdbcTemplate.update(
+                "INSERT INTO templates (id, name, description, category, tags, config, preview_config, is_premium, is_active, sort_order) "
+                        + "VALUES (?::uuid, ?::varchar, ?::text, ?::varchar, ARRAY[]::text[], ?::jsonb, '{}'::jsonb, false, true, 100)",
+                id.toString(),
+                name.trim(),
+                (description == null || description.isBlank()) ? "我的自定义模板" : description,
+                (category == null || category.isBlank()) ? "custom" : category,
+                json
+        );
+        Template out = new Template();
+        out.setId(id);
+        out.setName(name.trim());
+        out.setCategory((category == null || category.isBlank()) ? "custom" : category);
+        out.setConfig(json);
+        out.setIsActive(true);
+        out.setIsPremium(false);
+        out.setSortOrder(100);
+        return out;
     }
 
     /** 按分类筛选模板；category 为空时返回全部启用中的模板 */

@@ -16,7 +16,6 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-  type-handlers-package: com.zxl.resume.common.mybatis
   global-config:
     db-config:
       id-type: ASSIGN_UUID
