@@ -128,12 +128,42 @@ public class ResumeService {
         resume.setThemeColor("#2563eb");
         resume.setLineSpacing(1.6);
         resume.setLayoutConfig("{}");
+        applyTemplateStyle(resume, req.getTemplateId());
         resumeMapper.insert(resume);
 
         // 打开模板/新建简历时预置示例内容，用户可直接在样例上修改
         seedSampleSections(resume.getId(), req.getTemplateId());
 
         return resume;
+    }
+
+
+    /** 把模板的版式/配色写入简历 layoutConfig，保证预览与导出立刻分栏生效 */
+    private void applyTemplateStyle(Resume resume, UUID templateId) {
+        if (templateId == null) return;
+        try {
+            String cfg = templateCategoryMapper.findConfigById(templateId);
+            if (cfg == null || cfg.isBlank() || "{}".equals(cfg.trim())) return;
+            JsonNode node = objectMapper.readTree(cfg);
+            java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+            if (node.hasNonNull("layout")) out.put("layout", node.get("layout").asText());
+            if (node.hasNonNull("headerStyle")) out.put("headerStyle", node.get("headerStyle").asText());
+            if (node.hasNonNull("primaryColor")) {
+                String color = node.get("primaryColor").asText();
+                out.put("themeColor", color);
+                resume.setThemeColor(color);
+            }
+            if (node.hasNonNull("fonts") && node.get("fonts").isArray() && node.get("fonts").size() > 0) {
+                String font = node.get("fonts").get(0).asText();
+                out.put("globalFontFamily", font);
+                resume.setFontFamily(font);
+            }
+            if (!out.isEmpty()) {
+                resume.setLayoutConfig(objectMapper.writeValueAsString(out));
+            }
+        } catch (Exception ignored) {
+            // 配置解析失败不阻塞创建
+        }
     }
 
     /**

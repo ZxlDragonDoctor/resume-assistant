@@ -29,7 +29,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/api/auth/register",
             "/api/auth/login",
             "/api/public/",
-            "/api/templates"
+            "/api/templates-noop"
     );
 
     public JwtAuthGlobalFilter(@Value("${jwt.secret}") String secret) {
@@ -40,7 +40,9 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
-        if (isPublic(path)) {
+        String method = exchange.getRequest().getMethod() != null
+                ? exchange.getRequest().getMethod().name() : "GET";
+        if (isPublic(path, method)) {
             return chain.filter(exchange);
         }
 
@@ -67,7 +69,11 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
         }
     }
 
-    private boolean isPublic(String path) {
+    private boolean isPublic(String path, String method) {
+        // 模板列表/详情可匿名浏览；创建自定义模板需要登录
+        if (path.startsWith("/api/templates-noop")) {
+            return "GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method);
+        }
         return PUBLIC_PREFIXES.stream().anyMatch(path::startsWith);
     }
 

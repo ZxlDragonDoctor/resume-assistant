@@ -11,6 +11,7 @@
  *
  * 与 export-service/src/renderer.js 的规则保持同步。
  */
+import type { ReactNode } from 'react';
 import {
   normalizeSectionData,
   type LayoutConfig,
@@ -72,6 +73,40 @@ export function parseLayout(raw: string | undefined | null): LayoutConfig {
   } catch {
     return { ...DEFAULT_LAYOUT };
   }
+}
+
+/** 版式：正文分栏策略 */
+export type ResumeLayoutMode = 'single-column' | 'two-column' | 'sidebar';
+
+/** 侧边栏版式时放在左窄栏的模块类型 */
+const SIDEBAR_TYPES = new Set(['skills', 'awards', 'certificates', 'custom']);
+
+/**
+ * 按版式把正文模块分成主栏 / 副栏。
+ * - single-column：全部主栏
+ * - two-column：前半主栏、后半副栏（保证左右视觉平衡）
+ * - sidebar：技能/奖项/证书进侧栏，其余进主栏
+ */
+export function splitSectionsByLayout<
+  T extends { sectionType: string; sortOrder: number }
+>(sections: T[], mode: ResumeLayoutMode): { main: T[]; side: T[] } {
+  const sorted = [...sections].sort((a, b) => a.sortOrder - b.sortOrder);
+  if (mode === 'sidebar') {
+    const main: T[] = [];
+    const side: T[] = [];
+    for (const s of sorted) {
+      if (SIDEBAR_TYPES.has(s.sectionType)) side.push(s);
+      else main.push(s);
+    }
+    return { main, side };
+  }
+  if (mode === 'two-column') {
+    // 后 40% 的模块进副栏（至少 1 个，至多一半）
+    const n = sorted.length;
+    const sideCount = Math.max(1, Math.min(Math.floor(n * 0.4), Math.ceil(n / 2)));
+    return { main: sorted.slice(0, n - sideCount), side: sorted.slice(n - sideCount) };
+  }
+  return { main: sorted, side: [] };
 }
 
 function fontStack(name?: string): string {
@@ -542,6 +577,10 @@ export default function ResumePreviewEngine({
   const basicSection = sections.find((s) => s.sectionType === 'basic');
   const bodySections = sections.filter((s) => s.sectionType !== 'basic');
 
+  const layoutMode: ResumeLayoutMode =
+    (templateConfig?.layout as ResumeLayoutMode) || (layout.layout as ResumeLayoutMode) || 'single-column';
+  const { main: bodyMain, side: bodySide } = splitSectionsByLayout(bodySections, layoutMode);
+
   const globalCtx: Ctx = {
     titleSize: baseFontSize + 2,
     contentSize: baseFontSize,
@@ -583,7 +622,7 @@ export default function ResumePreviewEngine({
         targetCompany={resume.targetCompany}
       />
 
-      {/* ---------- 正文模块 ---------- */}
+      {/* ---------- 正文模块（按版式分栏） ---------- */}
       {sections.length === 0 ? (
         <div
           style={{
@@ -597,7 +636,8 @@ export default function ResumePreviewEngine({
           在左侧添加简历模块，开始构建你的简历
         </div>
       ) : (
-        bodySections.map((section) => {
+        <BodyColumns mode={layoutMode} main={bodyMain} side={bodySide} layout={layout} baseFontSize={baseFontSize} themeColor={themeColor} accentColor={accentColor} headerStyle={headerStyle}>
+          {(section) => {
           const data = normalizeSectionData(section.data);
           const cfg = (data._config || {}) as SectionConfig;
           const sectionCtx: Ctx = {
@@ -646,8 +686,64 @@ export default function ResumePreviewEngine({
               </div>
             </section>
           );
-        })
+          }}
+        </BodyColumns>
       )}
+    </div>
+  );
+}
+
+/** 版式容器：单栏纵排 / 双栏网格 / 侧边栏 */
+function BodyColumns({
+  mode,
+  main,
+  side,
+  layout,
+  baseFontSize,
+  themeColor,
+  accentColor,
+  headerStyle,
+  children,
+}: {
+  mode: ResumeLayoutMode;
+  main: ResumeSection[];
+  side: ResumeSection[];
+  layout: LayoutConfig;
+  baseFontSize: number;
+  themeColor: string;
+  accentColor: string;
+  headerStyle: string;
+  children: (section: ResumeSection) => ReactNode;
+}) {
+  const gap = Math.round((layout.moduleMargin ?? 20) * 0.9);
+
+  if (mode === 'single-column' || (!side.length && mode !== 'two-column')) {
+    return <div>{main.map((s) => children(s))}</div>;
+  }
+
+  if (mode === 'sidebar') {
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr', gap: gap + 8, alignItems: 'start' }}>
+        <aside style={{ borderRight: `1px solid ${themeColor}22`, paddingRight: 14 }}>
+          {side.map((s) => children(s))}
+          {side.length === 0 && (
+            <div style={{ color: neutral[400], fontSize: baseFontSize - 1, lineHeight: 1.6 }}>
+              将技能、奖项等模块移入可形成侧栏
+            </div>
+          )}
+        </aside>
+        <div>{main.map((s) => children(s))}</div>
+      </div>
+    );
+  }
+
+  // two-column
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: gap + 10, alignItems: 'start' }}>
+      <div>{main.map((s) => children(s))}</div>
+      <div style={{ borderLeft: `1px solid ${themeColor}18`, paddingLeft: 14 }}>
+        {side.map((s) => children(s))}
+      </div>
     </div>
   );
 }

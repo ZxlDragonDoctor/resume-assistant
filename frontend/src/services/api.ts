@@ -225,6 +225,15 @@ export const templateApi = {
   categories: () => unwrap<TemplateCategory[]>(http.get('/templates/categories')),
 
   detail: (id: string) => unwrap<Template>(http.get(`/templates/${id}`)),
+
+  /** 把当前简历样式保存为自定义模板 */
+  create: (payload: {
+    name: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+    config: string;
+  }) => unwrap<Template>(http.post('/templates', payload)),
 };
 
 // ==================================================================

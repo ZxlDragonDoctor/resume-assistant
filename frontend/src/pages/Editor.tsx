@@ -32,6 +32,7 @@ import {
   MoreOutlined,
   PhoneOutlined,
   RedoOutlined,
+  SaveOutlined,
   ShareAltOutlined,
   SlidersOutlined,
   ThunderboltOutlined,
@@ -127,12 +128,26 @@ export default function Editor() {
   // 宽度阈值：1440+ 三栏全开；1100–1439 收窄；<1100 侧栏可收起，预览优先
   const isNarrow = vw < 1400;
   const isVeryNarrow = vw < 1100;
-  // 极窄屏默认收起侧栏，优先露出预览；用户仍可手动展开
+  /**
+   * 极窄屏自动收起侧栏（优先露出预览），放大后自动恢复，
+   * 避免「缩一下就再也找不到模块列表」——若用户曾手动关掉，则只恢复被自动收起的那部分。
+   */
+  const autoCollapsedRef = useRef<{ left: boolean; right: boolean } | null>(null);
   useEffect(() => {
     if (isVeryNarrow) {
+      if (!autoCollapsedRef.current) {
+        autoCollapsedRef.current = { left: leftOpen, right: rightOpen };
+      }
       setLeftOpen(false);
       setRightOpen(false);
+    } else if (autoCollapsedRef.current) {
+      const saved = autoCollapsedRef.current;
+      autoCollapsedRef.current = null;
+      if (saved.left) setLeftOpen(true);
+      if (saved.right) setRightOpen(true);
     }
+    // 仅在跨越窄屏阈值时同步开合；开合值本身写入 ref 保存，无需进依赖
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVeryNarrow]);
 
   const leftWidth = !leftOpen ? 0 : isVeryNarrow ? 200 : isNarrow ? 200 : 232;
@@ -497,6 +512,30 @@ export default function Editor() {
     );
   }
 
+
+  /** 把当前简历的版式/主题保存为自定义模板 */
+  const handleSaveAsTemplate = useCallback(async () => {
+    const name = window.prompt('模板名称', `${current?.title || '我的简历'} 模板`);
+    if (!name || !name.trim()) return;
+    try {
+      await templateApi.create({
+        name: name.trim(),
+        description: '由当前简历样式保存',
+        category: 'custom',
+        tags: ['自定义'],
+        config: JSON.stringify({
+          layout: resolvedLayout.layout || 'single-column',
+          headerStyle: resolvedLayout.headerStyle || 'underline',
+          primaryColor: themeColor,
+          fonts: [resolvedLayout.globalFontFamily || 'system-ui'],
+        }),
+      });
+      message.success('已保存为模板，可在模板页使用');
+    } catch {
+      message.error('保存模板失败');
+    }
+  }, [current?.title, resolvedLayout, themeColor]);
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* ============ 顶栏 ============ */}
@@ -578,29 +617,35 @@ export default function Editor() {
 
         <span style={{ flex: 1 }} />
 
-        {/* 窄屏面板开关：优先保证预览可见 */}
-        {(isNarrow || !leftOpen || !rightOpen) && (
-          <>
-            <Tooltip title={leftOpen ? '收起模块列表' : '展开模块列表'} mouseEnterDelay={0.4}>
-              <button
-                onClick={() => setLeftOpen((v) => !v)}
-                style={{ ...textBtn, color: leftOpen ? brand.primary : neutral[500] }}
-              >
-                <MenuFoldOutlined style={{ fontSize: 13, transform: leftOpen ? 'none' : 'rotate(180deg)' }} />
-                {!isNarrow && '模块'}
-              </button>
-            </Tooltip>
-            <Tooltip title={rightOpen ? '收起样式/AI 面板' : '展开样式/AI 面板'} mouseEnterDelay={0.4}>
-              <button
-                onClick={() => setRightOpen((v) => !v)}
-                style={{ ...textBtn, color: rightOpen ? brand.primary : neutral[500] }}
-              >
-                <MenuUnfoldOutlined style={{ fontSize: 13, transform: rightOpen ? 'none' : 'rotate(180deg)' }} />
-                {!isNarrow && '面板'}
-              </button>
-            </Tooltip>
-          </>
-        )}
+        {/* 窄屏面板开关：优先保证预览可见；收起后始终露出，避免找不到入口 */}
+        <Tooltip title={leftOpen ? '收起模块列表' : '展开模块列表'} mouseEnterDelay={0.4}>
+          <button
+            onClick={() => setLeftOpen((v) => !v)}
+            style={{
+              ...textBtn,
+              color: leftOpen ? brand.primary : neutral[600],
+              background: leftOpen ? '#fff' : brand.primarySoft,
+              borderColor: leftOpen ? neutral[200] : brand.primaryBorder,
+            }}
+          >
+            <MenuFoldOutlined style={{ fontSize: 13, transform: leftOpen ? 'none' : 'rotate(180deg)' }} />
+            {!isNarrow && '模块'}
+          </button>
+        </Tooltip>
+        <Tooltip title={rightOpen ? '收起样式/AI 面板' : '展开样式/AI 面板'} mouseEnterDelay={0.4}>
+          <button
+            onClick={() => setRightOpen((v) => !v)}
+            style={{
+              ...textBtn,
+              color: rightOpen ? brand.primary : neutral[600],
+              background: rightOpen ? '#fff' : brand.primarySoft,
+              borderColor: rightOpen ? neutral[200] : brand.primaryBorder,
+            }}
+          >
+            <MenuUnfoldOutlined style={{ fontSize: 13, transform: rightOpen ? 'none' : 'rotate(180deg)' }} />
+            {!isNarrow && '面板'}
+          </button>
+        </Tooltip>
 
         {/* 右侧操作 */}
         <Tooltip title="分享只读链接" mouseEnterDelay={0.4}>
@@ -628,6 +673,13 @@ export default function Editor() {
           <button onClick={() => setExportOpen(true)} style={textBtn}>
             <DownloadOutlined style={{ fontSize: 13 }} />
             导出
+          </button>
+        </Tooltip>
+
+        <Tooltip title="把当前版式与配色保存为我的模板" mouseEnterDelay={0.4}>
+          <button onClick={handleSaveAsTemplate} style={textBtn}>
+            <SaveOutlined style={{ fontSize: 13 }} />
+            存为模板
           </button>
         </Tooltip>
 
@@ -700,8 +752,50 @@ export default function Editor() {
         }}
       >
         {/* ---------- 左：模块管理 ---------- */}
+        {/* 收起后保留「右拉」把手，拖拽或点击即可重新拉出模块列表 */}
+        {!leftOpen && (
+          <button
+            type="button"
+            title="拖拽或点击展开模块列表"
+            aria-label="展开模块列表"
+            onClick={() => setLeftOpen(true)}
+            onMouseDown={(e) => {
+              const startX = e.clientX;
+              const onMove = (ev: MouseEvent) => {
+                if (ev.clientX - startX > 24) {
+                  setLeftOpen(true);
+                  cleanup();
+                }
+              };
+              const onUp = () => cleanup();
+              const cleanup = () => {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+              };
+              window.addEventListener('mousemove', onMove);
+              window.addEventListener('mouseup', onUp);
+            }}
+            style={{
+              width: 18,
+              flexShrink: 0,
+              border: 'none',
+              borderRight: `1px solid ${neutral[150]}`,
+              background: neutral[25],
+              cursor: 'e-resize',
+              color: neutral[400],
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              userSelect: 'none',
+            }}
+          >
+            <MenuUnfoldOutlined style={{ fontSize: 11, transform: 'none' }} />
+          </button>
+        )}
         {leftOpen && (
-          <aside style={{ width: leftWidth, flexShrink: 0, minHeight: 0, overflow: 'hidden' }}>
+          <aside style={{ width: leftWidth, flexShrink: 0, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
             <SectionSidebar
               sections={sections}
               selectedId={selectedId}
@@ -712,6 +806,37 @@ export default function Editor() {
               onDuplicate={(sid) => duplicateSection(sid).catch(() => undefined)}
               onDelete={handleDelete}
               onJumpToBasic={handleJumpToBasic}
+            />
+            {/* 右缘拉手：向左拖可收起，双击也可收起 */}
+            <div
+              title="向左拖拽收起模块列表"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const startX = e.clientX;
+                const onMove = (ev: MouseEvent) => {
+                  if (startX - ev.clientX > 32) {
+                    setLeftOpen(false);
+                    cleanup();
+                  }
+                };
+                const onUp = () => cleanup();
+                const cleanup = () => {
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: 6,
+                height: '100%',
+                cursor: 'w-resize',
+                background: 'transparent',
+                zIndex: 2,
+              }}
             />
           </aside>
         )}
@@ -821,6 +946,48 @@ export default function Editor() {
         </section>
 
         {/* ---------- 右：样式 / AI / 版本 ---------- */}
+        {/* 收起后保留「左拉」把手 */}
+        {!rightOpen && (
+          <button
+            type="button"
+            title="拖拽或点击展开样式/AI 面板"
+            aria-label="展开样式/AI 面板"
+            onClick={() => setRightOpen(true)}
+            onMouseDown={(e) => {
+              const startX = e.clientX;
+              const onMove = (ev: MouseEvent) => {
+                if (startX - ev.clientX > 24) {
+                  setRightOpen(true);
+                  cleanup();
+                }
+              };
+              const onUp = () => cleanup();
+              const cleanup = () => {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+              };
+              window.addEventListener('mousemove', onMove);
+              window.addEventListener('mouseup', onUp);
+            }}
+            style={{
+              width: 18,
+              flexShrink: 0,
+              border: 'none',
+              borderLeft: `1px solid ${neutral[150]}`,
+              background: neutral[25],
+              cursor: 'w-resize',
+              color: neutral[400],
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              userSelect: 'none',
+            }}
+          >
+            <MenuFoldOutlined style={{ fontSize: 11, transform: 'none' }} />
+          </button>
+        )}
         {rightOpen && (
         <aside
           style={{
@@ -831,6 +998,7 @@ export default function Editor() {
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
+            position: 'relative',
           }}
         >
           {/* 页签 */}
@@ -930,6 +1098,37 @@ export default function Editor() {
               </div>
             )}
           </div>
+          {/* 左缘拉手：向右拖可收起 */}
+          <div
+            title="向右拖拽收起样式/AI 面板"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const startX = e.clientX;
+              const onMove = (ev: MouseEvent) => {
+                if (ev.clientX - startX > 32) {
+                  setRightOpen(false);
+                  cleanup();
+                }
+              };
+              const onUp = () => cleanup();
+              const cleanup = () => {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+              };
+              window.addEventListener('mousemove', onMove);
+              window.addEventListener('mouseup', onUp);
+            }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 6,
+              height: '100%',
+              cursor: 'e-resize',
+              background: 'transparent',
+              zIndex: 2,
+            }}
+          />
         </aside>
         )}
       </div>

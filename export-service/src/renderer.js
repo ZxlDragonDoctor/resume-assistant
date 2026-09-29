@@ -358,38 +358,81 @@ function renderResumeHtml(resume, options = {}) {
     }
   };
 
-  const sectionsHtml = bodySections
-    .map((section) => {
-      const data = parseJson(section.data, {});
-      const cfg = data._config || {};
-      const titleColor = cfg.titleColor || themeColor;
-      const titleSize =
-        cfg.titleFontSize ??
-        (cfg.contentFontSize ? cfg.contentFontSize + 2 : baseFontSize + 2);
-      const moduleName = cfg.moduleName || SECTION_LABELS[section.sectionType] || section.sectionType;
-      const resolvedHeaderStyle = cfg.titleStyle || headerStyle;
+  // 版式：与前端 ResumePreviewEngine.splitSectionsByLayout 保持一致
+  const layoutMode = templateConfig.layout || layout.layout || 'single-column';
+  const SIDEBAR_TYPES = ['skills', 'awards', 'certificates', 'custom'];
+  function splitByLayout(list, mode) {
+    const sorted = [...list].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    if (mode === 'sidebar') {
+      return {
+        main: sorted.filter((s) => !SIDEBAR_TYPES.includes(s.sectionType)),
+        side: sorted.filter((s) => SIDEBAR_TYPES.includes(s.sectionType)),
+      };
+    }
+    if (mode === 'two-column') {
+      const n = sorted.length;
+      const sideCount = Math.max(1, Math.min(Math.floor(n * 0.4), Math.ceil(n / 2)));
+      return { main: sorted.slice(0, n - sideCount), side: sorted.slice(n - sideCount) };
+    }
+    return { main: sorted, side: [] };
+  }
 
-      // 与前端 ResumePreviewEngine 一致：hideTitle 时只渲染内容
-      const body = `<div class="section-body"${
-        cfg.textAlign ? ` style="text-align:${cfg.textAlign}"` : ''
-      }>${renderSectionBody(section)}</div>`;
+  const renderOneSection = (section) => {
+    const data = parseJson(section.data, {});
+    const cfg = data._config || {};
+    const titleColor = cfg.titleColor || themeColor;
+    const titleSize =
+      cfg.titleFontSize ??
+      (cfg.contentFontSize ? cfg.contentFontSize + 2 : baseFontSize + 2);
+    const moduleName = cfg.moduleName || SECTION_LABELS[section.sectionType] || section.sectionType;
+    const resolvedHeaderStyle = cfg.titleStyle || headerStyle;
 
-      if (cfg.hideTitle) {
-        return `
+    const body = `<div class="section-body"${
+      cfg.textAlign ? ` style="text-align:${cfg.textAlign}"` : ''
+    }>${renderSectionBody(section)}</div>`;
+
+    if (cfg.hideTitle) {
+      return `
         <section class="resume-section" data-section="${escHtml(section.sectionType)}" style="margin-bottom:${moduleMargin}px">
           ${body}
         </section>`;
-      }
+    }
 
-      return `
+    return `
         <section class="resume-section" data-section="${escHtml(section.sectionType)}" style="margin-bottom:${moduleMargin}px">
           <h2 class="section-title ${resolvedHeaderStyle}" style="font-size:${titleSize}px;color:${titleColor};margin-top:${titleTop}px;margin-bottom:${titleBottom}px">
             ${escHtml(moduleName)}
           </h2>
           ${body}
         </section>`;
-    })
-    .join('');
+  };
+
+  const { main: mainSections, side: sideSections } = splitByLayout(bodySections, layoutMode);
+
+  let bodyHtml;
+  if (layoutMode === 'sidebar') {
+    bodyHtml = `
+      <div class="layout-sidebar" style="display:grid;grid-template-columns:210px 1fr;gap:${moduleMargin + 8}px;align-items:start">
+        <aside class="col-side" style="border-right:1px solid ${themeColor}22;padding-right:14px">
+          ${sideSections.map(renderOneSection).join('')}
+        </aside>
+        <div class="col-main">
+          ${mainSections.map(renderOneSection).join('')}
+        </div>
+      </div>`;
+  } else if (layoutMode === 'two-column') {
+    bodyHtml = `
+      <div class="layout-two-column" style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:${moduleMargin + 10}px;align-items:start">
+        <div class="col-main">
+          ${mainSections.map(renderOneSection).join('')}
+        </div>
+        <div class="col-side" style="border-left:1px solid ${themeColor}18;padding-left:14px">
+          ${sideSections.map(renderOneSection).join('')}
+        </div>
+      </div>`;
+  } else {
+    bodyHtml = `<div class="layout-single">${mainSections.map(renderOneSection).join('')}</div>`;
+  }
 
   const emptyState = !sections.length
     ? '<div class="page-empty">还没有任何模块 —— 回到编辑器添加你的第一段经历</div>'
@@ -415,7 +458,7 @@ function renderResumeHtml(resume, options = {}) {
 <body>
   <main class="page">
     ${headerHtml}
-    ${sectionsHtml}
+    ${bodyHtml}
     ${emptyState}
   </main>
 </body>
