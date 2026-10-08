@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zxl.resume.template.entity.Template;
 import com.zxl.resume.template.repository.TemplateMapper;
 import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,6 +22,7 @@ public class TemplateService {
 
     private final TemplateMapper templateMapper;
     private final JdbcTemplate jdbcTemplate;
+    private final ObjectMapper objectMapper;
 
 
     /** 用户把当前简历样式保存为自定义模板（JdbcTemplate 显式类型，避免 jsonb 绑定问题） */
@@ -29,28 +32,50 @@ public class TemplateService {
             throw new IllegalArgumentException("模板名称不能为空");
         }
         String json = (config == null) ? "" : config.trim();
-        if (json.isEmpty() || !json.startsWith("{")) {
+        if (!isJsonObject(json)) {
             json = "{\"layout\":\"single-column\"}";
         }
         UUID id = UUID.randomUUID();
+        String normalizedDescription = (description == null || description.isBlank()) ? "我的自定义模板" : description.trim();
+        String normalizedCategory = (category == null || category.isBlank()) ? "custom" : category.trim();
+        String[] normalizedTags = tags == null ? new String[0] : tags.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .distinct()
+                .toArray(String[]::new);
         jdbcTemplate.update(
                 "INSERT INTO templates (id, name, description, category, tags, config, preview_config, is_premium, is_active, sort_order) "
-                        + "VALUES (?::uuid, ?::varchar, ?::text, ?::varchar, ARRAY[]::text[], ?::jsonb, '{}'::jsonb, false, true, 100)",
+                        + "VALUES (?::uuid, ?::varchar, ?::text, ?::varchar, ?::text[], ?::jsonb, '{}'::jsonb, false, true, 100)",
                 id.toString(),
                 name.trim(),
-                (description == null || description.isBlank()) ? "我的自定义模板" : description,
-                (category == null || category.isBlank()) ? "custom" : category,
+                normalizedDescription,
+                normalizedCategory,
+                normalizedTags,
                 json
         );
         Template out = new Template();
-        out.setId(id);
+        out.setId(id.toString());
         out.setName(name.trim());
-        out.setCategory((category == null || category.isBlank()) ? "custom" : category);
+        out.setDescription(normalizedDescription);
+        out.setCategory(normalizedCategory);
+        out.setTags(java.util.Arrays.asList(normalizedTags));
         out.setConfig(json);
         out.setIsActive(true);
         out.setIsPremium(false);
         out.setSortOrder(100);
         return out;
+    }
+
+    private boolean isJsonObject(String value) {
+        if (!StringUtils.hasText(value)) {
+            return false;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(value);
+            return node != null && node.isObject();
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     /** 按分类筛选模板；category 为空时返回全部启用中的模板 */
@@ -64,11 +89,11 @@ public class TemplateService {
         if (StringUtils.hasText(keyword)) {
             q.and(w -> w.like(Template::getName, keyword).or().like(Template::getDescription, keyword));
         }
-        return templateMapper.selectList(q);
+        return templateMapper.selectTemplateList(q);
     }
 
     public Template getById(UUID id) {
-        Template template = templateMapper.selectById(id);
+        Template template = templateMapper.selectTemplateById(id.toString());
         if (template == null) {
             throw new IllegalArgumentException("模板不存在");
         }

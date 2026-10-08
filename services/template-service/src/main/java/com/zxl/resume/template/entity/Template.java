@@ -2,22 +2,23 @@ package com.zxl.resume.template.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.zxl.resume.common.mybatis.JsonbTypeHandler;
+import com.zxl.resume.template.mybatis.StringListArrayTypeHandler;
 import lombok.Data;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Data
-@TableName("templates")
+@TableName(value = "templates", autoResultMap = true)
 public class Template {
     @TableId(type = IdType.ASSIGN_UUID)
-    private UUID id;
+    private String id;
 
     private String name;
     private String description;
     private String category;
 
     /** 检索用的标签，如「双栏」「研发」「极简」 */
+    @TableField(typeHandler = StringListArrayTypeHandler.class)
     private List<String> tags;
 
     @TableField("thumbnail_url")
