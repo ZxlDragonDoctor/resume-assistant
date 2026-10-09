@@ -42,9 +42,11 @@ export default function PreviewPanel({
   focusSectionId,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const documentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(initialScale);
   const [fit, setFit] = useState<'none' | 'width' | 'height'>('width');
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const [documentHeight, setDocumentHeight] = useState<number>(layoutTokens.pageMinHeight);
 
   // 监听容器尺寸，用于「适应」计算
   useEffect(() => {
@@ -56,6 +58,16 @@ export default function PreviewPanel({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    const el = documentRef.current;
+    if (!el) return;
+    const update = () => setDocumentHeight(Math.max(layoutTokens.pageMinHeight, el.scrollHeight));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [resume, templateConfig]);
 
   const fitScale = useMemo(() => {
     const padX = 48;
@@ -82,7 +94,7 @@ export default function PreviewPanel({
   );
 
   const scaledWidth = layoutTokens.pageWidth * effectiveScale;
-  const scaledHeight = layoutTokens.pageMinHeight * effectiveScale;
+  const scaledHeight = documentHeight * effectiveScale;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0 }}>
@@ -215,7 +227,7 @@ export default function PreviewPanel({
                 // 注意：transform 不参与布局，因此外层容器显式给出缩放后的尺寸
               }}
             >
-              <div style={{ boxShadow: shadow.paper, background: '#fff' }}>
+              <div ref={documentRef} style={{ boxShadow: shadow.paper, background: '#fff' }}>
                 <ResumePreviewEngine resume={resume} templateConfig={templateConfig} scale={1} />
               </div>
 

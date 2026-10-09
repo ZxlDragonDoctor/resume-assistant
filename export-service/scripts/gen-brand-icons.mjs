@@ -1,13 +1,11 @@
 /**
- * 品牌图标生成脚本
- * ------------------------------------------------------------------
- * 把 frontend/public 下的矢量源（logo.svg / favicon.svg / logo-mascot.svg）
- * 栅格化成全套位图，并组装多尺寸 favicon.ico。
+ * Generate browser and installed-app icon assets from the canonical mascot PNG.
  *
- * 放在 export-service 下是因为只有这里有现成的 Puppeteer + Chrome，
- * 用浏览器渲染 SVG 能保证与页面里的显示完全一致。
+ * The source image is frontend/public/logo.png. This script writes only derived
+ * icons and intentionally never rewrites the source file.
  *
- * 用法：node scripts/gen-brand-icons.mjs
+ * Run from the repository root:
+ *   node export-service/scripts/gen-brand-icons.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
@@ -16,103 +14,87 @@ import puppeteer from 'puppeteer';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = resolve(__dirname, '../../frontend/public');
+const SOURCE_FILE = join(PUBLIC_DIR, 'logo.png');
+const MASCOT_DATA_URL = `data:image/png;base64,${readFileSync(SOURCE_FILE).toString('base64')}`;
+const TILE_COLOR = '#F5F3FF';
 
-const readSvg = (file) => readFileSync(join(PUBLIC_DIR, file), 'utf8');
-
-/** 把 <svg> 的 width/height 改成目标像素（viewBox 不变，等比缩放） */
-function scaleSvg(svg, size) {
-  return svg
-    .replace(/(<svg[^>]*?)\swidth="[^"]*"/, `$1 width="${size}"`)
-    .replace(/(<svg[^>]*?)\sheight="[^"]*"/, `$1 height="${size}"`);
-}
-
-/** PWA / apple-touch 图标由系统自行遮罩，所以去掉底板圆角改为满幅 */
-function squareTile(svg) {
-  return svg.replace(/rx="11"/g, 'rx="0"');
-}
-
-async function render(page, svg, size, outFile) {
+async function renderIcon(page, size, outFile, { cornerRadius = 0, padding = 0.12 } = {}) {
   await page.setViewport({ width: size, height: size, deviceScaleFactor: 1 });
   await page.setContent(
-    `<!DOCTYPE html><html><head><style>
-       html,body{margin:0;padding:0;background:transparent}
-       svg{display:block}
-     </style></head><body>${svg}</body></html>`,
+    `<!doctype html><html><head><meta charset="utf-8"><style>
+       html,body{width:100%;height:100%;margin:0;padding:0;background:transparent}
+       .tile{box-sizing:border-box;width:100%;height:100%;display:flex;align-items:center;
+         justify-content:center;overflow:hidden;background:${TILE_COLOR};
+         border-radius:${cornerRadius}%}
+       img{display:block;width:${100 - padding * 2}%;height:${100 - padding * 2}%;object-fit:contain}
+     </style></head><body><div class="tile"><img src="${MASCOT_DATA_URL}" alt=""></div></body></html>`,
     { waitUntil: 'load' }
   );
+  await page.evaluate(() => Promise.all([...document.images].map((image) => image.decode())));
   await page.screenshot({ path: join(PUBLIC_DIR, outFile), omitBackground: true });
   return outFile;
 }
 
-/** 手工组装 ICO：header + 目录项 + PNG 载荷（Vista+ 与所有现代浏览器均支持） */
+/** Assemble a multi-size ICO from PNG payloads. */
 function buildIco(entries) {
-  const count = entries.length;
   const header = Buffer.alloc(6);
-  header.writeUInt16LE(0, 0); // reserved
-  header.writeUInt16LE(1, 2); // type = icon
-  header.writeUInt16LE(count, 4);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(entries.length, 4);
 
-  const dir = Buffer.alloc(16 * count);
-  let offset = 6 + 16 * count;
-  entries.forEach(({ size, buffer }, i) => {
-    const e = 16 * i;
-    dir.writeUInt8(size >= 256 ? 0 : size, e + 0);
-    dir.writeUInt8(size >= 256 ? 0 : size, e + 1);
-    dir.writeUInt8(0, e + 2); // 调色板数
-    dir.writeUInt8(0, e + 3); // reserved
-    dir.writeUInt16LE(1, e + 4); // planes
-    dir.writeUInt16LE(32, e + 6); // 位深
-    dir.writeUInt32LE(buffer.length, e + 8);
-    dir.writeUInt32LE(offset, e + 12);
+  const directory = Buffer.alloc(16 * entries.length);
+  let offset = 6 + directory.length;
+  entries.forEach(({ size, buffer }, index) => {
+    const entry = 16 * index;
+    directory.writeUInt8(size >= 256 ? 0 : size, entry);
+    directory.writeUInt8(size >= 256 ? 0 : size, entry + 1);
+    directory.writeUInt8(0, entry + 2);
+    directory.writeUInt8(0, entry + 3);
+    directory.writeUInt16LE(1, entry + 4);
+    directory.writeUInt16LE(32, entry + 6);
+    directory.writeUInt32LE(buffer.length, entry + 8);
+    directory.writeUInt32LE(offset, entry + 12);
     offset += buffer.length;
   });
 
-  return Buffer.concat([header, dir, ...entries.map((e) => e.buffer)]);
+  return Buffer.concat([header, directory, ...entries.map(({ buffer }) => buffer)]);
 }
 
-const main = async () => {
-  const faviconSvg = readSvg('favicon.svg');
-  const logoSvg = readSvg('logo.svg');
-  const mascotSvg = readSvg('logo-mascot.svg');
-
+async function main() {
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  const done = [];
-
-  // 1. favicon 各尺寸（保留圆角底板，标签页里更好看）
+  const generated = [];
   const icoEntries = [];
-  for (const size of [16, 32, 48]) {
-    const file = `favicon-${size}.png`;
-    await render(page, scaleSvg(faviconSvg, size), size, file);
-    icoEntries.push({ size, buffer: readFileSync(join(PUBLIC_DIR, file)) });
-    done.push(file);
+
+  try {
+    for (const size of [16, 32, 48]) {
+      const file = `favicon-${size}.png`;
+      await renderIcon(page, size, file, { cornerRadius: 24, padding: 4 });
+      icoEntries.push({ size, buffer: readFileSync(join(PUBLIC_DIR, file)) });
+      generated.push(file);
+    }
+
+    writeFileSync(join(PUBLIC_DIR, 'favicon.ico'), buildIco(icoEntries));
+    generated.push('favicon.ico');
+
+    for (const [size, file, padding] of [
+      [180, 'apple-touch-icon.png', 12],
+      [192, 'icon-192.png', 12],
+      // Keep every mascot detail within Android's 80%-diameter maskable safe zone.
+      [512, 'icon-512.png', 22],
+    ]) {
+      await renderIcon(page, size, file, { padding });
+      generated.push(file);
+    }
+  } finally {
+    await browser.close();
   }
 
-  // 2. favicon.ico（16/32/48 三尺寸打包）
-  writeFileSync(join(PUBLIC_DIR, 'favicon.ico'), buildIco(icoEntries));
-  done.push('favicon.ico');
+  console.log(`Generated ${generated.length} derived brand icons from logo.png:`);
+  generated.forEach((file) => console.log(`  - ${file}`));
+}
 
-  // 3. PWA / apple-touch（满幅渐变，交给系统遮罩）
-  const squareSvg = squareTile(logoSvg);
-  for (const [size, file] of [
-    [180, 'apple-touch-icon.png'],
-    [192, 'icon-192.png'],
-    [512, 'icon-512.png'],
-  ]) {
-    await render(page, scaleSvg(squareSvg, size), size, file);
-    done.push(file);
-  }
-
-  // 4. 吉祥物主视觉
-  await render(page, scaleSvg(mascotSvg, 1024), 1024, 'logo.png');
-  done.push('logo.png');
-
-  await browser.close();
-  console.log(`生成完成（${done.length} 个文件）：`);
-  done.forEach((f) => console.log('  - ' + f));
-};
-
-main().catch((err) => {
-  console.error('生成失败：', err);
+main().catch((error) => {
+  console.error('Brand icon generation failed:', error);
   process.exit(1);
 });

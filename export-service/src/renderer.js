@@ -33,7 +33,7 @@ const SECTION_LABELS = {
 };
 
 const FONT_STACKS = {
-  'system-ui': "'Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,-apple-system,sans-serif",
+  'system-ui': "'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif",
   'Microsoft YaHei': "'Microsoft YaHei','Noto Sans SC',sans-serif",
   SimSun: "'SimSun','Songti SC',serif",
   SimHei: "'SimHei','Heiti SC',sans-serif",
@@ -263,6 +263,103 @@ function emptyHint(fontSize) {
   return `<div class="empty-hint" style="font-size:${fontSize - 1}px">待填写</div>`;
 }
 
+/**
+ * 按每页可用高度顺序排入两栏。heightFor 由调用方提供实际或估算高度，
+ * manual left/right placement 固定目标栏；auto 的阅读顺序为左栏、右栏、下一页左栏。
+ */
+function paginateSectionsByHeight(sections, { firstPageCapacity, columnCapacity, heightFor = (s) => s.height || 0 }) {
+  const pages = [];
+  const capacityFor = (pageIndex) => pageIndex === 0 ? firstPageCapacity : columnCapacity;
+  const ensurePage = (pageIndex) => {
+    while (pages.length <= pageIndex) pages.push({ main: [], side: [], mainHeight: 0, sideHeight: 0 });
+    return pages[pageIndex];
+  };
+  const fits = (pageIndex, column, height) => {
+    const page = ensurePage(pageIndex);
+    const used = column === 'main' ? page.mainHeight : page.sideHeight;
+    const capacity = capacityFor(pageIndex);
+    if (used === 0) return height <= capacity || (pageIndex > 0 && height > columnCapacity + 48);
+    return used + height <= capacity;
+  };
+  const place = (pageIndex, column, section, height) => {
+    const page = ensurePage(pageIndex);
+    page[column].push(section);
+    if (column === 'main') page.mainHeight += height;
+    else page.sideHeight += height;
+  };
+
+  let flowPage = 0;
+  let flowColumn = 'main';
+  for (const section of sections) {
+    if (section.layout === 'left' || section.layout === 'right') {
+      const column = section.layout === 'left' ? 'main' : 'side';
+      const height = Math.max(1, Number(heightFor(section, column)) || 1);
+      let pageIndex = flowPage;
+      while (!fits(pageIndex, column, height) && pageIndex < pages.length + 1) pageIndex += 1;
+      place(pageIndex, column, section, height);
+      continue;
+    }
+
+    let height = Math.max(1, Number(heightFor(section, flowColumn)) || 1);
+    while (!fits(flowPage, flowColumn, height)) {
+      if (flowColumn === 'main') flowColumn = 'side';
+      else {
+        flowColumn = 'main';
+        flowPage += 1;
+      }
+      height = Math.max(1, Number(heightFor(section, flowColumn)) || 1);
+    }
+    place(flowPage, flowColumn, section, height);
+  }
+
+  return pages.map(({ main, side }) => ({ main, side }));
+}
+
+function estimateSectionHeight(section, { fontSize, lineHeight, moduleMargin, columnWidth }) {
+  const data = parseJson(section.data, {});
+  const config = data._config || {};
+  const contentSize = Number(config.contentFontSize || fontSize);
+  const linePx = contentSize * Number(config.lineSpacing || lineHeight);
+  const charsPerLine = Math.max(12, Math.floor(columnWidth / Math.max(8, contentSize * 0.9)));
+  const lines = (value) => {
+    const text = typeof value === 'string' ? value.replace(/<[^>]*>/g, ' ') : '';
+    return text ? Math.max(1, Math.ceil(text.length / charsPerLine)) : 0;
+  };
+  const items = Array.isArray(data) ? data : Array.isArray(data.items) ? data.items : [];
+  let contentHeight = 0;
+  if (section.sectionType === 'skills') {
+    const text = items.map((item) => typeof item === 'string' ? item : JSON.stringify(item)).join(' ');
+    contentHeight = Math.max(linePx * 1.8, Math.ceil(text.length / Math.max(10, Math.floor(columnWidth / (contentSize * 4.5)))) * (contentSize * 2.2));
+  } else if (items.length) {
+    contentHeight = items.reduce((sum, item) => {
+      if (typeof item === 'string') return sum + lines(item) * linePx + 5;
+      if (!item || typeof item !== 'object') return sum + linePx;
+      const record = item;
+      const intro = [record.title, record.company, record.school, record.name, record.subtitle,
+        record.position, record.degree, record.major, record.date, record.startDate,
+        record.endDate, record.tech].filter((value) => typeof value === 'string').join(' ');
+      const body = [record.description, record.content, record.bullets]
+        .flatMap((value) => Array.isArray(value) ? value : [value])
+        .filter((value) => typeof value === 'string')
+        .reduce((count, value) => count + lines(value), 0);
+      return sum + Math.max(22, lines(intro) * linePx) + body * linePx + 12;
+    }, 0);
+  } else {
+    contentHeight = lines(data.content) * linePx;
+  }
+  const titleHeight = config.hideTitle ? 0 : Number(config.titleFontSize || fontSize + 2) * 1.4 + 12;
+  return Math.max(linePx, titleHeight + contentHeight + moduleMargin);
+}
+
+function estimateHeaderHeight(basicSection, resume, baseFontSize) {
+  const data = basicSection ? parseJson(basicSection.data, {}) : {};
+  const hasJob = Boolean(data.jobTitle || resume.targetJob);
+  const contacts = ['phone', 'email', 'city', 'website'].filter((key) => data[key]).length
+    + (Array.isArray(data.links) ? data.links.length : 0);
+  const nameSize = Number(data._config?.titleFontSize || baseFontSize + 8) + 12;
+  return Math.ceil(nameSize * 1.25 + (hasJob ? baseFontSize + 13 : 0) + (contacts ? baseFontSize * 1.7 + 8 : 0) + 20);
+}
+
 // ------------------------------------------------------------------
 // 主渲染入口
 // ------------------------------------------------------------------
@@ -278,9 +375,9 @@ function renderResumeHtml(resume, options = {}) {
 
   const themeColor = templateConfig.primaryColor || layout.themeColor || resume.themeColor || '#2563eb';
   const accentColor = templateConfig.accentColor || hexToRgba(themeColor, 0.08);
-  const fontName = templateConfig.font || layout.globalFontFamily || resume.fontFamily || 'system-ui';
-  const baseFontSize = layout.globalFontSize || resume.fontSize || 14;
-  const baseLineHeight = layout.globalLineSpacing || resume.lineSpacing || 1.6;
+  const fontName = layout.globalFontFamily || 'system-ui';
+  const baseFontSize = layout.globalFontSize ?? 14;
+  const baseLineHeight = layout.globalLineSpacing ?? 1.65;
   const pageTop = layout.pageTopMargin ?? 40;
   const pageBottom = layout.pageBottomMargin ?? 40;
   const pageLeft = layout.pageLeftMargin ?? 40;
@@ -290,7 +387,9 @@ function renderResumeHtml(resume, options = {}) {
   const titleBottom = layout.titleBottomMargin ?? 10;
   const headerStyle = templateConfig.headerStyle || layout.headerStyle || 'underline';
 
-  const sections = (resume.sections || []).filter((s) => s.isVisible !== false);
+  const sections = (resume.sections || [])
+    .filter((s) => s.isVisible !== false)
+    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
   // 基础信息单独渲染在页首
   const basicSection = sections.find((s) => s.sectionType === 'basic');
@@ -311,7 +410,7 @@ function renderResumeHtml(resume, options = {}) {
     const basicData = parseJson(basicSection.data, {});
     const cfg = basicData._config || {};
     headerHtml = renderBasic(basicData, {
-      titleSize: cfg.titleFontSize || globalCtx.titleSize + 8,
+      titleSize: cfg.titleFontSize || globalCtx.titleSize + 6,
       contentSize: cfg.contentFontSize || globalCtx.contentSize,
       titleColor: cfg.titleColor || themeColor,
       textColor: cfg.textColor || globalCtx.textColor,
@@ -359,20 +458,18 @@ function renderResumeHtml(resume, options = {}) {
   };
 
   // 版式：与前端 ResumePreviewEngine.splitSectionsByLayout 保持一致
-  const layoutMode = templateConfig.layout || layout.layout || 'single-column';
+  const layoutMode = layout.layout || templateConfig.layout || 'single-column';
   const SIDEBAR_TYPES = ['skills', 'awards', 'certificates', 'custom'];
   function splitByLayout(list, mode) {
     const sorted = [...list].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
     if (mode === 'sidebar') {
       return {
-        main: sorted.filter((s) => !SIDEBAR_TYPES.includes(s.sectionType)),
-        side: sorted.filter((s) => SIDEBAR_TYPES.includes(s.sectionType)),
+        main: sorted.filter((s) => s.layout === 'right' || (s.layout !== 'left' && !SIDEBAR_TYPES.includes(s.sectionType))),
+        side: sorted.filter((s) => s.layout === 'left' || (s.layout !== 'right' && SIDEBAR_TYPES.includes(s.sectionType))),
       };
     }
     if (mode === 'two-column') {
-      const n = sorted.length;
-      const sideCount = Math.max(1, Math.min(Math.floor(n * 0.4), Math.ceil(n / 2)));
-      return { main: sorted.slice(0, n - sideCount), side: sorted.slice(n - sideCount) };
+      return { main: sorted, side: [] };
     }
     return { main: sorted, side: [] };
   }
@@ -393,14 +490,14 @@ function renderResumeHtml(resume, options = {}) {
 
     if (cfg.hideTitle) {
       return `
-        <section class="resume-section" data-section="${escHtml(section.sectionType)}" style="margin-bottom:${moduleMargin}px">
+        <section class="resume-section" data-section="${escHtml(section.sectionType)}" data-section-id="${escHtml(section.id || `${section.sectionType}-${section.sortOrder}`)}" data-layout="${escHtml(section.layout || 'auto')}" style="margin-bottom:${moduleMargin}px">
           ${body}
         </section>`;
     }
 
     return `
-        <section class="resume-section" data-section="${escHtml(section.sectionType)}" style="margin-bottom:${moduleMargin}px">
-          <h2 class="section-title ${resolvedHeaderStyle}" style="font-size:${titleSize}px;color:${titleColor};margin-top:${titleTop}px;margin-bottom:${titleBottom}px">
+        <section class="resume-section" data-section="${escHtml(section.sectionType)}" data-section-id="${escHtml(section.id || `${section.sectionType}-${section.sortOrder}`)}" data-layout="${escHtml(section.layout || 'auto')}" style="margin-bottom:${moduleMargin}px">
+          <h2 class="section-title ${resolvedHeaderStyle}" style="font-size:${titleSize}px;line-height:1.4;color:${titleColor};margin-top:${titleTop}px;margin-bottom:${titleBottom}px">
             ${escHtml(moduleName)}
           </h2>
           ${body}
@@ -409,7 +506,12 @@ function renderResumeHtml(resume, options = {}) {
 
   const { main: mainSections, side: sideSections } = splitByLayout(bodySections, layoutMode);
 
+  const emptyState = !sections.length
+    ? '<div class="page-empty">还没有任何模块 —— 回到编辑器添加你的第一段经历</div>'
+    : '';
+
   let bodyHtml;
+  let documentMarkup;
   if (layoutMode === 'sidebar') {
     bodyHtml = `
       <div class="layout-sidebar" style="display:grid;grid-template-columns:210px 1fr;gap:${moduleMargin + 8}px;align-items:start">
@@ -421,22 +523,42 @@ function renderResumeHtml(resume, options = {}) {
         </div>
       </div>`;
   } else if (layoutMode === 'two-column') {
-    bodyHtml = `
-      <div class="layout-two-column" style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:${moduleMargin + 10}px;align-items:start">
-        <div class="col-main">
-          ${mainSections.map(renderOneSection).join('')}
+    const pageHeight = 1123;
+    const columnGap = Math.round(moduleMargin * 0.9) + 10;
+    const contentWidth = 794 - pageLeft - pageRight;
+    const columnWidth = Math.max(180, ((contentWidth - columnGap) * 0.85) / 2);
+    const pageCapacity = Math.max(120, pageHeight - pageTop - pageBottom);
+    const firstPageCapacity = Math.max(
+      120,
+      pageCapacity - estimateHeaderHeight(basicSection, resume, baseFontSize),
+    );
+    const pages = paginateSectionsByHeight(bodySections, {
+      firstPageCapacity,
+      columnCapacity: pageCapacity,
+      heightFor: (section, column) => estimateSectionHeight(section, {
+        fontSize: baseFontSize,
+        lineHeight: baseLineHeight,
+        moduleMargin,
+        columnWidth: column === 'side' ? Math.max(180, columnWidth - 14) : Math.max(180, columnWidth / 0.85 * 1.15),
+      }),
+    });
+    if (!pages.length) pages.push({ main: [], side: [] });
+    documentMarkup = pages.map((page, index) => `
+      <main class="page" data-page="${index + 1}">
+        ${index === 0 ? headerHtml : ''}
+        <div class="layout-two-column" style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:${columnGap}px;align-items:start">
+          <div class="col-main">${page.main.map(renderOneSection).join('')}</div>
+          <div class="col-side" style="border-left:1px solid ${themeColor}18;padding-left:14px">${page.side.map(renderOneSection).join('')}</div>
         </div>
-        <div class="col-side" style="border-left:1px solid ${themeColor}18;padding-left:14px">
-          ${sideSections.map(renderOneSection).join('')}
-        </div>
-      </div>`;
+        ${index === 0 ? emptyState : ''}
+      </main>`).join('');
   } else {
     bodyHtml = `<div class="layout-single">${mainSections.map(renderOneSection).join('')}</div>`;
   }
 
-  const emptyState = !sections.length
-    ? '<div class="page-empty">还没有任何模块 —— 回到编辑器添加你的第一段经历</div>'
-    : '';
+  if (!documentMarkup) {
+    documentMarkup = `<main class="page" data-page="1">${headerHtml}${bodyHtml}${emptyState}</main>`;
+  }
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -455,13 +577,7 @@ function renderResumeHtml(resume, options = {}) {
     pageRight,
   })}</style>
 </head>
-<body>
-  <main class="page">
-    ${headerHtml}
-    ${bodyHtml}
-    ${emptyState}
-  </main>
-</body>
+<body>${documentMarkup}</body>
 </html>`;
 }
 
@@ -501,7 +617,10 @@ html, body {
   min-height: 297mm;
   padding: ${pageTop}px ${pageRight}px ${pageBottom}px ${pageLeft}px;
   background: #fff;
+  break-after: page;
+  page-break-after: always;
 }
+.page:last-child { break-after: auto; page-break-after: auto; }
 
 /* ---------------- 头部 ---------------- */
 .resume-header { margin-bottom: 20px; }
@@ -653,4 +772,4 @@ html, body {
 `;
 }
 
-module.exports = { renderResumeHtml, escHtml, parseJson, hexToRgba };
+module.exports = { renderResumeHtml, paginateSectionsByHeight, escHtml, parseJson, hexToRgba };

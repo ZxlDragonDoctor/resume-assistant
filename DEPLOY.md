@@ -5,7 +5,7 @@
 | 形态 | 包含内容 | 适用平台 | 费用 |
 |---|---|---|---|
 | **A. 仅前端** | 前端静态站（后端指向你已有的地址） | Vercel / Netlify / Cloudflare Pages | 免费 |
-| **B. 全栈容器** | 前端 + 全部 8 个服务 + 5 个中间件 | 任意支持 Docker 的容器主机 | 通常需付费 |
+| **B. 全栈容器** | 前端 + 7 个后端服务 + 5 个中间件（共 13 个容器） | 任意支持 Docker 的容器主机 | 通常需付费 |
 
 > **为什么全栈没有免费方案？**
 > 导出服务依赖 Puppeteer 无头 Chromium（体积大、需要可写 /tmp、需要足够内存），
@@ -81,12 +81,24 @@ cp .env.example .env
 #    编辑 .env：至少改 JWT_SECRET，并按需填 OPENAI_API_KEY
 #    生成 JWT 密钥：openssl rand -base64 48
 
-# 2. 构建并启动全部服务
-docker-compose up -d --build
+# 2. 先启动数据库（首次启动会自动执行 init.sql）
+docker compose up -d postgres
+docker compose exec -T postgres sh -c 'until pg_isready -U resume -d resume_assistant; do sleep 2; done'
 
-# 3. 查看状态
-docker-compose ps
+# 3. 补齐旧数据库缺少的模板（新数据库/已有完整模板时自动跳过）
+docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/add-templates.sql
+
+# 4. 迁移旧分类；新数据库/已迁移数据时自动跳过
+docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/migrate-template-categories.sql
+
+# 5. 构建并启动全部服务
+docker compose up -d --build
+
+# 6. 查看状态
+docker compose ps
 ```
+
+若 `.env` 中 `DB_USERNAME` 或数据库名不是默认值 `resume` / `resume_assistant`，请替换迁移命令中的 `psql` 参数。迁移只更新系统模板的中文名称、说明、分类与标签，不改模板 ID、版式配置或用户简历。
 
 启动后访问：
 
@@ -100,6 +112,13 @@ docker-compose ps
 | AI 服务文档 | http://localhost:8086/docs |
 
 > 首次构建需要下载 Maven / Node / pip 依赖，耗时较长（10~30 分钟，取决于网速）。
+
+部署后检查容器状态，并确认模板分类 API 返回中文求职方向：
+
+```bash
+docker compose ps
+curl -fsS http://localhost:8080/api/templates/categories
+```
 
 ### 架构与请求链路
 
@@ -162,7 +181,11 @@ docker-compose ps
 git clone <你的仓库地址> && cd ResumeAssistant
 cp .env.example .env
 # 编辑 .env：JWT_SECRET 用 openssl rand -base64 48 生成，按需填 OPENAI_API_KEY
-docker-compose up -d --build
+docker compose up -d postgres
+docker compose exec -T postgres sh -c 'until pg_isready -U resume -d resume_assistant; do sleep 2; done'
+docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/add-templates.sql
+docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/migrate-template-categories.sql
+docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
 ```
 
 若要对外提供 HTTPS，推荐在前端容器前再挂一层反向代理
@@ -283,9 +306,9 @@ export-service/shots/
 ## 常见问题
 
 **Q：导出 PDF 报「无法连接导出服务」**
-检查 export-service 容器是否存活：`docker-compose logs export-service`。
+检查 export-service 容器是否存活：`docker compose logs export-service`。
 若在容器内报 Chromium 启动失败，确认镜像内路径：
-`docker-compose exec export-service ls -l /usr/bin/chromium-browser`
+`docker compose exec export-service ls -l /usr/bin/chromium-browser`
 
 **Q：Java 服务启动后注册不上 Nacos**
 Nacos 必须**先**就绪。本 compose 已用 `depends_on: condition: service_healthy`

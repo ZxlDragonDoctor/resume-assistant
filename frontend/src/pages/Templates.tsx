@@ -181,6 +181,15 @@ export default function Templates() {
                 <div
                   key={template.id}
                   className="template-card"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleUse(template)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleUse(template);
+                    }
+                  }}
                   style={{
                     background: '#fff',
                     borderRadius: radius.xl,
@@ -189,6 +198,7 @@ export default function Templates() {
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
+                    cursor: 'pointer',
                   }}
                 >
                   {/* 预览区 */}
@@ -223,7 +233,10 @@ export default function Templates() {
                         type="primary"
                         icon={<ThunderboltOutlined />}
                         loading={usingId === template.id}
-                        onClick={() => handleUse(template)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUse(template);
+                        }}
                         style={{
                           height: 38,
                           padding: '0 20px',

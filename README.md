@@ -5,7 +5,7 @@
 <br>
 
 **免费 · 开源的在线简历工作台**
-模块化编辑 · 所见即所得导出 · AI 只出建议、不代笔
+求职方向模板 · 模块手动分栏 · 双栏多页续排 · PDF 导出
 
 <br>
 
@@ -60,12 +60,12 @@
 <td width="50%" valign="top">
 
 ### 🗂 模板市场与示例内容
-12 套行业向模板（技术 / 产品 / 设计 / 商务 / 学术 / 校招 / 数据 / 医疗等），
-**新建简历会按模板分类自动填入对应示例内容**，打开即可直接修改，不必面对空白页。
+12 套中文模板按 **通用求职、应届校招、技术研发、产品运营、设计创意、商务职能、学术教育、医疗健康** 八个求职方向分类；
+单栏、双栏等版式作为模板标签。**新建简历会按方向填入对应示例内容**，打开即可直接修改。
 
 ### 📐 模块化编辑
 10 种内容模块（基本信息 / 个人总结 / 实习 / 工作 / 项目 / 教育 / 技能 / 奖项 / 证书 / 自定义），
-基于 `@dnd-kit` 自由拖拽排序，支持显隐与复制。
+基于 `@dnd-kit` 自由拖拽排序，支持显隐与复制。双栏布局会先填满左栏再续到右栏和下一页；每个模块也可固定在左栏或右栏。
 
 ### 🎨 三级样式覆盖
 `模板默认` < `全局布局` < `模块级配置`。
@@ -80,10 +80,10 @@
 
 ### 🖨️ 所见即所得导出
 Puppeteer 无头 Chrome 渲染 A4 PDF（794 × 1123 px），
-**与编辑器预览共用同一套排版规则**，并有一份 14 项断言的渲染契约测试守着两者不跑偏。
+**与编辑器预览遵循同一套排版规则**，并由 21 项渲染契约断言校验两者行为一致。
 
 ### 🤖 AI 助手（可离线降级）
-内容润色、个人总结、ATS 体检、JD 解析、面试题预测、技能匹配共 6 项能力。
+内容润色、个人总结、ATS 体检、JD 解析、面试题预测、简历翻译、技能匹配共 7 项主要能力。
 **未配置任何大模型密钥时自动降级为本地规则引擎**，功能不中断、页面不报错。
 
 ### 🕓 版本管理与只读分享
@@ -154,7 +154,7 @@ graph TB
         PG[("PostgreSQL 16<br/>JSONB + pgvector")]
         MINIO[("MinIO<br/>对象存储")]
         REDIS[("Redis 7<br/>缓存")]
-        MQ[("RabbitMQ<br/>异步任务")]
+        MQ[("RabbitMQ<br/>导出异步队列")]
     end
 
     Browser -->|HTTPS| NGX
@@ -236,9 +236,8 @@ docker compose up -d postgres nacos minio
 
 然后按下方「本地开发」分别启动各服务。
 
-> **当前 Java 服务只依赖 PostgreSQL / Nacos / MinIO 三者**
-> —— JSONB 简历数据、服务注册、模板与文件存储都已覆盖。
-> Redis 与 RabbitMQ 是为后续异步任务预留的。
+> 本地开发时，Java 核心服务需要 PostgreSQL 与 Nacos；文件服务还需要 MinIO。
+> RabbitMQ 当前用于导出异步队列（HTTP 直出接口仍可单独使用）；Redis 已编排但当前业务代码未依赖。
 
 <br>
 
@@ -389,7 +388,7 @@ ResumeAssistant/
 │   └── file-service/               #   MinIO 文件上传（:8084）
 ├── export-service/                 # Node.js PDF 导出（:8085）
 │   ├── src/renderer.js             #   渲染器（与前端预览引擎规则镜像）
-│   └── scripts/contract-test.mjs   #   渲染契约测试（14 项断言）
+│   └── scripts/contract-test.mjs   #   渲染契约测试（21 项断言）
 ├── ai-service/                     # Python FastAPI AI（:8086）
 │   ├── app/services/ai_service.py  #   LLM 优先
 │   ├── app/services/rule_engine.py #   本地规则降级
@@ -413,7 +412,9 @@ ResumeAssistant/
 │   ├── FRONTEND.md                 # 前端设计系统规范
 │   ├── assets/                     # README 视觉资源（banner / 截图）
 │   ├── conf/rabbitmq.conf          # 低内存服务器的 RabbitMQ 配置
-│   └── sql/init.sql                # 建表 + 触发器 + 6 个种子模板
+│   ├── sql/init.sql                # 建表 + 触发器 + 12 个种子模板
+│   ├── sql/add-templates.sql       # 为旧数据库幂等补齐缺少模板
+│   └── sql/migrate-template-categories.sql # 已有数据库分类迁移
 ├── docker-compose.yml              # 全栈编排
 ├── docker-compose.server.yml       # 低内存服务器覆盖层
 └── DEPLOY.md                       # 部署指南
@@ -461,7 +462,7 @@ Vite 已配置代理：`/api` → `http://localhost:8080`，`/export` → `http:
 | `GET /api/public/resumes/{token}` | resume | **公开**，只读分享 |
 | `/api/templates/**` | template | 模板列表 / 分类 / 详情 |
 | `/api/files/**` | file | 文件上传、头像 |
-| `/api/ai/**` | ai | 6 项 AI 能力 |
+| `/api/ai/**` | ai | 7 项主要 AI 能力 |
 | `/api/export/**` | export | PDF 导出 |
 
 除注册、登录、`/api/public/**` 外，均需 `Authorization: Bearer <token>`。
@@ -470,7 +471,7 @@ Vite 已配置代理：`/api` → `http://localhost:8080`，`/export` → `http:
 
 | 能力 | 端点 | 引擎 |
 |---|---|---|
-| 要点润色 | `/api/ai/optimize-bullet` | 大模型 |
+| 要点润色 | `/api/ai/optimize-bullet`、`/api/ai/optimize-bullets` | 大模型 |
 | 个人总结 | `/api/ai/generate-summary` | 大模型 |
 | ATS 评分 | `/api/ai/ats-score` | 大模型 |
 | JD 解析 | `/api/ai/parse-jd` | 大模型 |
@@ -486,8 +487,11 @@ Vite 已配置代理：`/api` → `http://localhost:8080`，`/export` → `http:
 ## 🧪 测试
 
 ```bash
-# 渲染契约测试（14 项）—— 保证 PDF 与预览完全一致
+# 渲染契约测试（21 项）—— 校验 PDF 与预览的排版契约
 cd export-service && npm run test:contract
+
+# 模板分类与示例简历选择单测
+mvn -pl services/template-service,services/resume-service -am test
 
 # AI 规则引擎降级测试（6 项）—— 保证无密钥时功能可用
 cd ai-service && python scripts/rule_engine_test.py
@@ -514,7 +518,9 @@ PostgreSQL，默认连接 `resume / resume123 @ localhost:5432/resume_assistant`
 | `templates` | 模板 |
 | `ai_operations` | AI 调用审计 |
 
-`docs/sql/init.sql` 含建表语句、触发器与 6 个种子模板。
+`docs/sql/init.sql` 含建表语句、触发器与 12 个种子模板。已有数据库升级时，先执行
+[`docs/sql/add-templates.sql`](./docs/sql/add-templates.sql) 补齐缺少的模板，再执行
+[`docs/sql/migrate-template-categories.sql`](./docs/sql/migrate-template-categories.sql) 迁移分类，然后更新应用。
 
 <br>
 

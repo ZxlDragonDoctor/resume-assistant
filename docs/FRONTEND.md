@@ -109,14 +109,28 @@ clearConfigKeys(data, keys)         // 重置指定键
 cd export-service && npm run test:contract
 ```
 
-该测试覆盖 14 项断言：模块配置生效、隐藏模块过滤、`hideTitle` 语义、
-模块级 `titleStyle`、Markdown / HTML / 纯文本三态、A4 容器尺寸。
+该测试覆盖 21 项断言：模块配置生效、隐藏模块过滤、`hideTitle` 语义、
+富文本、A4 容器尺寸、双栏容量分配、手动栏位优先级、首屏页眉占高与多页续排。
 
 > 修改任一渲染器后，务必运行此测试。
 
 ---
 
-## 5. 富文本三态处理
+## 5. 版式、模块分栏与分页
+
+全局版式保存在 `resume.layoutConfig.layout`，优先级高于模板推荐版式。样式面板提供单栏、双栏和侧边栏：
+
+- **单栏**：模块按排序顺序纵向排列。
+- **双栏**：自动模块按阅读顺序先填左栏，放不下再进入右栏；两栏都满后，在下一页从左栏继续。首屏会扣除姓名与联系信息页眉占用的高度。
+- **侧边栏**：技能、奖项、证书和自定义模块默认进入窄栏，其余进入主栏。
+
+选中模块后可在「模块栏位」设置 **自动 / 左栏 / 右栏**。固定栏位优先于自动流排；侧边栏模式下对应「自动 / 侧边栏 / 主内容区」。这些选择写入模块的 `layout`，不会改变模块排序。
+
+双栏预览先以内容估算栏高，再用浏览器实际测量校准；PDF 导出端镜像同样的容量分配规则。修改分页或分栏逻辑时，需同时检查 `ResumePreviewEngine.tsx` 与 `export-service/src/renderer.js`，并运行 21 项渲染契约测试。当前明确的自动多页续排规则针对双栏模式。
+
+---
+
+## 6. 富文本三态处理
 
 `src/components/viewer/RichText.tsx` 统一处理三种输入形态，保证「用户怎么填，预览/导出就怎么显示」：
 
@@ -131,7 +145,7 @@ cd export-service && npm run test:contract
 
 ---
 
-## 6. 编辑器布局
+## 7. 编辑器布局
 
 三栏工作台（`src/pages/Editor.tsx`）：
 
@@ -158,7 +172,7 @@ cd export-service && npm run test:contract
 
 ---
 
-## 7. 全局 CSS 类
+## 8. 全局 CSS 类
 
 `src/styles/components.css` 只放**无法用内联样式表达**的规则（伪元素、hover、媒体查询）：
 
@@ -179,7 +193,7 @@ cd export-service && npm run test:contract
 
 ---
 
-## 8. 组件分层
+## 9. 组件分层
 
 ```
 components/
@@ -206,7 +220,7 @@ components/
 
 ---
 
-## 9. 路由与代码分割
+## 10. 路由与代码分割
 
 `src/App.tsx`：首页与登录页**静态导入**（首屏必需），其余页面 **懒加载**：
 
@@ -220,7 +234,7 @@ const Editor = lazy(() => import('./pages/Editor'));
 
 ---
 
-## 10. 新增页面检查清单
+## 11. 新增页面检查清单
 
 - [ ] 颜色/间距从 `tokens.ts` 取值，无硬编码
 - [ ] 需要登录 → 用 `<AuthGuard>` 包裹
@@ -229,7 +243,7 @@ const Editor = lazy(() => import('./pages/Editor'));
 - [ ] 用 antd 组件时检查 `theme.ts` 是否已定制
 - [ ] 运行 `npm run build`，确认零 TS 错误
 
-## 11. 新增简历模块检查清单
+## 12. 新增简历模块检查清单
 
 - [ ] 在 `types/resume.ts` 的 `SectionType` 中加入类型
 - [ ] 在 `constants/sections.ts` 的 `SECTION_META` 中补充元数据（label/icon/hint/listLike）

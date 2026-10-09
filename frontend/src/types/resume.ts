@@ -76,7 +76,8 @@ export interface ResumeSection {
   sectionType: SectionType;
   sortOrder: number;
   isVisible: boolean;
-  layout?: string;
+  /** 手动栏位：auto 按内容高度平衡；left/right 固定分栏 */
+  layout?: 'auto' | 'left' | 'right' | string;
   data: SectionData;
 }
 

@@ -102,7 +102,7 @@ export default function Login() {
 
         <div style={{ position: 'relative', maxWidth: 420 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 34 }}>
-            <Logo size={34} monochrome />
+            <Logo size={34} onBrandBackground />
             <span style={{ fontSize: 20, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>
               晓龙简历
             </span>

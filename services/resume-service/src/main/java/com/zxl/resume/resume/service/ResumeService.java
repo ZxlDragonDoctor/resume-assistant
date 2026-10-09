@@ -168,7 +168,7 @@ public class ResumeService {
 
     /**
      * 预置可编辑示例简历。
-     * 按模板 category 切换不同行业样例，打开模板即可直接改；无模板时用通用研发样例。
+     * 按模板 category 切换不同行业样例，打开模板即可直接改；无模板时使用中性通用样例。
      * 人名/联系方式均为虚构占位。
      */
     private void seedSampleSections(UUID resumeId, UUID templateId) {
@@ -180,20 +180,20 @@ public class ResumeService {
                 category = null;
             }
         }
-        if (category == null) category = "modern";
-
-        switch (category) {
+        switch (TemplateSampleCategory.select(category)) {
+            case "general":
+                seedGeneralSample(resumeId);
+                break;
             case "business":
-            case "classic":
                 seedBusinessSample(resumeId);
                 break;
-            case "creative":
             case "design":
+                seedDesignSample(resumeId);
+                break;
             case "product":
                 seedProductSample(resumeId);
                 break;
             case "academic":
-            case "education":
                 seedAcademicSample(resumeId);
                 break;
             case "graduate":
@@ -212,6 +212,57 @@ public class ResumeService {
 
     private String findTemplateCategory(UUID templateId) {
         return templateCategoryMapper.findCategoryById(templateId);
+    }
+
+    /** 中性通用示例，避免未知方向被误填成研发岗位。 */
+    private void seedGeneralSample(UUID resumeId) {
+        insertSection(resumeId, "basic", 0, "single-column",
+                "{\"name\":\"林予安\",\"phone\":\"138****0000\",\"email\":\"linyuan@example.com\","
+                        + "\"city\":\"杭州\",\"jobTitle\":\"项目协调专员\",\"links\":[],\"_config\":{}}");
+        insertSection(resumeId, "summary", 1, "single-column",
+                "{\"content\":\"4 年项目与运营协作经验，擅长梳理目标、跟进节点并推动跨团队协作。"
+                        + "能够结合数据复盘流程效果，持续改善交付质量与服务体验。\",\"_config\":{}}");
+        insertSection(resumeId, "experience", 2, "single-column",
+                "{\"items\":[{\"company\":\"某综合服务企业\",\"position\":\"项目协调专员\","
+                        + "\"startDate\":\"2022-04\",\"endDate\":\"\",\"current\":true,\"bullets\":["
+                        + "\"统筹 6 个跨部门项目的计划与进度，按期交付率提升至 96%\","
+                        + "\"梳理客户反馈与内部流程，推动 8 项改进措施落地\"]}],\"_config\":{}}");
+        insertSection(resumeId, "projects", 3, "single-column",
+                "{\"items\":[{\"name\":\"客户服务流程优化\",\"role\":\"项目协调\","
+                        + "\"startDate\":\"2023-02\",\"endDate\":\"2023-08\",\"current\":false,\"bullets\":["
+                        + "\"整合 4 个渠道的服务数据，定位高频问题并形成改进清单\","
+                        + "\"优化任务分派与回访流程，平均处理时长缩短 28%\"]}],\"_config\":{}}");
+        insertSection(resumeId, "education", 4, "single-column",
+                "{\"items\":[{\"school\":\"某大学\",\"degree\":\"本科\",\"major\":\"行政管理\","
+                        + "\"startDate\":\"2017-09\",\"endDate\":\"2021-06\",\"current\":false}],\"_config\":{}}");
+        insertSection(resumeId, "skills", 5, "single-column",
+                "{\"items\":[\"项目协调\",\"流程优化\",\"数据整理\",\"跨部门沟通\",\"文档管理\"],\"_config\":{}}");
+    }
+
+    /** 视觉与界面设计岗位示例。 */
+    private void seedDesignSample(UUID resumeId) {
+        insertSection(resumeId, "basic", 0, "single-column",
+                "{\"name\":\"周予安\",\"phone\":\"137****2222\",\"email\":\"zhouyuan@example.com\","
+                        + "\"city\":\"上海\",\"jobTitle\":\"视觉设计师\",\"links\":[],\"_config\":{}}");
+        insertSection(resumeId, "summary", 1, "single-column",
+                "{\"content\":\"5 年品牌与界面设计经验，擅长从用户场景和品牌定位出发建立视觉方案。"
+                        + "能够独立完成设计交付，并与产品、研发团队协作推动方案落地。\",\"_config\":{}}");
+        insertSection(resumeId, "projects", 2, "single-column",
+                "{\"items\":[{\"name\":\"移动端会员体验升级\",\"role\":\"视觉设计负责人\","
+                        + "\"tech\":\"用户调研 · 交互原型 · 视觉规范\",\"startDate\":\"2023-01\","
+                        + "\"endDate\":\"2023-07\",\"current\":false,\"bullets\":["
+                        + "\"建立覆盖 30 余个页面的视觉规范，减少重复沟通与返工\","
+                        + "\"优化关键任务流程，会员功能转化率提升 16%\"]}],\"_config\":{}}");
+        insertSection(resumeId, "experience", 3, "single-column",
+                "{\"items\":[{\"company\":\"某数字创意工作室\",\"position\":\"视觉设计师\","
+                        + "\"startDate\":\"2020-06\",\"endDate\":\"\",\"current\":true,\"bullets\":["
+                        + "\"负责品牌视觉、活动页面与产品界面设计，累计交付 40 余项\","
+                        + "\"沉淀常用组件与交付检查清单，团队设计协作效率提升 25%\"]}],\"_config\":{}}");
+        insertSection(resumeId, "education", 4, "single-column",
+                "{\"items\":[{\"school\":\"某艺术学院\",\"degree\":\"本科\",\"major\":\"视觉传达设计\","
+                        + "\"startDate\":\"2016-09\",\"endDate\":\"2020-06\",\"current\":false}],\"_config\":{}}");
+        insertSection(resumeId, "skills", 5, "single-column",
+                "{\"items\":[\"品牌视觉\",\"界面设计\",\"设计规范\",\"原型协作\",\"动效基础\"],\"_config\":{}}");
     }
 
     /** 研发 / 通用 */

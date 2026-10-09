@@ -31,8 +31,8 @@ import {
 } from './EditorControls';
 import SectionIcon from '../common/SectionIcon';
 import { SECTION_META } from '../../constants/sections';
-import type { LayoutConfig, ResumeLayout, SectionConfig, SectionType } from '../../types/resume';
-import { fontOptions, neutral, radius, resumePalette, textPalette, transition } from '../../styles/tokens';
+import type { LayoutConfig, ResumeLayout, ResumeSection, SectionConfig, SectionType } from '../../types/resume';
+import { brand, fontOptions, neutral, radius, resumePalette, textPalette, transition } from '../../styles/tokens';
 import { DEFAULT_LAYOUT } from '../viewer/ResumePreviewEngine';
 
 // ==================================================================
@@ -526,6 +526,58 @@ export function GlobalStylePanel({
         </Tooltip>
       </PanelSection>
     </div>
+  );
+}
+
+export function SectionPlacementPanel({
+  section,
+  mode,
+  onChange,
+}: {
+  section: ResumeSection;
+  mode: ResumeLayout;
+  onChange: (placement: 'auto' | 'left' | 'right') => void;
+}) {
+  const current = section.layout === 'left' || section.layout === 'right' ? section.layout : 'auto';
+  const options = mode === 'sidebar'
+    ? [
+        { value: 'auto', label: '自动' },
+        { value: 'left', label: '侧边栏' },
+        { value: 'right', label: '主内容区' },
+      ] as const
+    : [
+        { value: 'auto', label: '自动平衡' },
+        { value: 'left', label: '左栏' },
+        { value: 'right', label: '右栏' },
+      ] as const;
+
+  return (
+    <PanelSection title="模块栏位" subtitle="自动会按内容量平衡栏高；也可固定到指定栏位。">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+        {options.map((option) => {
+          const active = current === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(option.value)}
+              style={{
+                padding: '7px 4px',
+                border: `1px solid ${active ? brand.primary : neutral[200]}`,
+                borderRadius: radius.md,
+                background: active ? `${brand.primary}0A` : '#fff',
+                color: active ? brand.primary : neutral[600],
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </PanelSection>
   );
 }
 

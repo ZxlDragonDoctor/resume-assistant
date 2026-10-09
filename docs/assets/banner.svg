@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" fill="none" role="img" aria-label="晓龙简历 · 在线简历工作台">
   <title>晓龙简历 · 在线简历工作台</title>
-  <desc>项目主视觉：品牌渐变底 + 泡泡龙标 + 项目名与一句话定位</desc>
+  <desc>晓龙简历项目海报：求职方向模板、模块手动分栏、双栏多页续排与 PDF 导出</desc>
 
   <defs>
     <!-- 背景渐变：与 tokens.ts 的 brand.gradient 同源 (#4F46E5 → #7C3AED) -->
@@ -88,23 +88,21 @@
         font-size="25" font-weight="600" fill="#FFFFFF" letter-spacing="0.5">免费 · 开源的在线简历工作台</text>
 
   <text x="88" y="308" font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',-apple-system,sans-serif"
-        font-size="17" font-weight="400" fill="#DDD6FE">模块化编辑 · 所见即所得导出 · AI 只出建议不代笔</text>
+        font-size="17" font-weight="400" fill="#DDD6FE">按求职方向选模板 · 模块可指定左右栏 · 双栏内容自动续页</text>
 
-  <!-- 底部技术标签 -->
-  <g font-family="'SF Mono','JetBrains Mono',Consolas,monospace" font-size="14" font-weight="500">
+  <!-- 底部产品能力标签 -->
+  <g font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif" font-size="14" font-weight="500">
     <g fill="#FFFFFF" fill-opacity="0.14" stroke="#FFFFFF" stroke-opacity="0.28">
-      <rect x="88"  y="340" width="118" height="34" rx="17"/>
-      <rect x="216" y="340" width="112" height="34" rx="17"/>
-      <rect x="338" y="340" width="132" height="34" rx="17"/>
-      <rect x="480" y="340" width="104" height="34" rx="17"/>
-      <rect x="594" y="340" width="106" height="34" rx="17"/>
+      <rect x="88"  y="340" width="140" height="34" rx="17"/>
+      <rect x="238" y="340" width="118" height="34" rx="17"/>
+      <rect x="366" y="340" width="132" height="34" rx="17"/>
+      <rect x="508" y="340" width="118" height="34" rx="17"/>
     </g>
     <g fill="#EDE9FE">
-      <text x="110" y="362">React 18</text>
-      <text x="238" y="362">Spring Boot</text>
-      <text x="360" y="362">PostgreSQL</text>
-      <text x="502" y="362">TipTap 2</text>
-      <text x="616" y="362">Puppeteer</text>
+      <text x="105" y="362">8 类求职方向</text>
+      <text x="256" y="362">模块手动分栏</text>
+      <text x="385" y="362">双栏多页续排</text>
+      <text x="530" y="362">PDF 导出</text>
     </g>
   </g>
 

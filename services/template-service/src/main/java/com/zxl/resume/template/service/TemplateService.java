@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +36,8 @@ public class TemplateService {
         }
         UUID id = UUID.randomUUID();
         String normalizedDescription = (description == null || description.isBlank()) ? "我的自定义模板" : description.trim();
-        String normalizedCategory = (category == null || category.isBlank()) ? "custom" : category.trim();
+        String normalizedCategory = (category == null || category.isBlank())
+                ? "custom" : TemplateCategoryCatalog.normalize(category);
         String[] normalizedTags = tags == null ? new String[0] : tags.stream()
                 .filter(StringUtils::hasText)
                 .map(String::trim)
@@ -84,12 +84,24 @@ public class TemplateService {
                 .ne(Template::getIsActive, false)
                 .orderByAsc(Template::getSortOrder);
         if (StringUtils.hasText(category) && !"all".equalsIgnoreCase(category)) {
-            q.eq(Template::getCategory, category);
+            String normalizedCategory = TemplateCategoryCatalog.normalize(category);
+            if ("other".equals(normalizedCategory)) {
+                List<String> knownCategories = TemplateCategoryCatalog.order().stream()
+                        .filter(key -> !"other".equals(key))
+                        .flatMap(key -> TemplateCategoryCatalog.aliases(key).stream())
+                        .distinct()
+                        .toList();
+                q.and(w -> w.isNull(Template::getCategory).or().notIn(Template::getCategory, knownCategories));
+            } else {
+                q.in(Template::getCategory, TemplateCategoryCatalog.aliases(normalizedCategory));
+            }
         }
         if (StringUtils.hasText(keyword)) {
             q.and(w -> w.like(Template::getName, keyword).or().like(Template::getDescription, keyword));
         }
-        return templateMapper.selectTemplateList(q);
+        List<Template> templates = templateMapper.selectTemplateList(q);
+        templates.forEach(template -> template.setCategory(TemplateCategoryCatalog.normalize(template.getCategory())));
+        return templates;
     }
 
     public Template getById(UUID id) {
@@ -97,32 +109,21 @@ public class TemplateService {
         if (template == null) {
             throw new IllegalArgumentException("模板不存在");
         }
+        template.setCategory(TemplateCategoryCatalog.normalize(template.getCategory()));
         return template;
     }
 
     /** 分类列表 + 每个分类的模板数量，用于模板库的筛选侧栏 */
     public List<Map<String, Object>> categories() {
         List<Template> all = list(null, null);
-        Map<String, Long> counts = all.stream()
-                .collect(Collectors.groupingBy(
-                        t -> t.getCategory() == null ? "other" : t.getCategory(),
-                        LinkedHashMap::new, Collectors.counting()));
-        return counts.entrySet().stream().map(e -> {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        all.forEach(template -> counts.merge(TemplateCategoryCatalog.normalize(template.getCategory()), 1L, Long::sum));
+        return TemplateCategoryCatalog.order().stream().map(key -> {
             Map<String, Object> m = new LinkedHashMap<>();
-            m.put("key", e.getKey());
-            m.put("label", CATEGORY_LABELS.getOrDefault(e.getKey(), e.getKey()));
-            m.put("count", e.getValue());
+            m.put("key", key);
+            m.put("label", TemplateCategoryCatalog.label(key));
+            m.put("count", counts.getOrDefault(key, 0L));
             return m;
-        }).collect(Collectors.toList());
+        }).toList();
     }
-
-    private static final Map<String, String> CATEGORY_LABELS = Map.of(
-            "modern", "简约现代",
-            "classic", "经典稳重",
-            "creative", "创意设计",
-            "technical", "技术研发",
-            "academic", "学术科研",
-            "business", "商务金融",
-            "other", "其他"
-    );
 }

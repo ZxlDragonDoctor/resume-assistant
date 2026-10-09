@@ -141,51 +141,51 @@ CREATE TRIGGER trg_sections_touch BEFORE UPDATE ON resume_sections
 -- Seed templates
 -- ------------------------------------------------------------
 INSERT INTO templates (name, description, category, tags, sort_order, config) VALUES
-  ('简约现代', '清晰简洁的单栏布局，留白充足，适合大多数行业与岗位', 'modern',
-   ARRAY['单栏','通用','极简'], 1,
+  ('通用简历', '清晰简洁的单栏布局，留白充足，适合多数行业与岗位', 'general',
+   ARRAY['单栏','通用','简洁'], 1,
    '{"layout":"single-column","fonts":["Inter","system-ui"],"primaryColor":"#2563eb","accentColor":"#eef2ff","headerStyle":"underline","sections":["basic","summary","experience","projects","education","skills","awards"]}'),
 
-  ('经典稳重', '传统双栏布局，左侧信息栏右侧主内容，稳重专业', 'classic',
-   ARRAY['双栏','国企','传统'], 2,
+  ('商务经典', '传统双栏布局，左侧信息栏、右侧主内容，适合商务与职能岗位', 'business',
+   ARRAY['双栏','商务','稳重'], 2,
    '{"layout":"two-column","fonts":["Times New Roman","serif"],"primaryColor":"#1e293b","accentColor":"#f1f5f9","headerStyle":"bar","sections":["basic","summary","experience","education","skills","awards"]}'),
 
-  ('创意新颖', '带色彩点缀的现代版式，适合设计、产品与创意岗位', 'creative',
+  ('创意设计', '以色彩和层次突出个人风格，适合视觉与创意岗位', 'design',
    ARRAY['色彩','设计','创意'], 3,
    '{"layout":"single-column","fonts":["Poppins","system-ui"],"primaryColor":"#7c3aed","accentColor":"#f3e8ff","headerStyle":"pill","sections":["basic","summary","skills","projects","experience","education"]}'),
 
-  ('技术极客', '为研发岗位优化，突出技术栈与项目成果', 'technical',
+  ('技术研发', '为研发岗位优化，重点呈现技术能力与项目成果', 'technical',
    ARRAY['研发','技术','项目'], 4,
    '{"layout":"two-column","fonts":["JetBrains Mono","Inter","system-ui"],"primaryColor":"#0f766e","accentColor":"#ecfdf5","headerStyle":"bar","sections":["basic","skills","projects","experience","education","awards"]}'),
 
-  ('学术简约', '适合科研、教学与升学申请，突出教育背景与发表', 'academic',
-   ARRAY['学术','科研','升学'], 5,
+  ('学术科研', '突出教育背景、研究经历与学术成果，适合科研和教学岗位', 'academic',
+   ARRAY['学术','科研','教育'], 5,
    '{"layout":"single-column","fonts":["Georgia","serif"],"primaryColor":"#334155","accentColor":"#f8fafc","headerStyle":"underline","sections":["basic","education","summary","projects","experience","awards"]}'),
 
-  ('商务精英', '深色标题栏 + 紧凑排版，适合金融、咨询、管理岗位', 'business',
+  ('商务管理', '深色标题栏与紧凑排版，适合金融、咨询与管理岗位', 'business',
    ARRAY['商务','金融','管理'], 6,
    '{"layout":"single-column","fonts":["Helvetica","Arial","system-ui"],"primaryColor":"#0f172a","accentColor":"#e2e8f0","headerStyle":"solid","sections":["basic","summary","experience","education","skills","awards"]}'),
 
-  ('产品经理', '突出产品成果与业务指标，适合互联网产品岗位', 'product',
-   ARRAY['产品','互联网','指标'], 7,
+  ('产品运营', '突出产品成果、运营策略与业务指标，适合互联网产品岗位', 'product',
+   ARRAY['产品','运营','指标'], 7,
    '{"layout":"single-column","fonts":["Inter","system-ui"],"primaryColor":"#2563eb","accentColor":"#eff6ff","headerStyle":"underline","sections":["basic","summary","projects","experience","education","skills"]}'),
 
-  ('UI 设计', '留白与层次感更强，适合视觉/交互设计岗位', 'design',
+  ('界面设计', '留白与层次感更强，适合界面、交互与视觉设计岗位', 'design',
    ARRAY['设计','视觉','作品'], 8,
    '{"layout":"single-column","fonts":["Poppins","system-ui"],"primaryColor":"#db2777","accentColor":"#fdf2f8","headerStyle":"pill","sections":["basic","summary","projects","skills","experience","education"]}'),
 
-  ('应届校招', '面向应届生，突出实习、项目与校园经历', 'graduate',
+  ('应届校招', '面向应届毕业生，突出实习、项目与校园经历', 'graduate',
    ARRAY['校招','应届','实习'], 9,
    '{"layout":"single-column","fonts":["Inter","system-ui"],"primaryColor":"#0284c7","accentColor":"#e0f2fe","headerStyle":"underline","sections":["basic","education","projects","experience","skills","awards"]}'),
 
-  ('数据分析', '强调指标、工具与业务洞察，适合数据/BI 岗位', 'data',
-   ARRAY['数据','分析','BI'], 10,
+  ('数据分析', '强调分析方法、工具与业务洞察，适合数据分析岗位', 'technical',
+   ARRAY['数据','分析','指标'], 10,
    '{"layout":"two-column","fonts":["Inter","system-ui"],"primaryColor":"#0d9488","accentColor":"#ccfbf1","headerStyle":"bar","sections":["basic","summary","skills","projects","experience","education"]}'),
 
-  ('教育培训', '适合教师、教培与教育行业求职', 'education',
-   ARRAY['教育','教师','教培'], 11,
+  ('教育教学', '适合教师、教育培训与教学管理岗位', 'academic',
+   ARRAY['教育','教师','教学'], 11,
    '{"layout":"single-column","fonts":["Georgia","serif"],"primaryColor":"#b45309","accentColor":"#fef3c7","headerStyle":"underline","sections":["basic","summary","experience","education","skills","certificates"]}'),
 
-  ('医疗健康', '适合医护、医药与大健康行业，突出资质与经历', 'medical',
+  ('医疗健康', '适合医护、医药与健康行业，突出专业资质与工作经历', 'medical',
    ARRAY['医疗','医护','资质'], 12,
    '{"layout":"single-column","fonts":["Helvetica","Arial","system-ui"],"primaryColor":"#0369a1","accentColor":"#e0f2fe","headerStyle":"solid","sections":["basic","summary","certificates","experience","education","skills"]}')
   ON CONFLICT DO NOTHING;

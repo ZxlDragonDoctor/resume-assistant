@@ -38,6 +38,14 @@
   transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 触屏设备没有 hover，操作入口必须始终可见。 */
+@media (hover: none), (pointer: coarse) {
+  .template-card-actions {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---------------- 简历列表卡片 ---------------- */
 .resume-card {
   transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);

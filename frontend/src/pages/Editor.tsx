@@ -40,7 +40,7 @@ import {
 
 import SectionSidebar from '../components/editor/SectionSidebar';
 import SectionContentEditor from '../components/editor/SectionContentEditor';
-import { GlobalStylePanel, SectionStylePanel } from '../components/editor/StylePanel';
+import { GlobalStylePanel, SectionPlacementPanel, SectionStylePanel } from '../components/editor/StylePanel';
 import AiPanel, { AiOptimizeModal } from '../components/editor/AiPanel';
 import VersionPanel from '../components/editor/VersionPanel';
 import PreviewPanel from '../components/editor/PreviewPanel';
@@ -330,6 +330,18 @@ export default function Editor() {
     [selectedSection, updateSectionData, persistSection]
   );
 
+  const handleSectionLayoutChange = useCallback(
+    (sectionId: string, sectionLayout: 'auto' | 'left' | 'right') => {
+      patchSectionLocal(sectionId, (section) => ({ ...section, layout: sectionLayout }));
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = null;
+        persistSection(sectionId).catch(() => undefined);
+      }, 250);
+    },
+    [patchSectionLocal, persistSection]
+  );
+
   const handleSectionStyleReset = useCallback(() => {
     if (!selectedSection) return;
     const next = clearConfigKeys(selectedSection.data, [
@@ -477,6 +489,29 @@ export default function Editor() {
   // 渲染
   // ---------------------------------------------------------------
 
+  /** 把当前简历的版式/主题保存为自定义模板 */
+  const handleSaveAsTemplate = useCallback(async () => {
+    const name = window.prompt('模板名称', `${current?.title || '我的简历'} 模板`);
+    if (!name || !name.trim()) return;
+    try {
+      await templateApi.create({
+        name: name.trim(),
+        description: '由当前简历样式保存',
+        category: 'custom',
+        tags: ['自定义'],
+        config: JSON.stringify({
+          layout: resolvedLayout.layout || 'single-column',
+          headerStyle: resolvedLayout.headerStyle || 'underline',
+          primaryColor: themeColor,
+          fonts: [resolvedLayout.globalFontFamily || 'system-ui'],
+        }),
+      });
+      message.success('已保存为模板，可在模板页使用');
+    } catch {
+      message.error('保存模板失败');
+    }
+  }, [current?.title, resolvedLayout, themeColor]);
+
   if (notFound) {
     return (
       <Result
@@ -512,29 +547,6 @@ export default function Editor() {
     );
   }
 
-
-  /** 把当前简历的版式/主题保存为自定义模板 */
-  const handleSaveAsTemplate = useCallback(async () => {
-    const name = window.prompt('模板名称', `${current?.title || '我的简历'} 模板`);
-    if (!name || !name.trim()) return;
-    try {
-      await templateApi.create({
-        name: name.trim(),
-        description: '由当前简历样式保存',
-        category: 'custom',
-        tags: ['自定义'],
-        config: JSON.stringify({
-          layout: resolvedLayout.layout || 'single-column',
-          headerStyle: resolvedLayout.headerStyle || 'underline',
-          primaryColor: themeColor,
-          fonts: [resolvedLayout.globalFontFamily || 'system-ui'],
-        }),
-      });
-      message.success('已保存为模板，可在模板页使用');
-    } catch {
-      message.error('保存模板失败');
-    }
-  }, [current?.title, resolvedLayout, themeColor]);
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -1060,6 +1072,14 @@ export default function Editor() {
                     globalHeaderStyle={globalHeaderStyle}
                     onChange={handleSectionStyleChange}
                     onReset={handleSectionStyleReset}
+                  />
+                )}
+
+                {selectedSection && resolvedLayout.layout !== 'single-column' && (
+                  <SectionPlacementPanel
+                    section={selectedSection}
+                    mode={resolvedLayout.layout || 'single-column'}
+                    onChange={(placement) => handleSectionLayoutChange(selectedSection.id, placement)}
                   />
                 )}
 

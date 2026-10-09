@@ -11,7 +11,7 @@
  *
  * 与 export-service/src/renderer.js 的规则保持同步。
  */
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   normalizeSectionData,
   type LayoutConfig,
@@ -84,29 +84,127 @@ const SIDEBAR_TYPES = new Set(['skills', 'awards', 'certificates', 'custom']);
 /**
  * 按版式把正文模块分成主栏 / 副栏。
  * - single-column：全部主栏
- * - two-column：前半主栏、后半副栏（保证左右视觉平衡）
+ * - two-column：明确指定 left/right 的模块固定分栏，其余按内容高度平衡
  * - sidebar：技能/奖项/证书进侧栏，其余进主栏
  */
 export function splitSectionsByLayout<
-  T extends { sectionType: string; sortOrder: number }
+  T extends { sectionType: string; sortOrder: number; layout?: string; data?: unknown }
 >(sections: T[], mode: ResumeLayoutMode): { main: T[]; side: T[] } {
   const sorted = [...sections].sort((a, b) => a.sortOrder - b.sortOrder);
   if (mode === 'sidebar') {
     const main: T[] = [];
     const side: T[] = [];
     for (const s of sorted) {
-      if (SIDEBAR_TYPES.has(s.sectionType)) side.push(s);
+      if (s.layout === 'left' || (s.layout !== 'right' && SIDEBAR_TYPES.has(s.sectionType))) side.push(s);
       else main.push(s);
     }
     return { main, side };
   }
   if (mode === 'two-column') {
-    // 后 40% 的模块进副栏（至少 1 个，至多一半）
-    const n = sorted.length;
-    const sideCount = Math.max(1, Math.min(Math.floor(n * 0.4), Math.ceil(n / 2)));
-    return { main: sorted.slice(0, n - sideCount), side: sorted.slice(n - sideCount) };
+    return { main: sorted, side: [] };
   }
   return { main: sorted, side: [] };
+}
+
+export function paginateSectionsByHeight<
+  T extends { layout?: string }
+>(
+  sections: T[],
+  options: {
+    firstPageCapacity: number;
+    columnCapacity: number;
+    heightFor: (section: T, column: 'main' | 'side') => number;
+  }
+): { main: T[]; side: T[] }[] {
+  const { firstPageCapacity, columnCapacity, heightFor } = options;
+  const pages: { main: T[]; side: T[]; mainHeight: number; sideHeight: number }[] = [];
+  const ensurePage = (index: number) => {
+    while (pages.length <= index) pages.push({ main: [], side: [], mainHeight: 0, sideHeight: 0 });
+    return pages[index];
+  };
+  const fits = (pageIndex: number, column: 'main' | 'side', height: number) => {
+    const page = ensurePage(pageIndex);
+    const used = column === 'main' ? page.mainHeight : page.sideHeight;
+    const capacity = pageIndex === 0 ? firstPageCapacity : columnCapacity;
+    if (used === 0) return height <= capacity || (pageIndex > 0 && height > columnCapacity + 48);
+    return used + height <= capacity;
+  };
+  const place = (pageIndex: number, column: 'main' | 'side', section: T, height: number) => {
+    const page = ensurePage(pageIndex);
+    page[column].push(section);
+    if (column === 'main') page.mainHeight += height;
+    else page.sideHeight += height;
+  };
+
+  let flowPage = 0;
+  let flowColumn: 'main' | 'side' = 'main';
+  for (const section of sections) {
+    if (section.layout === 'left' || section.layout === 'right') {
+      const column = section.layout === 'left' ? 'main' : 'side';
+      const height = Math.max(1, Number(heightFor(section, column)) || 1);
+      let pageIndex = flowPage;
+      while (!fits(pageIndex, column, height)) pageIndex += 1;
+      place(pageIndex, column, section, height);
+      continue;
+    }
+    let height = Math.max(1, Number(heightFor(section, flowColumn)) || 1);
+    while (!fits(flowPage, flowColumn, height)) {
+      if (flowColumn === 'main') flowColumn = 'side';
+      else {
+        flowColumn = 'main';
+        flowPage += 1;
+      }
+      height = Math.max(1, Number(heightFor(section, flowColumn)) || 1);
+    }
+    place(flowPage, flowColumn, section, height);
+  }
+  return pages.map(({ main, side }) => ({ main, side }));
+}
+
+function estimateSectionHeight(
+  section: ResumeSection,
+  options: { fontSize: number; lineHeight: number; moduleMargin: number; columnWidth: number }
+): number {
+  const data = normalizeSectionData(section.data);
+  const config = (data._config || {}) as SectionConfig;
+  const contentSize = Number(config.contentFontSize || options.fontSize);
+  const linePx = contentSize * Number(config.lineSpacing || options.lineHeight);
+  const charsPerLine = Math.max(12, Math.floor(options.columnWidth / Math.max(8, contentSize * 0.9)));
+  const lines = (value: unknown) => {
+    const text = typeof value === 'string' ? value.replace(/<[^>]*>/g, ' ') : '';
+    return text ? Math.max(1, Math.ceil(text.length / charsPerLine)) : 0;
+  };
+  const items = Array.isArray(data) ? data : Array.isArray(data.items) ? data.items : [];
+  let contentHeight = 0;
+  if (section.sectionType === 'skills') {
+    const text = items.map((item) => typeof item === 'string' ? item : JSON.stringify(item)).join(' ');
+    contentHeight = Math.max(linePx * 1.8, Math.ceil(text.length / Math.max(10, Math.floor(options.columnWidth / (contentSize * 4.5)))) * contentSize * 2.2);
+  } else if (items.length) {
+    contentHeight = items.reduce((sum, item) => {
+      if (typeof item === 'string') return sum + lines(item) * linePx + 5;
+      if (!item || typeof item !== 'object') return sum + linePx;
+      const record = item as Record<string, unknown>;
+      const intro = ['title', 'company', 'school', 'name', 'subtitle', 'position', 'degree', 'major', 'date', 'startDate', 'endDate', 'tech']
+        .map((key) => record[key]).filter((value): value is string => typeof value === 'string').join(' ');
+      const body = [record.description, record.content, record.bullets]
+        .flatMap((value) => Array.isArray(value) ? value : [value])
+        .filter((value): value is string => typeof value === 'string')
+        .reduce((count, value) => count + lines(value), 0);
+      return sum + Math.max(22, lines(intro) * linePx) + body * linePx + 12;
+    }, 0);
+  } else {
+    contentHeight = lines(data.content) * linePx;
+  }
+  const titleHeight = config.hideTitle ? 0 : Number(config.titleFontSize || options.fontSize + 2) * 1.4 + 12;
+  return Math.max(linePx, titleHeight + contentHeight + options.moduleMargin);
+}
+
+function estimateHeaderHeight(basicSection: ResumeSection | undefined, resume: ResumeDetail, fontSize: number): number {
+  const data = basicSection ? normalizeSectionData(basicSection.data) : {};
+  const contacts = ['phone', 'email', 'city', 'website'].filter((key) => data[key]).length
+    + (Array.isArray(data.links) ? data.links.length : 0);
+  const nameSize = Number((data._config as SectionConfig | undefined)?.titleFontSize || fontSize + 8) + 12;
+  return Math.ceil(nameSize * 1.25 + (data.jobTitle || resume.targetJob ? fontSize + 13 : 0) + (contacts ? fontSize * 1.7 + 8 : 0) + 20);
 }
 
 function fontStack(name?: string): string {
@@ -493,7 +591,7 @@ function ResumeHeader({
   const isCenter = ctx.align === 'center';
 
   return (
-    <header style={{ textAlign: ctx.align, marginBottom: 20 }}>
+    <header className="resume-header" style={{ textAlign: ctx.align, marginBottom: 20 }}>
       <div
         style={{
           fontSize: ctx.titleSize + 12,
@@ -560,6 +658,9 @@ export default function ResumePreviewEngine({
   templateConfig,
   scale = 1,
 }: ResumePreviewProps) {
+  const documentRef = useRef<HTMLDivElement>(null);
+  const sectionNodesRef = useRef(new Map<string, HTMLElement>());
+  const [measuredPlacements, setMeasuredPlacements] = useState<{ main: string[]; side: string[] }[] | null>(null);
   const layout = parseLayout(resume.layoutConfig);
 
   const themeColor =
@@ -578,7 +679,7 @@ export default function ResumePreviewEngine({
   const bodySections = sections.filter((s) => s.sectionType !== 'basic');
 
   const layoutMode: ResumeLayoutMode =
-    (templateConfig?.layout as ResumeLayoutMode) || (layout.layout as ResumeLayoutMode) || 'single-column';
+    (layout.layout as ResumeLayoutMode) || (templateConfig?.layout as ResumeLayoutMode) || 'single-column';
   const { main: bodyMain, side: bodySide } = splitSectionsByLayout(bodySections, layoutMode);
 
   const globalCtx: Ctx = {
@@ -592,103 +693,252 @@ export default function ResumePreviewEngine({
 
   const basicData = basicSection ? normalizeSectionData(basicSection.data) : {};
   const basicCfg = (basicData._config || {}) as SectionConfig;
+  const pageHeight = 1123;
+  const pageCapacity = Math.max(120, pageHeight - (layout.pageTopMargin ?? 44) - (layout.pageBottomMargin ?? 44));
+  const columnGap = Math.round((layout.moduleMargin ?? 20) * 0.9) + 10;
+  const contentWidth = 794 - (layout.pageLeftMargin ?? 52) - (layout.pageRightMargin ?? 52);
+  const availableColumnWidth = contentWidth - columnGap;
+  const mainColumnWidth = availableColumnWidth * 1.15 / 2;
+  const sideColumnWidth = availableColumnWidth * 0.85 / 2 - 15;
+  const estimatedPages = layoutMode === 'two-column'
+    ? paginateSectionsByHeight(bodySections, {
+        firstPageCapacity: Math.max(120, pageCapacity - estimateHeaderHeight(basicSection, resume, baseFontSize)),
+        columnCapacity: pageCapacity,
+        heightFor: (section, column) => estimateSectionHeight(section, {
+          fontSize: baseFontSize,
+          lineHeight: baseLineHeight,
+          moduleMargin: layout.moduleMargin ?? 20,
+          columnWidth: column === 'side' ? sideColumnWidth : mainColumnWidth,
+        }),
+      })
+    : [{ main: bodyMain, side: bodySide }];
+  useLayoutEffect(() => {
+    if (layoutMode !== 'two-column') {
+      setMeasuredPlacements(null);
+      return;
+    }
+
+    const root = documentRef.current;
+    const firstPaper = root?.querySelector<HTMLElement>('.resume-paper');
+    const grid = firstPaper?.querySelector<HTMLElement>('[data-resume-columns="two-column"]');
+    const mainColumn = grid?.children.item(0) as HTMLElement | null;
+    const sideColumn = grid?.children.item(1) as HTMLElement | null;
+    if (!root || !firstPaper || !mainColumn || !sideColumn) return;
+    if (bodySections.some((section) => !sectionNodesRef.current.has(section.id))) return;
+
+    const sideStyle = getComputedStyle(sideColumn);
+    const mainWidth = mainColumn.clientWidth;
+    const sideWidth = sideColumn.clientWidth
+      - parseFloat(sideStyle.paddingLeft || '0')
+      - parseFloat(sideStyle.paddingRight || '0')
+      - parseFloat(sideStyle.borderLeftWidth || '0')
+      - parseFloat(sideStyle.borderRightWidth || '0');
+    const rootStyle = getComputedStyle(root);
+    const probe = document.createElement('div');
+    Object.assign(probe.style, {
+      position: 'fixed',
+      left: '-100000px',
+      top: '0',
+      width: '794px',
+      padding: '0',
+      margin: '0',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+      fontFamily: rootStyle.fontFamily,
+      fontSize: rootStyle.fontSize,
+      fontWeight: rootStyle.fontWeight,
+      lineHeight: rootStyle.lineHeight,
+      color: rootStyle.color,
+    });
+    document.body.appendChild(probe);
+
+    const measure = (section: ResumeSection, width: number) => {
+      const source = sectionNodesRef.current.get(section.id)!;
+      const clone = source.cloneNode(true) as HTMLElement;
+      clone.style.width = `${width}px`;
+      probe.appendChild(clone);
+      const style = getComputedStyle(clone);
+      const height = clone.getBoundingClientRect().height
+        + parseFloat(style.marginTop || '0')
+        + parseFloat(style.marginBottom || '0');
+      clone.remove();
+      return height;
+    };
+
+    const measured = bodySections.map((section) => ({
+      section,
+      mainHeight: measure(section, mainWidth),
+      sideHeight: measure(section, sideWidth),
+    }));
+    probe.remove();
+
+    const header = firstPaper.querySelector<HTMLElement>('.resume-header');
+    const headerHeight = header
+      ? header.offsetHeight + parseFloat(getComputedStyle(header).marginBottom || '0')
+      : 0;
+    const exactCapacity = Math.max(1, 1122.52 - (layout.pageTopMargin ?? 44) - (layout.pageBottomMargin ?? 44) - 8);
+    const heightsById = new Map(measured.map((item) => [item.section.id, item]));
+    const exactPages = paginateSectionsByHeight(
+      bodySections,
+      {
+        firstPageCapacity: Math.max(1, exactCapacity - headerHeight),
+        columnCapacity: exactCapacity,
+        heightFor: (section, column) => {
+          const item = heightsById.get(section.id);
+          return column === 'side' ? item?.sideHeight || 1 : item?.mainHeight || 1;
+        },
+      },
+    ).map((page) => ({
+      main: page.main.map((section) => section.id),
+      side: page.side.map((section) => section.id),
+    }));
+    setMeasuredPlacements((current) => JSON.stringify(current) === JSON.stringify(exactPages) ? current : exactPages);
+  }, [
+    resume.sections,
+    resume.title,
+    resume.targetJob,
+    resume.targetCompany,
+    templateConfig?.headerStyle,
+    layoutMode,
+    layout.pageTopMargin,
+    layout.pageBottomMargin,
+    layout.pageLeftMargin,
+    layout.pageRightMargin,
+    layout.globalFontFamily,
+    layout.moduleMargin,
+    layout.titleTopPadding,
+    layout.titleBottomMargin,
+    baseFontSize,
+    baseLineHeight,
+  ]);
+
+  const sectionsById = new Map(bodySections.map((section) => [section.id, section]));
+  const measuredPages = measuredPlacements?.map((page) => ({
+    main: page.main.flatMap((id) => sectionsById.has(id) ? [sectionsById.get(id)!] : []),
+    side: page.side.flatMap((id) => sectionsById.has(id) ? [sectionsById.get(id)!] : []),
+  }));
+  const measuredPagesMatch = measuredPages?.reduce((count, page) => count + page.main.length + page.side.length, 0)
+    === bodySections.length;
+  const bodyPages = layoutMode === 'two-column' && measuredPagesMatch ? measuredPages : estimatedPages;
+  if (!bodyPages.length) bodyPages.push({ main: [], side: [] });
+
+  const bindSectionNode = (sectionId: string) => (node: HTMLElement | null) => {
+    if (node) sectionNodesRef.current.set(sectionId, node);
+    else sectionNodesRef.current.delete(sectionId);
+  };
+
+  const renderSection = (section: ResumeSection) => {
+    const data = normalizeSectionData(section.data);
+    const cfg = (data._config || {}) as SectionConfig;
+    const sectionCtx: Ctx = {
+      titleSize: cfg.titleFontSize ?? (cfg.contentFontSize ? cfg.contentFontSize + 2 : baseFontSize + 2),
+      contentSize: cfg.contentFontSize ?? baseFontSize,
+      titleColor: cfg.titleColor ?? themeColor,
+      textColor: cfg.textColor ?? neutral[700],
+      lineHeight: cfg.lineSpacing ?? baseLineHeight,
+      align: cfg.textAlign ?? 'left',
+    };
+    const moduleName = cfg.moduleName ?? SECTION_META[section.sectionType]?.label ?? section.sectionType;
+    const resolvedTitleStyle = cfg.titleStyle || headerStyle;
+
+    if (cfg.hideTitle) {
+      return (
+        <section key={section.id} ref={bindSectionNode(section.id)} data-section-id={section.id} data-layout={section.layout || 'auto'} style={{ marginBottom: layout.moduleMargin, breakInside: 'auto' }}>
+          <SectionContent section={section} ctx={sectionCtx} />
+        </section>
+      );
+    }
+
+    return (
+      <section key={section.id} ref={bindSectionNode(section.id)} data-section-id={section.id} data-layout={section.layout || 'auto'} style={{ marginBottom: layout.moduleMargin, breakInside: 'auto' }}>
+        <h2
+          style={{
+            fontSize: sectionCtx.titleSize,
+            fontWeight: 600,
+            color: sectionCtx.titleColor,
+            margin: 0,
+            marginTop: layout.titleTopPadding,
+            marginBottom: layout.titleBottomMargin,
+            lineHeight: 1.4,
+            letterSpacing: 0.3,
+            breakAfter: 'avoid',
+            ...titleStyle(resolvedTitleStyle, sectionCtx.titleColor, accentColor),
+          }}
+        >
+          {moduleName}
+        </h2>
+        <div style={{ textAlign: sectionCtx.align }}>
+          <SectionContent section={section} ctx={sectionCtx} />
+        </div>
+      </section>
+    );
+  };
 
   return (
     <div
-      className="resume-paper"
+      ref={documentRef}
+      className="resume-document"
       style={{
         fontFamily: fontStack(layout.globalFontFamily),
         fontSize: baseFontSize,
         lineHeight: baseLineHeight,
         color: neutral[700],
-        padding: `${layout.pageTopMargin}px ${layout.pageRightMargin}px ${layout.pageBottomMargin}px ${layout.pageLeftMargin}px`,
         transform: scale !== 1 ? `scale(${scale})` : undefined,
         transformOrigin: 'top center',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
       }}
     >
-      {/* ---------- 头部 ---------- */}
-      <ResumeHeader
-        data={basicData as Record<string, unknown>}
-        ctx={{
-          titleSize: basicCfg.titleFontSize ?? baseFontSize + 8,
-          contentSize: basicCfg.contentFontSize ?? baseFontSize,
-          titleColor: basicCfg.titleColor ?? themeColor,
-          textColor: basicCfg.textColor ?? neutral[700],
-          lineHeight: baseLineHeight,
-          align: basicCfg.textAlign ?? 'center',
-        }}
-        fallbackTitle={resume.title || '个人简历'}
-        targetJob={resume.targetJob}
-        targetCompany={resume.targetCompany}
-      />
-
-      {/* ---------- 正文模块（按版式分栏） ---------- */}
-      {sections.length === 0 ? (
+      {bodyPages.map((page, pageIndex) => (
         <div
+          key={pageIndex}
+          className="resume-paper"
+          data-page={pageIndex + 1}
           style={{
-            textAlign: 'center',
-            padding: '80px 24px',
-            color: neutral[400],
-            fontSize: baseFontSize + 2,
+            minHeight: pageHeight,
+            flexShrink: 0,
+            boxSizing: 'border-box',
+            padding: `${layout.pageTopMargin}px ${layout.pageRightMargin}px ${layout.pageBottomMargin}px ${layout.pageLeftMargin}px`,
           }}
         >
-          <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.35 }}>📄</div>
-          在左侧添加简历模块，开始构建你的简历
-        </div>
-      ) : (
-        <BodyColumns mode={layoutMode} main={bodyMain} side={bodySide} layout={layout} baseFontSize={baseFontSize} themeColor={themeColor} accentColor={accentColor} headerStyle={headerStyle}>
-          {(section) => {
-          const data = normalizeSectionData(section.data);
-          const cfg = (data._config || {}) as SectionConfig;
-          const sectionCtx: Ctx = {
-            titleSize: cfg.titleFontSize ?? (cfg.contentFontSize ? cfg.contentFontSize + 2 : baseFontSize + 2),
-            contentSize: cfg.contentFontSize ?? baseFontSize,
-            titleColor: cfg.titleColor ?? themeColor,
-            textColor: cfg.textColor ?? neutral[700],
-            lineHeight: cfg.lineSpacing ?? baseLineHeight,
-            align: cfg.textAlign ?? 'left',
-          };
-          const moduleName =
-            cfg.moduleName ?? SECTION_META[section.sectionType]?.label ?? section.sectionType;
-          const resolvedTitleStyle = cfg.titleStyle || headerStyle;
-
-          if (cfg.hideTitle) {
-            return (
-              <section key={section.id} style={{ marginBottom: layout.moduleMargin }}>
-                <SectionContent section={section} ctx={sectionCtx} />
-              </section>
-            );
-          }
-
-          return (
-            <section
-              key={section.id}
-              style={{ marginBottom: layout.moduleMargin, breakInside: 'auto' }}
+          {pageIndex === 0 && (
+            <ResumeHeader
+              data={basicData as Record<string, unknown>}
+              ctx={{
+                titleSize: basicCfg.titleFontSize ?? baseFontSize + 8,
+                contentSize: basicCfg.contentFontSize ?? baseFontSize,
+                titleColor: basicCfg.titleColor ?? themeColor,
+                textColor: basicCfg.textColor ?? neutral[700],
+                lineHeight: baseLineHeight,
+                align: basicCfg.textAlign ?? 'center',
+              }}
+              fallbackTitle={resume.title || '个人简历'}
+              targetJob={resume.targetJob}
+              targetCompany={resume.targetCompany}
+            />
+          )}
+          {sections.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '80px 24px', color: neutral[400], fontSize: baseFontSize + 2 }}>
+              <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.35 }}>📄</div>
+              在左侧添加简历模块，开始构建你的简历
+            </div>
+          ) : (
+            <BodyColumns
+              mode={layoutMode}
+              main={page.main}
+              side={page.side}
+              layout={layout}
+              baseFontSize={baseFontSize}
+              themeColor={themeColor}
+              accentColor={accentColor}
+              headerStyle={headerStyle}
             >
-              <h2
-                style={{
-                  fontSize: sectionCtx.titleSize,
-                  fontWeight: 600,
-                  color: sectionCtx.titleColor,
-                  margin: 0,
-                  marginTop: layout.titleTopPadding,
-                  marginBottom: layout.titleBottomMargin,
-                  lineHeight: 1.4,
-                  letterSpacing: 0.3,
-                  breakAfter: 'avoid',
-                  ...titleStyle(resolvedTitleStyle, sectionCtx.titleColor, accentColor),
-                }}
-              >
-                {moduleName}
-              </h2>
-              <div style={{ textAlign: sectionCtx.align }}>
-                <SectionContent section={section} ctx={sectionCtx} />
-              </div>
-            </section>
-          );
-          }}
-        </BodyColumns>
-      )}
+              {renderSection}
+            </BodyColumns>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -739,7 +989,7 @@ function BodyColumns({
 
   // two-column
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: gap + 10, alignItems: 'start' }}>
+    <div data-resume-columns="two-column" style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: gap + 10, alignItems: 'start' }}>
       <div>{main.map((s) => children(s))}</div>
       <div style={{ borderLeft: `1px solid ${themeColor}18`, paddingLeft: 14 }}>
         {side.map((s) => children(s))}

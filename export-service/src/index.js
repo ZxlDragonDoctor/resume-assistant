@@ -13,7 +13,7 @@ const amqp = require('amqplib');
 const Minio = require('minio');
 const puppeteer = require('puppeteer');
 const crypto = require('crypto');
-const { renderResumeHtml } = require('./renderer');
+const { renderResumeHtml, paginateSectionsByHeight } = require('./renderer');
 
 const CHROME_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || '';
 
@@ -68,6 +68,116 @@ async function getBrowser() {
   return browserPromise;
 }
 
+async function reflowTwoColumnPages(page) {
+  const measurements = await page.evaluate(() => {
+    const firstPage = document.querySelector('.page');
+    const grid = firstPage?.querySelector('.layout-two-column');
+    if (!firstPage || !grid) return null;
+
+    const mainColumn = grid.querySelector('.col-main');
+    const sideColumn = grid.querySelector('.col-side');
+    if (!mainColumn || !sideColumn) return null;
+
+    const sideStyle = getComputedStyle(sideColumn);
+    const mainWidth = mainColumn.getBoundingClientRect().width;
+    const sideWidth = sideColumn.getBoundingClientRect().width
+      - parseFloat(sideStyle.paddingLeft || '0')
+      - parseFloat(sideStyle.paddingRight || '0')
+      - parseFloat(sideStyle.borderLeftWidth || '0')
+      - parseFloat(sideStyle.borderRightWidth || '0');
+    const pageStyle = getComputedStyle(firstPage);
+    const columnCapacity = parseFloat(pageStyle.minHeight)
+      - parseFloat(pageStyle.paddingTop)
+      - parseFloat(pageStyle.paddingBottom);
+    const header = firstPage.querySelector('.resume-header');
+    const headerStyle = header ? getComputedStyle(header) : null;
+    const headerHeight = header
+      ? header.getBoundingClientRect().height + parseFloat(headerStyle.marginBottom || '0')
+      : 0;
+
+    const host = document.createElement('div');
+    const pageFont = getComputedStyle(document.body);
+    Object.assign(host.style, {
+      position: 'fixed',
+      left: '-100000px',
+      top: '0',
+      width: '794px',
+      padding: '0',
+      margin: '0',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+      fontFamily: pageFont.fontFamily,
+      fontSize: pageFont.fontSize,
+      fontWeight: pageFont.fontWeight,
+      lineHeight: pageFont.lineHeight,
+      color: pageFont.color,
+    });
+    document.body.appendChild(host);
+
+    const measure = (section, width) => {
+      const clone = section.cloneNode(true);
+      clone.style.width = `${width}px`;
+      host.appendChild(clone);
+      const rect = clone.getBoundingClientRect();
+      const style = getComputedStyle(clone);
+      const height = rect.height + parseFloat(style.marginTop || '0') + parseFloat(style.marginBottom || '0');
+      clone.remove();
+      return height;
+    };
+
+    const sections = [...document.querySelectorAll('.resume-section[data-section-id]')].map((section) => ({
+      id: section.dataset.sectionId,
+      layout: section.dataset.layout || 'auto',
+      mainHeight: measure(section, mainWidth),
+      sideHeight: measure(section, sideWidth),
+    }));
+    host.remove();
+
+    return {
+      sections,
+      columnCapacity,
+      firstPageCapacity: Math.max(1, columnCapacity - headerHeight),
+    };
+  });
+
+  if (!measurements) return;
+  const pages = paginateSectionsByHeight(measurements.sections, {
+    firstPageCapacity: Math.max(1, measurements.firstPageCapacity - 8),
+    columnCapacity: Math.max(1, measurements.columnCapacity - 8),
+    heightFor: (section, column) => column === 'side' ? section.sideHeight : section.mainHeight,
+  });
+  if (!pages.length) pages.push({ main: [], side: [] });
+
+  await page.evaluate((placements) => {
+    const firstPage = document.querySelector('.page');
+    const layoutTemplate = firstPage?.querySelector('.layout-two-column');
+    if (!firstPage || !layoutTemplate) return;
+
+    const sectionNodes = new Map(
+      [...document.querySelectorAll('.resume-section[data-section-id]')]
+        .map((section) => [section.dataset.sectionId, section]),
+    );
+    const header = firstPage.querySelector('.resume-header');
+    const pages = placements.map((placement, index) => {
+      const pageNode = firstPage.cloneNode(false);
+      pageNode.dataset.page = String(index + 1);
+      if (index === 0 && header) pageNode.appendChild(header);
+
+      const grid = layoutTemplate.cloneNode(true);
+      const main = grid.querySelector('.col-main');
+      const side = grid.querySelector('.col-side');
+      main.replaceChildren(...placement.main.map((id) => sectionNodes.get(id)).filter(Boolean));
+      side.replaceChildren(...placement.side.map((id) => sectionNodes.get(id)).filter(Boolean));
+      pageNode.appendChild(grid);
+      return pageNode;
+    });
+    document.body.replaceChildren(...pages);
+  }, pages.map((placement) => ({
+    main: placement.main.map((section) => section.id),
+    side: placement.side.map((section) => section.id),
+  })));
+}
+
 async function generatePdf(html) {
   const browser = await getBrowser();
   const page = await browser.newPage();
@@ -75,6 +185,7 @@ async function generatePdf(html) {
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
     // 等字体就绪，否则中文可能以 fallback 字体渲染
     await page.evaluate(() => document.fonts && document.fonts.ready);
+    await reflowTwoColumnPages(page);
     return await page.pdf({
       format: 'A4',
       printBackground: true,
