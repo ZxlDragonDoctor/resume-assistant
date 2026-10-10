@@ -1,5 +1,7 @@
 <div align="center">
 
+<h1><img src="./frontend/public/logo.png" alt="" width="48" align="middle"> 晓龙简历</h1>
+
 <img src="./docs/assets/readme-poster.png" alt="暖白纸张上的简历页叠放，以靛蓝与浅紫线条呈现的产品海报" width="100%">
 
 <br>
