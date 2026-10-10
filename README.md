@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/banner.svg" alt="晓龙简历 · 在线简历工作台" width="100%">
+<img src="./docs/assets/readme-poster.png" alt="暖白纸张上的简历页叠放，以靛蓝与浅紫线条呈现的产品海报" width="100%">
 
 <br>
 
@@ -11,8 +11,8 @@
 
 [![CI](https://img.shields.io/badge/build-passing-4F46E5?style=flat-square&logo=githubactions&logoColor=white)](./DEPLOY.md)
 [![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat-square)](./LICENSE)
-[![Release](https://img.shields.io/badge/release-v1.0.0-7C3AED?style=flat-square)](https://github.com/ZxlDragonDoctor/resume-assiatant/releases)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-7C3AED?style=flat-square)](https://github.com/ZxlDragonDoctor/resume-assiatant/pulls)
+[![Release](https://img.shields.io/badge/release-v1.0.0-7C3AED?style=flat-square)](https://github.com/ZxlDragonDoctor/resume-assistant/releases)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-7C3AED?style=flat-square)](https://github.com/ZxlDragonDoctor/resume-assistant/pulls)
 
 [![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -45,9 +45,9 @@
 
 <br>
 
-<img src="./docs/assets/screenshot-home.png" alt="工作台首页" width="100%">
+<img src="./docs/assets/screenshot-home-public.png" alt="晓龙简历公开首页：产品介绍与示例简历预览" width="100%">
 
-<sub>▲ 首页：实时简历预览 + AI 优化提示，所见即所得</sub>
+<sub>▲ 首页：在线简历工作台介绍与真实示例简历预览</sub>
 
 </div>
 
@@ -100,10 +100,15 @@ Puppeteer 无头 Chrome 渲染 A4 PDF（794 × 1123 px），
 
 <div align="center">
 
-<img src="./docs/assets/screenshot-login.png" alt="登录页" width="49%">
-<img src="./docs/assets/screenshot-home.png" alt="工作台" width="49%">
+<img src="./docs/assets/screenshot-templates-public.png" alt="晓龙简历模板库公开页面，展示求职方向分类与多款简历版式" width="100%">
 
-<sub>▲ 登录（品牌色全屏） · 工作台（实时预览）</sub>
+<sub>▲ 模板库：按求职方向浏览单栏、双栏等简历版式</sub>
+
+<br>
+
+<img src="./docs/assets/screenshot-template-card-public.png" alt="公开模板库中通用简历卡片的单栏版式缩略预览、简介与标签" width="72%">
+
+<sub>▲ 模板预览：模板库公开展示的“通用简历”版式缩略卡</sub>
 
 </div>
 
@@ -544,8 +549,8 @@ PostgreSQL，默认连接 `resume / resume123 @ localhost:5432/resume_assistant`
 欢迎提交 Issue 与 Pull Request。
 
 ```bash
-git clone https://github.com/ZxlDragonDoctor/resume-assiatant.git
-cd ResumeAssistant
+git clone https://github.com/ZxlDragonDoctor/resume-assistant.git
+cd resume-assistant
 git checkout -b feat/your-feature
 ```
 
