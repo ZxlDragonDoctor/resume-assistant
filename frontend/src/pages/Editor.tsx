@@ -506,7 +506,7 @@ export default function Editor() {
           fonts: [resolvedLayout.globalFontFamily || 'system-ui'],
         }),
       });
-      message.success('已保存为模板，可在模板页使用');
+      message.success('已保存版式，可在「我的简历」新建时选择');
     } catch {
       message.error('保存模板失败');
     }

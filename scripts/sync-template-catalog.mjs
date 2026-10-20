@@ -48,6 +48,8 @@ function validate(record, file) {
   const index = expectedRoles.findIndex(([key]) => key === record.key);
   require(index >= 0 && record.sortOrder === index + 1, 'role/order differs from the approved directory');
   for (const key of ['name', 'description', 'category']) require(nonempty(record[key]), `${key} is required`);
+  require(!['SQL直插测试', '测试模板', '我的简历', '我的侧边栏模板', '自定义模板'].includes(record.name)
+    && !/^(?:test\d*|t)$/i.test(record.name), 'template name must describe a role rather than a test or saved layout');
   require(categories.has(record.category), 'unsupported template category');
   require(Array.isArray(record.tags) && record.tags.length >= 3 && record.tags.every(nonempty), 'at least three readable tags are required');
   require(Array.isArray(record.legacyNames), 'legacyNames must be an array');
@@ -99,6 +101,10 @@ function validate(record, file) {
     if (!object(section.data)) continue;
     const data = section.data;
     require(object(data._config) && nonempty(data._config.moduleName), `${prefix}: editable module caption is required`);
+    if (section.sectionType === 'custom') {
+      const caption = typeof data._config?.moduleName === 'string' ? data._config.moduleName.trim() : '';
+      require(!['自定义模块', '自定义内容', '自定义', '补充模块'].includes(caption), `${prefix}: name the actual content, such as publications, portfolio or campus activities`);
+    }
     if (section.sectionType === 'basic') {
       require(nonempty(data.name) && data.jobTitle === profile?.jobTitle && nonempty(data.city), 'basic identity must agree with profile');
       require(/^1\d{2}\*{4}\d{4}$/.test(data.phone), 'phone must be masked');

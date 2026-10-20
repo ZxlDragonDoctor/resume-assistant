@@ -40,9 +40,12 @@ export default function Templates() {
     return () => { active = false; };
   }, [retry]);
 
-  const entries = useMemo(() => templates.map((template) => {
+  // Saved layouts have no sample content and belong in the new-resume selector.
+  // The public gallery only presents complete samples that can actually be read.
+  const entries = useMemo(() => templates.flatMap((template) => {
     const sample = normalizeTemplateSample(template.previewConfig);
-    return { template, sample, config: normalizeTemplateConfig(template.config), searchable: templateSearchText(template, sample) };
+    if (!sample) return [];
+    return [{ template, sample, config: normalizeTemplateConfig(template.config), searchable: templateSearchText(template, sample) }];
   }), [templates]);
 
   const filtered = useMemo(() => {
@@ -61,9 +64,7 @@ export default function Templates() {
     setUsingId(template.id);
     try {
       const resume = await createResume(`${template.name}简历`, template.id);
-      message.success(normalizeTemplateSample(template.previewConfig)
-        ? '已创建简历。示例内容，请替换为真实经历'
-        : '已创建简历，请在编辑器中核对示例并替换为真实经历', 5);
+      message.success('已创建简历。示例内容，请替换为真实经历', 5);
       navigate(`/editor/${resume.id}`);
     } catch {
       message.error('创建简历失败，请稍后重试');
@@ -73,8 +74,11 @@ export default function Templates() {
   };
 
   const categoryOptions = [
-    { value: 'all', label: `全部 ${templates.length}` },
-    ...categories.map((category) => ({ value: category.key, label: `${category.label} ${category.count}` })),
+    { value: 'all', label: `全部 ${entries.length}` },
+    ...categories.flatMap((category) => {
+      const count = entries.filter(({ template }) => template.category === category.key).length;
+      return count ? [{ value: category.key, label: `${category.label} ${count}` }] : [];
+    }),
   ];
 
   return (
@@ -102,25 +106,25 @@ export default function Templates() {
                 <div className="template-library-grid">
                   {filtered.map(({ template, sample, config }) => (
                     <article key={template.id} className="template-sample-card" data-testid="template-card" data-template-id={template.id} aria-labelledby={`template-title-${template.id}`}>
-                      <button type="button" className="template-sample-cover" aria-label={`预览${template.name}${sample ? '完整范文' : '版式'}`} onClick={() => setPreviewTemplate(template)}>
+                      <button type="button" className="template-sample-cover" aria-label={`预览${template.name}完整范文`} onClick={() => setPreviewTemplate(template)}>
                         <TemplatePreview config={config} sample={sample} width={224} />
-                        <span className="template-sample-cover-caption">{sample ? '真实范文节选 · 点击阅读全文' : '版式示意 · 暂无完整范文'}</span>
+                        <span className="template-sample-cover-caption">范文节选 · 点击阅读全文</span>
                       </button>
                       <div className="template-sample-card-info">
                         <div className="template-sample-card-heading">
                           <h2 id={`template-title-${template.id}`}>{template.name}</h2>
                           {!template.isPremium && <span style={{ color: semantic.success, background: semantic.successSoft, padding: '2px 6px', borderRadius: 4, fontSize: 10, whiteSpace: 'nowrap' }}><CheckOutlined /> 免费</span>}
                         </div>
-                        {sample && <p className="template-sample-card-stage">{sample.profile.jobTitle} · {sample.profile.experienceLevel}</p>}
+                        <p className="template-sample-card-stage">{sample.profile.jobTitle} · {sample.profile.experienceLevel}</p>
                         <p className="template-sample-card-description">{template.description}</p>
                         <div className="template-sample-card-tags">
                           <span>{layoutLabel(config.layout)}</span>
-                          {(sample?.profile.highlights || template.tags || []).slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}
-                          {sample && <span>{sample.sections.length} 个可编辑模块</span>}
+                          {sample.profile.highlights.slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}
+                          <span>{sample.sections.length} 个可编辑模块</span>
                         </div>
                       </div>
                       <div className="template-sample-card-controls">
-                        <Button icon={<EyeOutlined />} onClick={() => setPreviewTemplate(template)} aria-label={`预览${template.name}${sample ? '范文' : '版式'}`}>{sample ? '预览范文' : '预览版式'}</Button>
+                        <Button icon={<EyeOutlined />} onClick={() => setPreviewTemplate(template)} aria-label={`预览${template.name}范文`}>预览范文</Button>
                         <Button type="primary" icon={<ThunderboltOutlined />} loading={usingId === template.id} disabled={Boolean(usingId && usingId !== template.id)} onClick={() => handleUse(template)} aria-label={`使用${template.name}模板`}>使用此模板</Button>
                       </div>
                     </article>
