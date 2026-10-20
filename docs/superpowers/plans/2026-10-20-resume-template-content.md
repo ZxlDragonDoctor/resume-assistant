@@ -27,8 +27,8 @@ Each catalog record has `key`, `name`, `description`, `category`, `tags`, `sortO
 - [x] Update `TemplatePreview.tsx` with actual text excerpts while retaining legacy fallback for custom templates. Add `TemplateSampleModal.tsx` using `ResumePreviewEngine` and responsive scaling. Update `Templates.tsx` with anonymous preview and explicit use actions, visible keyboard-accessible controls and sample notice.
 - [x] Validate content/catalog, frontend production build and Java module tests. Verify migration twice against PostgreSQL with preservation checks and 24 sample profiles. Check representative single/two/sidebar layouts and multi-page export in a browser/PDF.
 - [x] Review the full diff for spec compliance and code quality. Fix material findings, commit scoped files, preserving unrelated untracked documents.
-- [ ] Inspect production Git/container state. Preserve server-local configuration and create a database backup. Build/deploy only affected services from the reviewed commit, apply migration transactionally, retain old image rollback tags.
-- [ ] Verify public template count/content, representative preview pages, protected creation with a temporary verification account, and PDF. Remove only verification account/data. Report commit and deployment outcome.
+- [x] Inspect production Git/container state. Preserve server-local configuration and create a database backup. Build/deploy only affected services from the reviewed commit, apply migration transactionally, retain old image rollback tags.
+- [x] Verify public template count/content and published assets, protected creation with a temporary verification account, and PDF. Remove only verification account/data. Report commit and deployment outcome.
 
 ## Commands and expected checks
 
