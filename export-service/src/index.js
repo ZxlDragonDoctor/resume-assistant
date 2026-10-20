@@ -190,7 +190,9 @@ async function generatePdf(html) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
+    // The rendered HTML is self-contained. Wait for document load and fonts,
+    // rather than an unrelated network-idle lifecycle that can stall in Chromium.
+    await page.setContent(html, { waitUntil: 'load', timeout: 60000 });
     // 等字体就绪，否则中文可能以 fallback 字体渲染
     await page.evaluate(() => document.fonts && document.fonts.ready);
     await reflowResumePages(page);
