@@ -107,16 +107,17 @@ export function splitSectionsByLayout<
 }
 
 export function paginateSectionsByHeight<
-  T extends { layout?: string }
+  T extends { layout?: string; sectionType?: string }
 >(
   sections: T[],
   options: {
+    mode?: ResumeLayoutMode;
     firstPageCapacity: number;
     columnCapacity: number;
     heightFor: (section: T, column: 'main' | 'side') => number;
   }
 ): { main: T[]; side: T[] }[] {
-  const { firstPageCapacity, columnCapacity, heightFor } = options;
+  const { mode = 'two-column', firstPageCapacity, columnCapacity, heightFor } = options;
   const pages: { main: T[]; side: T[]; mainHeight: number; sideHeight: number }[] = [];
   const ensurePage = (index: number) => {
     while (pages.length <= index) pages.push({ main: [], side: [], mainHeight: 0, sideHeight: 0 });
@@ -126,7 +127,9 @@ export function paginateSectionsByHeight<
     const page = ensurePage(pageIndex);
     const used = column === 'main' ? page.mainHeight : page.sideHeight;
     const capacity = pageIndex === 0 ? firstPageCapacity : columnCapacity;
-    if (used === 0) return height <= capacity || (pageIndex > 0 && height > columnCapacity + 48);
+    // A module taller than a full page must still be placed once; otherwise
+    // searching for a page that fits it never terminates.
+    if (used === 0) return height <= capacity || height > columnCapacity;
     return used + height <= capacity;
   };
   const place = (pageIndex: number, column: 'main' | 'side', section: T, height: number) => {
@@ -136,15 +139,29 @@ export function paginateSectionsByHeight<
     else page.sideHeight += height;
   };
 
+  if (mode !== 'two-column') {
+    const nextPage = { main: 0, side: 0 };
+    for (const section of sections) {
+      const column = mode === 'sidebar' && (section.layout === 'left'
+        || (section.layout !== 'right' && SIDEBAR_TYPES.has(section.sectionType || ''))) ? 'side' : 'main';
+      const height = Math.max(1, Number(heightFor(section, column)) || 1);
+      while (!fits(nextPage[column], column, height)) nextPage[column] += 1;
+      place(nextPage[column], column, section, height);
+    }
+    return pages.map(({ main, side }) => ({ main, side }));
+  }
+  const manualPages = { main: 0, side: 0 };
   let flowPage = 0;
   let flowColumn: 'main' | 'side' = 'main';
   for (const section of sections) {
     if (section.layout === 'left' || section.layout === 'right') {
       const column = section.layout === 'left' ? 'main' : 'side';
       const height = Math.max(1, Number(heightFor(section, column)) || 1);
-      let pageIndex = flowPage;
+      // Keep each pinned column in section order after it continues to a new page.
+      let pageIndex = Math.max(flowPage, manualPages[column]);
       while (!fits(pageIndex, column, height)) pageIndex += 1;
       place(pageIndex, column, section, height);
+      manualPages[column] = pageIndex;
       continue;
     }
     let height = Math.max(1, Number(heightFor(section, flowColumn)) || 1);
@@ -680,7 +697,6 @@ export default function ResumePreviewEngine({
 
   const layoutMode: ResumeLayoutMode =
     (layout.layout as ResumeLayoutMode) || (templateConfig?.layout as ResumeLayoutMode) || 'single-column';
-  const { main: bodyMain, side: bodySide } = splitSectionsByLayout(bodySections, layoutMode);
 
   const globalCtx: Ctx = {
     titleSize: baseFontSize + 2,
@@ -698,41 +714,34 @@ export default function ResumePreviewEngine({
   const columnGap = Math.round((layout.moduleMargin ?? 20) * 0.9) + 10;
   const contentWidth = 794 - (layout.pageLeftMargin ?? 52) - (layout.pageRightMargin ?? 52);
   const availableColumnWidth = contentWidth - columnGap;
-  const mainColumnWidth = availableColumnWidth * 1.15 / 2;
-  const sideColumnWidth = availableColumnWidth * 0.85 / 2 - 15;
-  const estimatedPages = layoutMode === 'two-column'
-    ? paginateSectionsByHeight(bodySections, {
-        firstPageCapacity: Math.max(120, pageCapacity - estimateHeaderHeight(basicSection, resume, baseFontSize)),
-        columnCapacity: pageCapacity,
-        heightFor: (section, column) => estimateSectionHeight(section, {
-          fontSize: baseFontSize,
-          lineHeight: baseLineHeight,
-          moduleMargin: layout.moduleMargin ?? 20,
-          columnWidth: column === 'side' ? sideColumnWidth : mainColumnWidth,
-        }),
-      })
-    : [{ main: bodyMain, side: bodySide }];
+  const mainColumnWidth = layoutMode === 'single-column' ? contentWidth
+    : layoutMode === 'sidebar' ? contentWidth - 210 - (columnGap - 2) : availableColumnWidth * 1.15 / 2;
+  const sideColumnWidth = layoutMode === 'sidebar' ? 210 - 15 : availableColumnWidth * 0.85 / 2 - 15;
+  const estimatedPages = paginateSectionsByHeight(bodySections, {
+    mode: layoutMode,
+    firstPageCapacity: Math.max(120, pageCapacity - estimateHeaderHeight(basicSection, resume, baseFontSize)),
+    columnCapacity: pageCapacity,
+    heightFor: (section, column) => estimateSectionHeight(section, {
+      fontSize: baseFontSize,
+      lineHeight: baseLineHeight,
+      moduleMargin: layout.moduleMargin ?? 20,
+      columnWidth: column === 'side' ? sideColumnWidth : mainColumnWidth,
+    }),
+  });
   useLayoutEffect(() => {
-    if (layoutMode !== 'two-column') {
-      setMeasuredPlacements(null);
-      return;
-    }
-
     const root = documentRef.current;
     const firstPaper = root?.querySelector<HTMLElement>('.resume-paper');
-    const grid = firstPaper?.querySelector<HTMLElement>('[data-resume-columns="two-column"]');
-    const mainColumn = grid?.children.item(0) as HTMLElement | null;
-    const sideColumn = grid?.children.item(1) as HTMLElement | null;
-    if (!root || !firstPaper || !mainColumn || !sideColumn) return;
+    const mainColumn = firstPaper?.querySelector<HTMLElement>('[data-resume-column="main"]');
+    const sideColumn = firstPaper?.querySelector<HTMLElement>('[data-resume-column="side"]');
+    if (!root || !firstPaper || !mainColumn) return;
     if (bodySections.some((section) => !sectionNodesRef.current.has(section.id))) return;
 
-    const sideStyle = getComputedStyle(sideColumn);
-    const mainWidth = mainColumn.clientWidth;
-    const sideWidth = sideColumn.clientWidth
-      - parseFloat(sideStyle.paddingLeft || '0')
-      - parseFloat(sideStyle.paddingRight || '0')
-      - parseFloat(sideStyle.borderLeftWidth || '0')
-      - parseFloat(sideStyle.borderRightWidth || '0');
+    const innerWidth = (column: HTMLElement) => {
+      const style = getComputedStyle(column);
+      return column.clientWidth - parseFloat(style.paddingLeft || '0') - parseFloat(style.paddingRight || '0');
+    };
+    const mainWidth = innerWidth(mainColumn);
+    const sideWidth = sideColumn ? innerWidth(sideColumn) : mainWidth;
     const rootStyle = getComputedStyle(root);
     const probe = document.createElement('div');
     Object.assign(probe.style, {
@@ -781,6 +790,7 @@ export default function ResumePreviewEngine({
     const exactPages = paginateSectionsByHeight(
       bodySections,
       {
+        mode: layoutMode,
         firstPageCapacity: Math.max(1, exactCapacity - headerHeight),
         columnCapacity: exactCapacity,
         heightFor: (section, column) => {
@@ -798,7 +808,7 @@ export default function ResumePreviewEngine({
     resume.title,
     resume.targetJob,
     resume.targetCompany,
-    templateConfig?.headerStyle,
+    headerStyle,
     layoutMode,
     layout.pageTopMargin,
     layout.pageBottomMargin,
@@ -819,7 +829,7 @@ export default function ResumePreviewEngine({
   }));
   const measuredPagesMatch = measuredPages?.reduce((count, page) => count + page.main.length + page.side.length, 0)
     === bodySections.length;
-  const bodyPages = layoutMode === 'two-column' && measuredPagesMatch ? measuredPages : estimatedPages;
+  const bodyPages = measuredPagesMatch ? measuredPages : estimatedPages;
   if (!bodyPages.length) bodyPages.push({ main: [], side: [] });
 
   const bindSectionNode = (sectionId: string) => (node: HTMLElement | null) => {
@@ -896,6 +906,7 @@ export default function ResumePreviewEngine({
           className="resume-paper"
           data-page={pageIndex + 1}
           style={{
+            width: 794,
             minHeight: pageHeight,
             flexShrink: 0,
             boxSizing: 'border-box',
@@ -967,31 +978,26 @@ function BodyColumns({
 }) {
   const gap = Math.round((layout.moduleMargin ?? 20) * 0.9);
 
-  if (mode === 'single-column' || (!side.length && mode !== 'two-column')) {
-    return <div>{main.map((s) => children(s))}</div>;
+  if (mode === 'single-column') {
+    return <div data-resume-column="main">{main.map((s) => children(s))}</div>;
   }
 
   if (mode === 'sidebar') {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr', gap: gap + 8, alignItems: 'start' }}>
-        <aside style={{ borderRight: `1px solid ${themeColor}22`, paddingRight: 14 }}>
+      <div data-resume-columns="sidebar" style={{ display: 'grid', gridTemplateColumns: '210px minmax(0, 1fr)', gap: gap + 8, alignItems: 'start' }}>
+        <aside data-resume-column="side" style={{ borderRight: `1px solid ${themeColor}22`, paddingRight: 14 }}>
           {side.map((s) => children(s))}
-          {side.length === 0 && (
-            <div style={{ color: neutral[400], fontSize: baseFontSize - 1, lineHeight: 1.6 }}>
-              将技能、奖项等模块移入可形成侧栏
-            </div>
-          )}
         </aside>
-        <div>{main.map((s) => children(s))}</div>
+        <div data-resume-column="main">{main.map((s) => children(s))}</div>
       </div>
     );
   }
 
   // two-column
   return (
-    <div data-resume-columns="two-column" style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: gap + 10, alignItems: 'start' }}>
-      <div>{main.map((s) => children(s))}</div>
-      <div style={{ borderLeft: `1px solid ${themeColor}18`, paddingLeft: 14 }}>
+    <div data-resume-columns="two-column" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 0.85fr)', gap: gap + 10, alignItems: 'start' }}>
+      <div data-resume-column="main">{main.map((s) => children(s))}</div>
+      <div data-resume-column="side" style={{ borderLeft: `1px solid ${themeColor}18`, paddingLeft: 14 }}>
         {side.map((s) => children(s))}
       </div>
     </div>

@@ -1,0 +1,220 @@
+{
+  "key": "data-analyst",
+  "name": "数据分析·指标实验",
+  "description": "数据分析师原创范文，适用于1–3 年。指标口径、异常归因、实验分析；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "technical",
+  "tags": [
+    "数据分析师",
+    "1–3 年",
+    "双栏",
+    "指标口径",
+    "异常归因"
+  ],
+  "sortOrder": 10,
+  "legacyNames": [
+    "数据分析"
+  ],
+  "config": {
+    "systemKey": "data-analyst",
+    "layout": "two-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0d9488",
+    "accentColor": "#0d948812",
+    "headerStyle": "bar",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "data-analyst",
+      "jobTitle": "数据分析师",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "指标口径",
+        "异常归因",
+        "实验分析"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "周明澈",
+          "jobTitle": "数据分析师",
+          "city": "深圳",
+          "phone": "138****1010",
+          "email": "mingche.zhou@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2024 年起从事电商业务数据分析，围绕交易漏斗、用户分群与活动效果提供支持。能够用 SQL 完成取数和质量检查，结合运营动作解释指标变化；参与实验方案和结论整理，习惯说明观察窗口、样本范围及不能由数据直接推断的因果关系。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "left"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "青屿零售科技（虚构）",
+              "position": "数据分析师",
+              "startDate": "2024-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "维护订单、支付与售后指标字典，和产品、财务核对取消、退款及跨日归属规则，为 6 个业务看板补齐来源与更新说明。",
+                "每天检查交易量、重复订单和关键字段缺失，对异常先核验采集及链路变化，再按渠道、设备与新老用户拆解影响。",
+                "参与 9 次活动与产品实验复盘，预先记录主指标、护栏和观察窗口；对样本不足及分组不均的结果明确限制条件。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "新用户首单漏斗排查",
+              "role": "数据整理与归因",
+              "startDate": "2025-02",
+              "endDate": "2025-05",
+              "current": false,
+              "tech": "SQL · Python · 漏斗分析",
+              "bullets": [
+                "围绕注册到首单的下降趋势，统一用户去重和七日转化窗口，排除埋点晚到、测试账号和渠道结构变化的影响。",
+                "按设备、渠道和支付方式对比流失，结合客服工单发现部分浏览器的地址校验失败，提供脱敏路径样例供研发复现。",
+                "修复后使用相同口径观察两周，目标浏览器地址提交成功率从 86% 回到 94%；未将同期整体销量变化归为单一改动。"
+              ]
+            },
+            {
+              "name": "优惠券门槛实验评估",
+              "role": "实验分析",
+              "startDate": "2025-08",
+              "endDate": "2025-11",
+              "current": false,
+              "tech": "分层随机 · 置信区间 · 成本分析",
+              "bullets": [
+                "与运营明确实验目标，按历史活跃度分层随机分组，主指标为每名用户支付毛利，并同时跟踪退款和优惠成本。",
+                "实验前检查样本比例、历史指标平衡及预期检验能力，运行中监控券发放失败和跨组领取，记录排除规则。",
+                "输出分层结果与区间估计，发现高活跃组毛利变化不明确，建议仅对低活跃组继续试行，并说明多重比较的探索性质。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "分析项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "left"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "南川统计学院（虚构）",
+              "major": "统计学",
+              "degree": "本科",
+              "startDate": "2020-09",
+              "endDate": "2024-06",
+              "current": false,
+              "description": "相关课程：概率论、数理统计、回归分析、抽样调查与数据库。毕业实践使用公开交易样本完成缺失检查、用户分群与分析报告。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "数据处理",
+              "items": [
+                "SQL 窗口函数",
+                "Python/pandas",
+                "数据质量核对"
+              ]
+            },
+            {
+              "name": "业务分析",
+              "items": [
+                "漏斗与留存",
+                "指标字典",
+                "分群归因"
+              ]
+            },
+            {
+              "name": "统计表达",
+              "items": [
+                "实验设计基础",
+                "置信区间",
+                "图表与结论边界"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "分析技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "right"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "为每份报告附上数据时间范围、去重规则、过滤条件和可重复查询。异动解释先区分数据问题、结构变化和业务变化，主动向运营确认活动节奏。对观察相关性与实验因果结论使用不同措辞；将需要继续验证的假设和下一步取数需求单独记录，方便业务持续跟踪。",
+          "_config": {
+            "moduleName": "分析工作习惯"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "right"
+      }
+    ]
+  }
+}

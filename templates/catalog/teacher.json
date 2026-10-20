@@ -1,0 +1,230 @@
+{
+  "key": "teacher",
+  "name": "教师求职·教学教研",
+  "description": "初中语文教师原创范文，适用于1–3 年。教师资质、课堂评价、教学教研；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "academic",
+  "tags": [
+    "初中语文教师",
+    "1–3 年",
+    "单栏",
+    "教师资质",
+    "课堂评价"
+  ],
+  "sortOrder": 11,
+  "legacyNames": [
+    "教育教学"
+  ],
+  "config": {
+    "systemKey": "teacher",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#b45309",
+    "accentColor": "#b4530912",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "certificates",
+      "experience",
+      "projects",
+      "education",
+      "skills"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "teacher",
+      "jobTitle": "初中语文教师",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "教师资质",
+        "课堂评价",
+        "教学教研"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "许知遥",
+          "jobTitle": "初中语文教师",
+          "city": "南京",
+          "phone": "138****1011",
+          "email": "zhiyao.xu@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2023 年 11 月起从事初中语文教学，参与两个年级的阅读与写作课程。注重将教学目标拆为课堂任务，利用作业分析和分层反馈改进教学，也参与班级管理与家校沟通。能够保留评价依据，结合连续观察理解学生进展，避免仅用单次考试成绩判断教学成效。",
+          "_config": {
+            "moduleName": "教学概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "certificates",
+        "data": {
+          "items": [
+            {
+              "title": "初级中学教师资格（语文，示例）",
+              "date": "2023-07",
+              "level": "按真实资格替换"
+            },
+            {
+              "title": "普通话水平测试二级甲等（示例）",
+              "date": "2022-06",
+              "level": "按真实成绩替换"
+            }
+          ],
+          "_config": {
+            "moduleName": "专业资质"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "明川实验学校（虚构）",
+              "position": "语文教师",
+              "startDate": "2023-11",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "承担 2 个班约 80 名学生的语文教学，按单元准备目标、任务和评价材料，累计完善 12 个单元的教案与练习。",
+                "围绕阅读作业中证据引用不足的问题安排例文标注与二次修改；同一量表下跟踪 3 次作业，完整引用比例由 48% 升至 71%。",
+                "每月组织学情复盘，与班主任和家长讨论学习习惯及支持措施，记录后续执行情况，对需要持续帮助的学生安排定期回访。"
+              ]
+            },
+            {
+              "company": "江畔中学（虚构）",
+              "position": "语文实习教师",
+              "startDate": "2023-02",
+              "endDate": "2023-06",
+              "current": false,
+              "bullets": [
+                "在指导教师带教下完成 16 课时授课与 8 次听评课，根据课堂观察调整提问顺序、板书结构和小组活动时长。",
+                "协助批阅作文并建立常见问题清单，围绕立意、材料与段落衔接提供可执行的建议，记录学生修改后的变化。",
+                "参与班会、阅读节及家长会准备，负责活动材料、学生反馈和过程记录，课后向指导教师汇报观察与反思。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "教学经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "一篇文章的三次修改",
+              "role": "课程设计与实施",
+              "startDate": "2024-03",
+              "endDate": "2024-06",
+              "current": false,
+              "tech": "写作任务 · 同伴反馈 · 评价量表",
+              "bullets": [
+                "设计初稿、同伴反馈和修订稿三阶段任务，将评价拆为观点、材料及衔接，用匿名样例示范如何给出具体修改建议。",
+                "收集 76 份完整修订记录，在同一量表下比较变化，选取 6 组教学示例，保留原稿、反馈和修改稿供年级组备课。",
+                "在教研活动分享任务单与实施反思，说明样本和观察周期，提出下一轮加强同伴反馈训练及跟踪长期迁移的计划。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "教学教研"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江南师范学院（虚构）",
+              "major": "汉语言文学（师范）",
+              "degree": "本科",
+              "startDate": "2019-09",
+              "endDate": "2023-06",
+              "current": false,
+              "description": "课程包括语文课程与教学论、教育心理学、中国现当代文学与班级管理。完成教育见习和教学实习，保留授课教案、课堂观察和反思材料。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "课程教学",
+              "items": [
+                "单元任务设计",
+                "分层作业",
+                "课堂提问"
+              ]
+            },
+            {
+              "name": "评价教研",
+              "items": [
+                "作业分析",
+                "评价量表",
+                "听评课记录"
+              ]
+            },
+            {
+              "name": "沟通工具",
+              "items": [
+                "家校沟通",
+                "互动课件",
+                "Office 学情表"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "教学技能"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

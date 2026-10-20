@@ -1,0 +1,252 @@
+{
+  "key": "academic-research",
+  "name": "学术科研·研究成果",
+  "description": "环境科学科研助理原创范文，适用于硕士/科研申请。研究问题、实验设计、成果边界；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "academic",
+  "tags": [
+    "环境科学科研助理",
+    "硕士/科研申请",
+    "单栏",
+    "研究问题",
+    "实验设计"
+  ],
+  "sortOrder": 5,
+  "legacyNames": [
+    "学术科研"
+  ],
+  "config": {
+    "systemKey": "academic-research",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#334155",
+    "accentColor": "#33415512",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "education",
+      "summary",
+      "experience",
+      "projects",
+      "custom",
+      "skills",
+      "awards"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "academic-research",
+      "jobTitle": "环境科学科研助理",
+      "experienceLevel": "硕士/科研申请",
+      "highlights": [
+        "研究问题",
+        "实验设计",
+        "成果边界"
+      ],
+      "suggestedPages": 2
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "陈知夏",
+          "jobTitle": "环境科学科研助理",
+          "city": "南京",
+          "phone": "138****1005",
+          "email": "zhixia.chen@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江南环境研究学院（虚构）",
+              "major": "环境科学",
+              "degree": "硕士",
+              "startDate": "2022-09",
+              "endDate": "2025-06",
+              "current": false,
+              "description": "研究方向为城市河道沉积物污染特征与采样不确定性。完成实验设计、环境统计、分析化学课程；学位论文围绕重复采样与空白对照对检测结论的影响。"
+            },
+            {
+              "school": "清源理工学院（虚构）",
+              "major": "环境工程",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "相关课程：环境监测、水污染控制、仪器分析与概率统计。毕业设计完成小型实验装置的采样方案和运行记录，接受实验安全与数据完整性训练。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "关注环境监测中的采样差异与质量控制，具备文献梳理、现场采样、实验记录和统计分析训练。硕士期间参与河道沉积物调查，独立完成样品追踪与部分数据分析；目前在研究团队协助开展方法验证，申请继续从事环境数据与监测方法研究。",
+          "_config": {
+            "moduleName": "研究概述"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "澄湖环境研究中心（虚构）",
+              "position": "科研助理",
+              "startDate": "2025-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "协助开展沉积物检测方法验证，维护样品编号、前处理批次和仪器序列，确保检测结果能够关联到原始记录。",
+                "按研究方案设置平行样、空白与加标样，整理回收率和重复性结果，发现异常后先检查批次与仪器状态再讨论重测。",
+                "每两周向课题组汇报方法变化与未解决问题，保留分析脚本版本、参数及数据字典，支持同组成员复核过程。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "研究经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "城市河道沉积物分层采样研究",
+              "role": "采样记录与统计分析",
+              "startDate": "2023-03",
+              "endDate": "2024-12",
+              "current": false,
+              "tech": "现场调查 · R · 质量控制",
+              "bullets": [
+                "围绕站点间差异是否大于重复采样差异提出研究问题，参与设计 8 个站点、两轮采样与平行样安排。",
+                "负责 96 份样品的流转记录和数据清洗，以图形和混合效应模型比较站点及批次影响，记录缺失值的处理理由。",
+                "在组会上报告结果及采样限制，说明观察关联不能推断污染来源；形成方法附录，为后续增补季节样本提供依据。"
+              ]
+            },
+            {
+              "name": "环境监测结果可复核报告",
+              "role": "分析脚本与图表",
+              "startDate": "2024-02",
+              "endDate": "2024-06",
+              "current": false,
+              "tech": "R Markdown · 文献比较",
+              "bullets": [
+                "将样品信息、检测值与质控记录统一到长表结构，对重复编号、单位换算和检出限标记设置核对规则。",
+                "把描述统计、敏感性分析与图表生成写入可重复运行的报告，分别展示不同缺失值处理假设下的结论变化。",
+                "邀请两名同组成员使用独立样例运行报告，修正路径依赖与参数说明，保存版本及复核意见用于论文补充材料。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "研究项目"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "硕士学位论文《城市河道沉积物监测中重复采样差异的评价》（虚构题目，2025.06），本人完成数据分析与正文初稿。课题组内部报告《沉积物样品质量控制记录与方法比较》（示例，2024.12），负责质量控制章节与图表。本示例不虚构期刊录用状态；实际申请时注明真实作者顺序、发表或投稿状态及可核验来源。",
+          "_config": {
+            "moduleName": "论文与研究报告"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "研究方法",
+              "items": [
+                "文献检索与证据表",
+                "实验与采样方案",
+                "质量控制"
+              ]
+            },
+            {
+              "name": "分析工具",
+              "items": [
+                "R/tidyverse",
+                "混合效应模型基础",
+                "可复核报告"
+              ]
+            },
+            {
+              "name": "学术交流",
+              "items": [
+                "研究记录",
+                "学术图表",
+                "英文文献阅读"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "科研技能"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "awards",
+        "data": {
+          "items": [
+            {
+              "title": "研究生学业奖学金（示例）",
+              "date": "2024-11",
+              "level": "校级"
+            },
+            {
+              "title": "研究生学术交流海报展示（示例）",
+              "date": "2024-05",
+              "level": "院级交流"
+            }
+          ],
+          "_config": {
+            "moduleName": "奖项与交流"
+          }
+        },
+        "sortOrder": 7,
+        "layout": "auto"
+      }
+    ]
+  }
+}

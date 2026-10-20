@@ -1,0 +1,219 @@
+{
+  "key": "brand-designer",
+  "name": "品牌视觉·创意作品",
+  "description": "品牌视觉设计师原创范文，适用于3–5 年。品牌系统、传播物料、作品交付；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "design",
+  "tags": [
+    "品牌视觉设计师",
+    "3–5 年",
+    "侧栏",
+    "品牌系统",
+    "传播物料"
+  ],
+  "sortOrder": 3,
+  "legacyNames": [
+    "创意设计"
+  ],
+  "config": {
+    "systemKey": "brand-designer",
+    "layout": "sidebar",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#7c3aed",
+    "accentColor": "#7c3aed12",
+    "headerStyle": "solid",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "brand-designer",
+      "jobTitle": "品牌视觉设计师",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "品牌系统",
+        "传播物料",
+        "作品交付"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "周予棠",
+          "jobTitle": "品牌视觉设计师",
+          "city": "上海",
+          "phone": "138****1003",
+          "email": "yutang.zhou@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起从事消费品牌视觉设计，围绕品牌定位完成标识应用、包装与传播物料。能将文字策略转为视觉方向，通过打样和场景展示检验方案，熟悉从设计评审到印刷交付的协作流程。作品集中说明设计问题、个人职责及最终落地情况。",
+          "_config": {
+            "moduleName": "设计概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "right"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "山禾品牌工作室（虚构）",
+              "position": "品牌视觉设计师",
+              "startDate": "2023-08",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "参与 5 个消费品牌的视觉更新，依据品牌访谈和竞品研究提出设计方向，分别展示包装、门店与线上传播的应用效果。",
+                "负责字体、色彩、图形和版式规范，补齐小尺寸、单色及深色背景示例，帮助客户执行团队保持应用一致。",
+                "对接印刷供应商完成纸张、专色与工艺打样，登记修改意见和色差确认记录，交付可编辑文件及印前检查表。"
+              ]
+            },
+            {
+              "company": "观原创意机构（虚构）",
+              "position": "视觉设计助理",
+              "startDate": "2022-07",
+              "endDate": "2023-07",
+              "current": false,
+              "bullets": [
+                "配合设计负责人制作展会主视觉、社交媒体和产品折页，按尺寸清单适配 30 余份物料并核对文案层级。",
+                "整理摄影与插画素材授权范围，将源文件、字体及链接图片按项目归档，减少交接时寻找素材的时间。",
+                "在活动上线前检查二维码、出血与低清图片问题，与运营逐项确认，记录常见返修原因供后续项目参考。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "禾野茶饮品牌视觉更新",
+              "role": "视觉系统与包装设计",
+              "startDate": "2024-03",
+              "endDate": "2024-08",
+              "current": false,
+              "tech": "品牌策略转译 · 包装打样",
+              "bullets": [
+                "从“日常通勤也能轻松喝茶”的定位出发，比较三组图形与字体方向，结合杯身和门头模拟稿解释选择依据。",
+                "设计标识组合、三款杯套和外带纸袋，建立 16 页应用指南，说明留白、最小尺寸、颜色和禁用情形。",
+                "完成两轮实际打样与门店查看，调整杯身小字与深色印刷效果，最终交付源文件、印刷文件及使用说明。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "品牌作品"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "right"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江南艺术学院（虚构）",
+              "major": "视觉传达设计",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "学习品牌设计、字体设计、包装结构与印刷工艺。毕业设计为地方文化展陈视觉系统，完成访谈、图形提炼、海报及导览物料。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "品牌视觉",
+              "items": [
+                "标识与应用",
+                "字体与版式",
+                "包装系统"
+              ]
+            },
+            {
+              "name": "设计工具",
+              "items": [
+                "Illustrator",
+                "Photoshop",
+                "InDesign"
+              ]
+            },
+            {
+              "name": "生产交付",
+              "items": [
+                "印前检查",
+                "工艺打样",
+                "源文件规范"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "设计技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "left"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "作品集示例地址：portfolio.example.com/yutang。按品牌视觉、包装应用与活动传播三个章节展示项目，每个项目附需求、草图、设计取舍与落地照片说明。团队作品注明本人负责的部分；示例图与品牌均为虚构，实际求职时替换为拥有展示权限的作品。",
+          "_config": {
+            "moduleName": "作品集导读"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "right"
+      }
+    ]
+  }
+}

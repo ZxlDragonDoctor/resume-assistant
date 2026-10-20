@@ -68,23 +68,26 @@ async function getBrowser() {
   return browserPromise;
 }
 
-async function reflowTwoColumnPages(page) {
+async function reflowResumePages(page) {
   const measurements = await page.evaluate(() => {
     const firstPage = document.querySelector('.page');
-    const grid = firstPage?.querySelector('.layout-two-column');
+    const grid = firstPage?.querySelector('.layout-two-column, .layout-sidebar, .layout-single');
     if (!firstPage || !grid) return null;
 
-    const mainColumn = grid.querySelector('.col-main');
+    const mode = grid.classList.contains('layout-sidebar') ? 'sidebar'
+      : grid.classList.contains('layout-two-column') ? 'two-column' : 'single-column';
+    const mainColumn = mode === 'single-column' ? grid : grid.querySelector('.col-main');
     const sideColumn = grid.querySelector('.col-side');
-    if (!mainColumn || !sideColumn) return null;
+    if (!mainColumn) return null;
 
-    const sideStyle = getComputedStyle(sideColumn);
-    const mainWidth = mainColumn.getBoundingClientRect().width;
-    const sideWidth = sideColumn.getBoundingClientRect().width
-      - parseFloat(sideStyle.paddingLeft || '0')
-      - parseFloat(sideStyle.paddingRight || '0')
-      - parseFloat(sideStyle.borderLeftWidth || '0')
-      - parseFloat(sideStyle.borderRightWidth || '0');
+    const innerWidth = (column) => {
+      const style = getComputedStyle(column);
+      return column.getBoundingClientRect().width
+        - parseFloat(style.paddingLeft || '0') - parseFloat(style.paddingRight || '0')
+        - parseFloat(style.borderLeftWidth || '0') - parseFloat(style.borderRightWidth || '0');
+    };
+    const mainWidth = innerWidth(mainColumn);
+    const sideWidth = sideColumn ? innerWidth(sideColumn) : mainWidth;
     const pageStyle = getComputedStyle(firstPage);
     const columnCapacity = parseFloat(pageStyle.minHeight)
       - parseFloat(pageStyle.paddingTop)
@@ -125,15 +128,19 @@ async function reflowTwoColumnPages(page) {
       return height;
     };
 
-    const sections = [...document.querySelectorAll('.resume-section[data-section-id]')].map((section) => ({
-      id: section.dataset.sectionId,
-      layout: section.dataset.layout || 'auto',
-      mainHeight: measure(section, mainWidth),
-      sideHeight: measure(section, sideWidth),
-    }));
+    const sections = [...document.querySelectorAll('.resume-section[data-section-id]')]
+      .sort((a, b) => Number(a.dataset.sortOrder || 0) - Number(b.dataset.sortOrder || 0))
+      .map((section) => ({
+        id: section.dataset.sectionId,
+        sectionType: section.dataset.section,
+        layout: section.dataset.layout || 'auto',
+        mainHeight: measure(section, mainWidth),
+        sideHeight: measure(section, sideWidth),
+      }));
     host.remove();
 
     return {
+      mode,
       sections,
       columnCapacity,
       firstPageCapacity: Math.max(1, columnCapacity - headerHeight),
@@ -142,6 +149,7 @@ async function reflowTwoColumnPages(page) {
 
   if (!measurements) return;
   const pages = paginateSectionsByHeight(measurements.sections, {
+    mode: measurements.mode,
     firstPageCapacity: Math.max(1, measurements.firstPageCapacity - 8),
     columnCapacity: Math.max(1, measurements.columnCapacity - 8),
     heightFor: (section, column) => column === 'side' ? section.sideHeight : section.mainHeight,
@@ -150,7 +158,7 @@ async function reflowTwoColumnPages(page) {
 
   await page.evaluate((placements) => {
     const firstPage = document.querySelector('.page');
-    const layoutTemplate = firstPage?.querySelector('.layout-two-column');
+    const layoutTemplate = firstPage?.querySelector('.layout-two-column, .layout-sidebar, .layout-single');
     if (!firstPage || !layoutTemplate) return;
 
     const sectionNodes = new Map(
@@ -164,10 +172,10 @@ async function reflowTwoColumnPages(page) {
       if (index === 0 && header) pageNode.appendChild(header);
 
       const grid = layoutTemplate.cloneNode(true);
-      const main = grid.querySelector('.col-main');
+      const main = grid.classList.contains('layout-single') ? grid : grid.querySelector('.col-main');
       const side = grid.querySelector('.col-side');
       main.replaceChildren(...placement.main.map((id) => sectionNodes.get(id)).filter(Boolean));
-      side.replaceChildren(...placement.side.map((id) => sectionNodes.get(id)).filter(Boolean));
+      if (side) side.replaceChildren(...placement.side.map((id) => sectionNodes.get(id)).filter(Boolean));
       pageNode.appendChild(grid);
       return pageNode;
     });
@@ -185,7 +193,7 @@ async function generatePdf(html) {
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
     // 等字体就绪，否则中文可能以 fallback 字体渲染
     await page.evaluate(() => document.fonts && document.fonts.ready);
-    await reflowTwoColumnPages(page);
+    await reflowResumePages(page);
     return await page.pdf({
       format: 'A4',
       printBackground: true,

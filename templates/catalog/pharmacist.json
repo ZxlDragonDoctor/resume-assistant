@@ -1,0 +1,230 @@
+{
+  "key": "pharmacist",
+  "name": "临床药师·专业资质",
+  "description": "临床药师原创范文，适用于3–5 年。药学资质、医嘱审核、用药教育；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "medical",
+  "tags": [
+    "临床药师",
+    "3–5 年",
+    "单栏",
+    "药学资质",
+    "医嘱审核"
+  ],
+  "sortOrder": 12,
+  "legacyNames": [
+    "医疗健康"
+  ],
+  "config": {
+    "systemKey": "pharmacist",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0369a1",
+    "accentColor": "#0369a112",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "certificates",
+      "experience",
+      "projects",
+      "education",
+      "skills"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "pharmacist",
+      "jobTitle": "临床药师",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "药学资质",
+        "医嘱审核",
+        "用药教育"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "林清和",
+          "jobTitle": "临床药师",
+          "city": "广州",
+          "phone": "138****1012",
+          "email": "qinghe.lin@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起在医院药学部门工作，参与医嘱审核、病区药学服务与患者用药教育。熟悉常见药学问题的记录和沟通流程，能够结合药品说明书、医院规范及检索资料向带教药师和临床团队反馈，关注用药信息完整性、交接追踪与患者理解。",
+          "_config": {
+            "moduleName": "专业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "certificates",
+        "data": {
+          "items": [
+            {
+              "title": "药师专业技术资格（示例）",
+              "date": "2023-05",
+              "level": "按实际取得情况替换"
+            },
+            {
+              "title": "临床药师规范化培训结业（示例）",
+              "date": "2024-06",
+              "level": "培训方向：内科药学"
+            }
+          ],
+          "_config": {
+            "moduleName": "专业资质"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "澄江综合医院（虚构）",
+              "position": "临床药师",
+              "startDate": "2024-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "参与内科病区查房与医嘱审核，记录过敏史、既往用药和检验资料完整性，将疑似剂量、重复用药等问题按流程反馈。",
+                "为出院患者提供用药说明，使用清单核对药品名称、使用时点和需关注事项，并通过患者复述确认理解，记录待随访问题。",
+                "每月汇总药学干预记录，与上级药师复核问题分类和采纳情况，在药学讨论中分享典型案例及沟通改进点。"
+              ]
+            },
+            {
+              "company": "澄江综合医院（虚构）",
+              "position": "药师/规范化培训学员",
+              "startDate": "2022-07",
+              "endDate": "2024-06",
+              "current": false,
+              "bullets": [
+                "在带教下完成调剂、审核及内科病区轮转，依照双人核对与交接要求完成日常工作，保留培训学习和考核记录。",
+                "协助整理药物不良反应报告所需信息，按规定去标识并交由上级审核，不独立判断未经确认的因果关系。",
+                "参与药品储存与效期巡查，核对温度记录、近效期清单和异常处理，为常见遗漏补充交接检查提示。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "药学经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "出院用药清单沟通改进",
+              "role": "资料整理与随访记录",
+              "startDate": "2025-02",
+              "endDate": "2025-07",
+              "current": false,
+              "tech": "清单核对 · 患者教育 · 过程评价",
+              "bullets": [
+                "复核 60 份去标识沟通记录，发现药品别名与服用时点解释不清的问题，在上级药师指导下重写患者用语和版式。",
+                "与护士确认出院材料交接节点，为新增、停用和调整药品设置醒目标记，用复述问题检查患者是否能够说清服药安排。",
+                "试行期间抽查 45 份记录，完整说明和理解确认项由 31 份增加至 41 份；仅报告过程指标，不将变化等同临床疗效。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "药学改进项目"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "南岭医药学院（虚构）",
+              "major": "临床药学",
+              "degree": "本科",
+              "startDate": "2017-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "学习药理学、临床药物治疗学、药事管理与循证药学。完成医院药学实习，接受药学服务记录、患者隐私保护和专业沟通训练。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "药学服务",
+              "items": [
+                "医嘱信息核对",
+                "用药史采集",
+                "干预记录"
+              ]
+            },
+            {
+              "name": "患者沟通",
+              "items": [
+                "清单式用药教育",
+                "理解确认",
+                "随访交接"
+              ]
+            },
+            {
+              "name": "证据工具",
+              "items": [
+                "说明书与文献检索",
+                "质量检查表",
+                "脱敏记录整理"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "专业技能"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "key": "ux-designer",
+  "name": "UI/UX·体验设计",
+  "description": "UI/UX 设计师原创范文，适用于3–5 年。任务流程、组件规范、可用性验证；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "design",
+  "tags": [
+    "UI/UX 设计师",
+    "3–5 年",
+    "单栏",
+    "任务流程",
+    "组件规范"
+  ],
+  "sortOrder": 8,
+  "legacyNames": [
+    "界面设计"
+  ],
+  "config": {
+    "systemKey": "ux-designer",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#be185d",
+    "accentColor": "#be185d12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "ux-designer",
+      "jobTitle": "UI/UX 设计师",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "任务流程",
+        "组件规范",
+        "可用性验证"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "许映禾",
+          "jobTitle": "UI/UX 设计师",
+          "city": "深圳",
+          "phone": "138****1008",
+          "email": "yinghe.xu@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起从事企业工具与移动端体验设计，能够从用户任务出发开展访谈、流程梳理、原型和界面交付。关注信息层级、异常反馈与组件一致性，通过任务测试和上线观察修正方案；作品中保留过程依据，清楚说明个人职责与协作范围。",
+          "_config": {
+            "moduleName": "设计概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "星野协作产品（虚构）",
+              "position": "体验设计师",
+              "startDate": "2023-09",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责工单处理和客户管理方向的交互与界面，与产品共同梳理任务、角色和权限，将复杂操作拆为清晰步骤。",
+                "维护表单、列表与状态反馈组件的设计规范，补齐加载、禁用、错误与键盘焦点样式，支持前端按统一规则实现。",
+                "每轮上线前对照设计稿走查交互细节，记录问题等级和修复状态；上线后邀请客服复盘真实工单，寻找流程阻塞点。"
+              ]
+            },
+            {
+              "company": "浅川数字设计（虚构）",
+              "position": "界面设计师",
+              "startDate": "2022-07",
+              "endDate": "2023-08",
+              "current": false,
+              "bullets": [
+                "参与预约服务移动端设计，交付 26 个页面与关键流程原型，对预约冲突、改期和取消给出明确提示及后续操作。",
+                "依据现有组件整理字体、间距和颜色变量，提供尺寸与响应式说明，与前端核对不同屏幕下的信息顺序。",
+                "协助主持 6 次远程任务测试，记录误触、犹豫和失败路径，用观察证据支持页面层级与文案调整。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "设计经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "客服工单工作台重构",
+              "role": "研究与交互设计",
+              "startDate": "2024-02",
+              "endDate": "2024-08",
+              "current": false,
+              "tech": "Figma · 任务测试 · 组件规范",
+              "bullets": [
+                "观察 5 位客服处理连续工单，将跨页面查找客户资料的步骤画成任务图，确认高频信息与操作优先级。",
+                "设计列表筛选、上下文信息与处理面板，比较抽屉和独立详情两种方案，在窄屏与长文本场景中验证可读性。",
+                "以同一组任务进行两轮测试，8 位参与者的任务完成中位时长从 94 秒降至 68 秒，并记录样本规模及学习效应限制。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "体验项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "南湾设计学院（虚构）",
+              "major": "数字媒体艺术",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "相关课程：交互设计、信息可视化、用户研究与认知心理学。毕业设计完成社区预约工具，包含访谈、线框、任务测试及方案反思。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "研究与验证",
+              "items": [
+                "访谈与任务观察",
+                "可用性测试",
+                "问题优先级"
+              ]
+            },
+            {
+              "name": "交互设计",
+              "items": [
+                "信息架构",
+                "复杂表单",
+                "异常与空状态"
+              ]
+            },
+            {
+              "name": "视觉协作",
+              "items": [
+                "Figma 组件变量",
+                "响应式规范",
+                "开发走查"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "设计方法"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "作品集示例地址：portfolio.example.com/yinghe。重点展示工单工作台、预约服务与组件规范三个项目，附任务流程、关键版本对比和验证记录。设计交付清单覆盖文字溢出、错误提示、键盘顺序及窄屏适配；团队作品说明本人负责研究与交互的范围，实际投递时替换为可公开的材料。",
+          "_config": {
+            "moduleName": "作品集与规范"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

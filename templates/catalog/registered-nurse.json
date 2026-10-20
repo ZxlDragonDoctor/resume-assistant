@@ -1,0 +1,228 @@
+{
+  "key": "registered-nurse",
+  "name": "护理求职·临床实践",
+  "description": "临床护士原创范文，适用于应届/1–3 年。护理资格、临床轮转、患者沟通；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "medical",
+  "tags": [
+    "临床护士",
+    "应届/1–3 年",
+    "侧栏",
+    "护理资格",
+    "临床轮转"
+  ],
+  "sortOrder": 24,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "registered-nurse",
+    "layout": "sidebar",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0e7490",
+    "accentColor": "#0e749012",
+    "headerStyle": "solid",
+    "sections": [
+      "basic",
+      "summary",
+      "certificates",
+      "experience",
+      "projects",
+      "education",
+      "skills"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "registered-nurse",
+      "jobTitle": "临床护士",
+      "experienceLevel": "应届/1–3 年",
+      "highlights": [
+        "护理资格",
+        "临床轮转",
+        "患者沟通"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "苏予宁",
+          "jobTitle": "临床护士",
+          "city": "广州",
+          "phone": "138****1024",
+          "email": "yuning.su@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2024 年护理学本科毕业，在综合医院完成临床实践并从事病区护理。能够按制度完成身份核对、护理评估、交接和患者沟通，在带教与科室规范下开展操作；遇到病情变化及时报告，重视记录完整、患者理解与跨班次信息连续，持续通过案例复盘提升判断和协作。",
+          "_config": {
+            "moduleName": "护理概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "right"
+      },
+      {
+        "sectionType": "certificates",
+        "data": {
+          "items": [
+            {
+              "title": "护士执业资格考试合格（示例）",
+              "date": "2024-05",
+              "level": "按真实考试结果替换"
+            },
+            {
+              "title": "护士执业注册（示例）",
+              "date": "2024-09",
+              "level": "实际求职按有效状态填写"
+            }
+          ],
+          "_config": {
+            "moduleName": "专业资质"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "left"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "澄江综合医院（虚构）",
+              "position": "内科病区护士",
+              "startDate": "2024-08",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "按科室流程完成入院评估、生命体征观察和护理记录，对风险与异常及时报告责任护士或医生，跟进处理后的观察要求。",
+                "执行身份核对、用药核查和操作前解释，与患者确认理解；对跌倒风险、活动支持和饮食要求进行个体化提醒。",
+                "参与交接班核对，重点说明病情变化、管路及待完成事项，记录接收人与处理时点，减少跨班次信息遗漏。"
+              ]
+            },
+            {
+              "company": "南湾教学医院（虚构）",
+              "position": "护理实习生",
+              "startDate": "2023-07",
+              "endDate": "2024-04",
+              "current": false,
+              "bullets": [
+                "在带教下完成内科、外科、急诊和手术室轮转，按照实习计划记录学习任务、操作观察和阶段反馈。",
+                "协助基础护理与病区秩序维护，操作前遵循查对和手卫生要求，对超出实习权限的事项主动请示，不独立处理。",
+                "参与患者宣教与出院资料准备，用清晰语言介绍已确认的护理安排，遇到疑问及时交由带教或专业人员解答。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "护理经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "病区交接重点提示卡",
+              "role": "记录整理与试行反馈",
+              "startDate": "2025-03",
+              "endDate": "2025-06",
+              "current": false,
+              "tech": "交接核对 · 过程记录 · 团队讨论",
+              "bullets": [
+                "在护士长指导下回顾去标识交接记录，整理待观察事项、管路及检查安排的常见遗漏，形成讨论清单。",
+                "与同组护士设计重点提示卡，按患者、风险、待办和确认时间排列，仅辅助现有交接流程，不替代正式护理记录。",
+                "试行四周后抽查 40 份交接记录，重点事项完整记录由 29 份增至 37 份；结合反馈调整字段，并注明仅评价记录过程。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "护理改进实践"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "南岭护理学院（虚构）",
+              "major": "护理学",
+              "degree": "本科",
+              "startDate": "2020-09",
+              "endDate": "2024-06",
+              "current": false,
+              "description": "课程包括基础护理、内外科护理、护理伦理、健康评估与护理研究。完成临床实习与技能考核，毕业实践讨论病区健康教育的理解确认方法。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "临床基础",
+              "items": [
+                "护理评估与记录",
+                "生命体征观察",
+                "异常报告"
+              ]
+            },
+            {
+              "name": "规范执行",
+              "items": [
+                "身份与用药查对",
+                "手卫生",
+                "交接班核对"
+              ]
+            },
+            {
+              "name": "患者服务",
+              "items": [
+                "操作前解释",
+                "理解确认",
+                "出院护理沟通"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "护理技能"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "left"
+      }
+    ]
+  }
+}

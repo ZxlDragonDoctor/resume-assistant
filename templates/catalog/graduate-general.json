@@ -1,0 +1,241 @@
+{
+  "key": "graduate-general",
+  "name": "通用校招·校园成长",
+  "description": "综合事务/运营助理（应届）原创范文，适用于应届/实习。课程实践、志愿服务、组织协作；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "graduate",
+  "tags": [
+    "综合事务/运营助理（应届）",
+    "应届/实习",
+    "单栏",
+    "课程实践",
+    "志愿服务"
+  ],
+  "sortOrder": 23,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "graduate-general",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0891b2",
+    "accentColor": "#0891b212",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "education",
+      "summary",
+      "experience",
+      "projects",
+      "custom",
+      "skills",
+      "awards"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "graduate-general",
+      "jobTitle": "综合事务/运营助理（应届）",
+      "experienceLevel": "应届/实习",
+      "highlights": [
+        "课程实践",
+        "志愿服务",
+        "组织协作"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "江予晴",
+          "jobTitle": "综合事务/运营助理（应届）",
+          "city": "武汉",
+          "phone": "138****1023",
+          "email": "yuqing.jiang@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江城文理学院（虚构）",
+              "major": "公共事业管理",
+              "degree": "本科",
+              "startDate": "2022-09",
+              "endDate": "2026-06",
+              "current": false,
+              "description": "课程包括管理学、社会调查、应用统计、公共关系与文书写作。GPA 3.4/4.0（示例）；毕业实践围绕社区活动组织与参与反馈完成调研报告。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2026 届公共事业管理专业毕业生，完成一段综合事务实习，参与校园服务调研与志愿活动。能够整理报名、排期和反馈资料，使用办公工具维护清单，及时确认责任和截止时间。希望从事务执行与运营支持岗位开始，把细致记录、沟通跟进和持续复盘落实到日常工作。",
+          "_config": {
+            "moduleName": "求职概述"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "知桥社区服务中心（虚构）",
+              "position": "综合事务实习生",
+              "startDate": "2025-07",
+              "endDate": "2025-09",
+              "current": false,
+              "bullets": [
+                "协助 5 场社区活动的报名、物料和现场签到，依据流程表逐项检查场地、人员与安全提示，及时向负责人报告缺项。",
+                "整理约 160 条参与反馈，按活动内容、时间与现场服务分类，保留原始表述，汇总可由执行环节改进的问题。",
+                "维护物料借还和志愿者排班记录，活动后核对数量及未归还原因，将确认信息交接给值班同事，减少重复联系。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "实习经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "校园办事信息可读性调研",
+              "role": "4 人小组/访谈与整理",
+              "startDate": "2024-10",
+              "endDate": "2024-12",
+              "current": false,
+              "tech": "访谈 · 信息归类 · 文档原型",
+              "bullets": [
+                "围绕新生查找办事入口的困难，访谈 18 位同学并记录具体任务，区分找不到信息、看不懂材料与流程变化三类问题。",
+                "核对 8 类常见事项的公开办理说明，用标题、材料和下一步动作重排信息，请老师与同学共同检查表述是否准确。",
+                "邀请 10 位同学使用新旧文档完成同一任务，记录成功率和疑问；将原型、反馈与样本限制写入课程报告。"
+              ]
+            },
+            {
+              "name": "社区阅读日组织实践",
+              "role": "现场与反馈协调",
+              "startDate": "2025-03",
+              "endDate": "2025-05",
+              "current": false,
+              "tech": "任务清单 · 分工 · 服务记录",
+              "bullets": [
+                "和 6 名同学共同筹备 2 场阅读活动，负责参与登记、场地检查与时间提醒，把每项任务落实到具体负责人。",
+                "根据首次活动中的签到拥堵调整入口和名单顺序，提前给志愿者演示流程，保留临时缺席时的替补安排。",
+                "两场累计服务 94 人次，整理问卷、物料消耗和现场记录，提出缩短开场说明及设置休息区的建议供下次参考。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "课程实践"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "江城文理学院志愿服务队（虚构）｜项目组成员｜2023.10–2025.06。参与图书整理、迎新指引与社区阅读活动，按分工完成报名核对、场地引导和材料归档。服务结束后记录常见问题及交接事项，保持出勤、反馈和物资记录一致，帮助后续同学快速了解活动要求。",
+          "_config": {
+            "moduleName": "校园与志愿服务"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "办公整理",
+              "items": [
+                "Excel 表格与筛选",
+                "Word 规范排版",
+                "演示文稿"
+              ]
+            },
+            {
+              "name": "执行协作",
+              "items": [
+                "活动流程清单",
+                "排班与物料",
+                "会议纪要"
+              ]
+            },
+            {
+              "name": "调研沟通",
+              "items": [
+                "访谈记录",
+                "问卷分类",
+                "服务反馈跟进"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "实用技能"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "awards",
+        "data": {
+          "items": [
+            {
+              "title": "校级优秀志愿者（示例）",
+              "date": "2025-06",
+              "level": "按真实服务记录替换"
+            },
+            {
+              "title": "社会调查课程优秀小组（示例）",
+              "date": "2024-12",
+              "level": "负责访谈与资料整理"
+            }
+          ],
+          "_config": {
+            "moduleName": "校园荣誉"
+          }
+        },
+        "sortOrder": 7,
+        "layout": "auto"
+      }
+    ]
+  }
+}

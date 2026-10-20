@@ -1,0 +1,240 @@
+{
+  "key": "graduate-business",
+  "name": "商科校招·实习实践",
+  "description": "市场/商业分析实习生原创范文，适用于应届/实习。两段实习、研究实践、校园组织；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "graduate",
+  "tags": [
+    "市场/商业分析实习生",
+    "应届/实习",
+    "单栏",
+    "两段实习",
+    "研究实践"
+  ],
+  "sortOrder": 22,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "graduate-business",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0369a1",
+    "accentColor": "#0369a112",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "education",
+      "summary",
+      "experience",
+      "projects",
+      "custom",
+      "skills",
+      "awards"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "graduate-business",
+      "jobTitle": "市场/商业分析实习生",
+      "experienceLevel": "应届/实习",
+      "highlights": [
+        "两段实习",
+        "研究实践",
+        "校园组织"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "陈予宁",
+          "jobTitle": "市场/商业分析实习生",
+          "city": "上海",
+          "phone": "138****1022",
+          "email": "yuning.chen@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "海川财经学院（虚构）",
+              "major": "市场营销",
+              "degree": "本科",
+              "startDate": "2022-09",
+              "endDate": "2026-06",
+              "current": false,
+              "description": "GPA 3.6/4.0（示例）。课程包括市场研究、统计学、消费者行为、会计学原理与商业数据分析；课程成绩与排名请按实际情况替换。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2026 届市场营销专业毕业生，完成市场研究与运营两段实习，参与访谈、问卷、竞品整理和活动支持。能够使用 Excel 和基础 SQL 处理资料，清楚表达研究范围与个人贡献，希望在市场研究或商业分析岗位继续学习业务判断和规范分析方法。",
+          "_config": {
+            "moduleName": "求职概述"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "青禾消费品牌（虚构）",
+              "position": "市场研究实习生",
+              "startDate": "2025-07",
+              "endDate": "2025-10",
+              "current": false,
+              "bullets": [
+                "在主管指导下整理 15 次访谈和 210 份有效问卷，将购买动机、使用场景及顾虑归纳为 4 类需求，保留原始记录对应关系。",
+                "统一 6 个竞品的规格、售价与渠道信息，用 Excel 透视表形成周度比较，标注采集日期、促销与规格口径。",
+                "将材料整理为 18 页汇报，3 条建议进入新品卖点测试；本人负责资料和分析，不将团队决策写为个人独立成果。"
+              ]
+            },
+            {
+              "company": "明衡企业服务（虚构）",
+              "position": "运营实习生",
+              "startDate": "2025-01",
+              "endDate": "2025-03",
+              "current": false,
+              "bullets": [
+                "维护客户试用与跟进表，整理 120 条反馈，按功能、操作和服务问题分类，交给对应负责人并记录后续处理。",
+                "针对重复咨询梳理 12 个常见问题，更新引导文档，通过前后两周咨询记录观察使用情况，支持客服调整答复。",
+                "协助 4 场客户交流活动的报名页面、到场名单和反馈汇总，核对人数及资料版本，按时交付活动复盘材料。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "实习经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "校园便利店消费行为研究",
+              "role": "4 人小组/数据整理与分析",
+              "startDate": "2024-10",
+              "endDate": "2024-12",
+              "current": false,
+              "tech": "问卷设计 · 交叉表 · 方案比较",
+              "bullets": [
+                "将高峰期排队流失拆为到店时段、购买任务和等待容忍度，参与研究问题与问卷设计，先用小样本试填修正歧义。",
+                "清洗 186 份有效问卷，以交叉表比较购买频率与时段关系；记录抽样范围，说明结果不能直接推广到所有校区。",
+                "提出快取区与预包装组合建议，按成本、执行难度和观察指标比较，完成课堂答辩并整理老师对样本局限的反馈。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "研究与实践项目"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "海川财经学院学生发展中心（虚构）｜活动组负责人｜2024.09–2025.06。协调 8 名志愿者完成 3 场职业分享活动，负责场地、流程、讲者资料与现场交接，累计服务约 260 人次。根据活动后问卷改善签到和提问环节，复盘时保留未到场原因与建议，供下一届组织者参考。",
+          "_config": {
+            "moduleName": "校园经历"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "资料分析",
+              "items": [
+                "Excel 常用函数与透视表",
+                "基础 SQL",
+                "问卷清洗"
+              ]
+            },
+            {
+              "name": "研究表达",
+              "items": [
+                "访谈纪要",
+                "竞品资料核验",
+                "PowerPoint 汇报"
+              ]
+            },
+            {
+              "name": "语言协作",
+              "items": [
+                "英文行业材料阅读",
+                "中文摘要",
+                "活动流程与分工"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "技能与语言"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "awards",
+        "data": {
+          "items": [
+            {
+              "title": "校级综合奖学金（示例）",
+              "date": "2024-11",
+              "level": "按真实情况替换"
+            },
+            {
+              "title": "校园商业案例分析赛二等奖（示例）",
+              "date": "2025-05",
+              "level": "小组成员/数据分析"
+            }
+          ],
+          "_config": {
+            "moduleName": "奖项"
+          }
+        },
+        "sortOrder": 7,
+        "layout": "auto"
+      }
+    ]
+  }
+}

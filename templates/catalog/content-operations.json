@@ -1,0 +1,218 @@
+{
+  "key": "content-operations",
+  "name": "新媒体运营·内容策划",
+  "description": "新媒体内容运营原创范文，适用于1–3 年。选题策划、内容生产、分发复盘；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "product",
+  "tags": [
+    "新媒体内容运营",
+    "1–3 年",
+    "单栏",
+    "选题策划",
+    "内容生产"
+  ],
+  "sortOrder": 17,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "content-operations",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#c2410c",
+    "accentColor": "#c2410c12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "content-operations",
+      "jobTitle": "新媒体内容运营",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "选题策划",
+        "内容生产",
+        "分发复盘"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "宋知微",
+          "jobTitle": "新媒体内容运营",
+          "city": "广州",
+          "phone": "138****1017",
+          "email": "zhiwei.song@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2024 年起从事生活消费品牌内容运营，负责选题、图文编辑、短视频脚本与多渠道分发。能够围绕目标人群的问题组织内容，在制作前明确事实来源与表达边界，和设计、客服协作完成校对。复盘同时观察阅读质量、有效咨询与制作成本，形成可持续的内容计划。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "禾见生活品牌（虚构）",
+              "position": "内容运营专员",
+              "startDate": "2024-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "维护公众号与短视频账号的周度选题表，从客服咨询、搜索词和产品使用场景提取问题，说明目标读者与内容价值。",
+                "每月交付约 8 篇图文和 12 条短视频脚本，协调拍摄、设计与校对；涉及功能和材料的表述由产品负责人复核。",
+                "建立内容台账，记录题材、发布时间、自然与付费流量来源，按周比较完读、收藏和有效咨询，减少仅追逐播放量的判断。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "新手收纳实用内容系列",
+              "role": "选题与制作统筹",
+              "startDate": "2025-02",
+              "endDate": "2025-06",
+              "current": false,
+              "tech": "用户问题 · 脚本 · 图文分发",
+              "bullets": [
+                "从 180 条去标识咨询中筛出空间测量、物品分类和维护三个主题，设计 10 期系列，分别说明读者任务和演示步骤。",
+                "与摄影及产品同事完成场景实拍，先展示适用条件再呈现操作，用字幕与图示补齐尺寸、材料等容易误解的信息。",
+                "按同等曝光口径比较前后两组内容，收藏率由 2.1% 升至 3.4%；同步整理 37 条有效咨询，注明非随机发布的比较限制。"
+              ]
+            },
+            {
+              "name": "内容生产校对流程优化",
+              "role": "流程与资料整理",
+              "startDate": "2025-08",
+              "endDate": "2025-11",
+              "current": false,
+              "tech": "编辑清单 · 素材管理 · 复盘",
+              "bullets": [
+                "复盘过去 24 条内容的返修记录，把事实核对、字幕错误和素材缺失列为前置检查项，明确每项的确认责任人。",
+                "统一脚本、授权素材与成片版本命名，制作分发尺寸清单，让设计与运营能快速定位最终文件和对应说明。",
+                "选择两个月内容试行，二次返修从首月 11 条降至次月 5 条，记录新增制作投入，保留对不同题材适用性的观察。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "内容项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "南湾传媒学院（虚构）",
+              "major": "网络与新媒体",
+              "degree": "本科",
+              "startDate": "2020-09",
+              "endDate": "2024-06",
+              "current": false,
+              "description": "学习传播学、新闻采访、视听语言与数据分析。毕业作品完成城市生活服务专题，负责采访、资料核对、脚本和多平台编辑。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "策划编辑",
+              "items": [
+                "问题导向选题",
+                "采访与事实核对",
+                "标题与脚本"
+              ]
+            },
+            {
+              "name": "制作协作",
+              "items": [
+                "剪映基础剪辑",
+                "图文排版",
+                "素材授权与版本"
+              ]
+            },
+            {
+              "name": "效果复盘",
+              "items": [
+                "渠道数据台账",
+                "完读与收藏",
+                "咨询归类与归因边界"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "内容技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "作品集示例地址：portfolio.example.com/zhiwei。每个案例附选题依据、脚本版本、本人职责和发布后的反馈，区分自然与付费数据。对团队拍摄作品注明摄影与设计贡献；涉及他人形象或客户材料时先确认展示权限。实际求职时替换为真实可公开作品，并保留数据时间范围和口径。",
+          "_config": {
+            "moduleName": "作品集说明"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "key": "supply-chain",
+  "name": "供应链采购·交付成本",
+  "description": "采购与供应链专员原创范文，适用于3–5 年。供应商协作、交期跟踪、库存与成本；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "business",
+  "tags": [
+    "采购与供应链专员",
+    "3–5 年",
+    "单栏",
+    "供应商协作",
+    "交期跟踪"
+  ],
+  "sortOrder": 21,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "supply-chain",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#047857",
+    "accentColor": "#04785712",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "supply-chain",
+      "jobTitle": "采购与供应链专员",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "供应商协作",
+        "交期跟踪",
+        "库存与成本"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "温序宁",
+          "jobTitle": "采购与供应链专员",
+          "city": "苏州",
+          "phone": "138****1021",
+          "email": "xuning.wen@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起从事制造企业采购与供应协调，负责电子辅料和包装物料的询比价、订单跟踪与异常处理。能够结合生产计划、库存和供应商能力安排交付，关注总成本、质量与交期的平衡；维护准确记录，及时把风险转为可讨论的替代方案和责任安排。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "青岳智能制造（虚构）",
+              "position": "采购专员",
+              "startDate": "2023-09",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责 32 类电子辅料与包装物料，维护 16 家常用供应商的价格、交期和最小起订量，按生产计划下单并跟踪确认。",
+                "与计划及仓库每周核对在途、可用库存和需求变动，对缺料风险明确最晚到货日，协调分批交货或经确认的替代方案。",
+                "月度汇总供应商准时交付、到货差异和质量反馈，和质量部门复核原因，把整改时点与复查结果纳入供应商沟通记录。"
+              ]
+            },
+            {
+              "company": "明川工业配套（虚构）",
+              "position": "供应链助理",
+              "startDate": "2022-07",
+              "endDate": "2023-08",
+              "current": false,
+              "bullets": [
+                "维护采购订单、收货和发票关联表，对数量及价格差异逐项核实，协助财务与供应商完成月度对账。",
+                "整理历史消耗、库存账龄和滞料原因，按停用、设计变更与超量采购分类，供计划负责人安排消耗或处置。",
+                "协助收集新供应商资质与样品资料，按评审清单核对缺失项，跟进试用记录，不以报价最低替代综合准入判断。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "包装物料交期与库存优化",
+              "role": "数据整理与供应协调",
+              "startDate": "2024-08",
+              "endDate": "2025-02",
+              "current": false,
+              "tech": "需求分层 · 交付排期 · 成本比较",
+              "bullets": [
+                "复盘 6 个月包装需求，将常规、活动和定制物料分开，发现低频定制集中下单造成积压，与业务确认需求冻结点。",
+                "和两家供应商比较分批交付、起订量与运输成本，选取 8 类常用物料试行滚动计划，保留紧急需求的审批入口。",
+                "连续三个月跟踪试点，平均库存覆盖天数由 47 天降至 35 天，准时到货保持在约 95%；记录试点范围和季节性影响。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "供应链项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "东江物流学院（虚构）",
+              "major": "物流管理",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "相关课程：采购管理、库存控制、供应链管理与运筹学。毕业设计使用模拟需求比较补货策略，讨论服务水平、起订量与资金占用。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "采购执行",
+              "items": [
+                "询比价与合同",
+                "订单确认",
+                "供应商台账"
+              ]
+            },
+            {
+              "name": "计划协同",
+              "items": [
+                "缺料风险跟踪",
+                "库存覆盖分析",
+                "分批交付"
+              ]
+            },
+            {
+              "name": "数据质量",
+              "items": [
+                "Excel 透视与核对",
+                "ERP 单据关联",
+                "总成本比较"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "专业技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "交期异常先核对需求变化、供应承诺和运输节点，再说明影响工单及最晚处理时点。所有替代物料与临时采购均保留内部确认，避免口头变更造成质量和结算争议。季度复盘将质量、交付和价格一起讨论，对单一来源物料记录备选进度、验证条件及未解决风险。",
+          "_config": {
+            "moduleName": "风险与交接记录"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

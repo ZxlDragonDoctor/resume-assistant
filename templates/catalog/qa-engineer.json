@@ -1,0 +1,218 @@
+{
+  "key": "qa-engineer",
+  "name": "软件测试·质量保障",
+  "description": "软件测试工程师原创范文，适用于1–3 年。风险分析、接口自动化、缺陷闭环；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "technical",
+  "tags": [
+    "软件测试工程师",
+    "1–3 年",
+    "单栏",
+    "风险分析",
+    "接口自动化"
+  ],
+  "sortOrder": 14,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "qa-engineer",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#4338ca",
+    "accentColor": "#4338ca12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "qa-engineer",
+      "jobTitle": "软件测试工程师",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "风险分析",
+        "接口自动化",
+        "缺陷闭环"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "程安序",
+          "jobTitle": "软件测试工程师",
+          "city": "成都",
+          "phone": "138****1014",
+          "email": "anxu.cheng@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2024 年起从事企业软件测试，覆盖订单、权限与批量任务等场景。能够从需求状态、数据边界和系统依赖识别风险，设计接口与页面测试，使用 Python 维护可重复执行的回归集。重视缺陷复现、修复验证和发布后的实际表现，清楚说明测试覆盖及遗留风险。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "川原企业软件（虚构）",
+              "position": "测试工程师",
+              "startDate": "2024-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "参与订单与权限模块的需求评审，将角色、状态和异常依赖拆为测试矩阵，维护 320 条核心场景并随版本调整。",
+                "负责接口、页面和数据库结果核对，对高风险缺陷提供最小复现步骤、请求数据与日志时间，帮助研发快速定位。",
+                "每轮发布输出覆盖结果和遗留问题，按业务影响建议修复顺序；上线后观察客服反馈，对漏测原因补充对应场景。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "订单状态接口回归集",
+              "role": "测试设计与脚本维护",
+              "startDate": "2025-01",
+              "endDate": "2025-06",
+              "current": false,
+              "tech": "Python · pytest · SQL",
+              "bullets": [
+                "围绕支付、取消、超时及退款建立状态迁移表，覆盖重复回调、消息晚到和金额边界，明确每个接口的预期业务状态。",
+                "编写可独立准备和清理数据的接口用例，将测试账号、环境地址与业务断言分开，避免用例依赖固定执行顺序。",
+                "接入版本回归后持续记录误报，将时间等待改为有上限的状态轮询；82 条核心用例稳定运行，为人工检查留出探索时间。"
+              ]
+            },
+            {
+              "name": "批量导出可靠性验证",
+              "role": "专项测试执行",
+              "startDate": "2025-08",
+              "endDate": "2025-10",
+              "current": false,
+              "tech": "边界数据 · 故障模拟 · 浏览器检查",
+              "bullets": [
+                "按数据量、字段长度和权限建立组合样本，核对导出条数、中文字符与金额精度，并检查文件访问权限和过期行为。",
+                "模拟节点重启、请求超时和重复下载，观察任务是否恢复、文件是否完整，将问题记录与任务标识关联供研发分析。",
+                "整理 27 个专项场景及验收证据，推动修复大文件取消后的资源清理问题，发布说明保留尚未覆盖的环境限制。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "质量项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "西岭软件学院（虚构）",
+              "major": "软件工程",
+              "degree": "本科",
+              "startDate": "2020-09",
+              "endDate": "2024-06",
+              "current": false,
+              "description": "学习软件测试、数据库、计算机网络与程序设计。课程项目负责图书借阅服务的测试计划、接口用例和缺陷跟踪。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "测试设计",
+              "items": [
+                "等价类与边界值",
+                "状态迁移",
+                "风险分层"
+              ]
+            },
+            {
+              "name": "执行工具",
+              "items": [
+                "Python/pytest",
+                "接口调试",
+                "SQL 数据核对"
+              ]
+            },
+            {
+              "name": "质量协作",
+              "items": [
+                "缺陷最小复现",
+                "发布风险说明",
+                "日志关联分析"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "测试技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "用例记录业务目标、前置数据、操作与断言，保持关键场景可由他人复现。对偶发问题记录出现频率、环境与并发条件，避免仅以一次通过关闭问题。复盘时区分需求遗漏、环境差异与用例不足，选择能覆盖风险的检查方式；自动化报告同时展示失败原因和人工确认结论。",
+          "_config": {
+            "moduleName": "质量记录"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

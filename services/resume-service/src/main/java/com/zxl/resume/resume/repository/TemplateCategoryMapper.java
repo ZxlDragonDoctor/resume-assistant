@@ -14,4 +14,7 @@ public interface TemplateCategoryMapper {
 
     @Select("SELECT config FROM templates WHERE id = #{id}")
     String findConfigById(UUID id);
+
+    @Select("SELECT preview_config::text FROM templates WHERE id = #{id}")
+    String findPreviewById(UUID id);
 }

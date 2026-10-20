@@ -1,0 +1,218 @@
+{
+  "key": "algorithm-engineer",
+  "name": "算法工程·实验落地",
+  "description": "算法工程师原创范文，适用于1–3 年。数据划分、误差分析、部署约束；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "technical",
+  "tags": [
+    "算法工程师",
+    "1–3 年",
+    "双栏",
+    "数据划分",
+    "误差分析"
+  ],
+  "sortOrder": 15,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "algorithm-engineer",
+    "layout": "two-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#6d28d9",
+    "accentColor": "#6d28d912",
+    "headerStyle": "bar",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "algorithm-engineer",
+      "jobTitle": "算法工程师",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "数据划分",
+        "误差分析",
+        "部署约束"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "邵景言",
+          "jobTitle": "算法工程师",
+          "city": "北京",
+          "phone": "138****1015",
+          "email": "jingyan.shao@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2024 年硕士毕业后从事文本分类与检索算法工作，参与数据标注、基线建立、误差分析和服务联调。能够在业务约束下比较模型效果与推理成本，保留数据版本、划分规则和实验记录；关注离线指标与实际使用差异，不将单次实验提升直接等同业务收益。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "left"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "知语智能科技（虚构）",
+              "position": "算法工程师",
+              "startDate": "2024-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责客服工单分类的数据检查与模型迭代，和业务共同明确 18 类标签及冲突规则，对模糊样本保留人工复核入口。",
+                "维护去重、时间切分和样本来源说明，先复现轻量基线再比较编码器方案，统一评估脚本并记录参数和随机种子。",
+                "与后端约定超时、低置信度及模型不可用的回退行为，参与灰度观察，把误判样例和线上分布变化纳入后续迭代。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "工单分派分类模型",
+              "role": "训练与误差分析",
+              "startDate": "2024-09",
+              "endDate": "2025-03",
+              "current": false,
+              "tech": "Python · PyTorch · 文本分类",
+              "bullets": [
+                "整理 3.6 万条去标识工单，按时间划分训练与验证集合，清理近重复文本，抽查历史转派记录与标签是否一致。",
+                "比较词袋线性模型和预训练编码器，在固定测试集上宏平均 F1 从 0.78 升至 0.84，重点复核长尾类与相近标签混淆。",
+                "针对低置信度样本保留人工分派，在统一硬件上测试批量和单条时延，输出阈值、资源消耗与适用范围供上线评审。"
+              ]
+            },
+            {
+              "name": "知识库检索排序试验",
+              "role": "评估集与实验",
+              "startDate": "2025-06",
+              "endDate": "2025-11",
+              "current": false,
+              "tech": "BM25 · 向量检索 · 重排",
+              "bullets": [
+                "从脱敏检索日志抽取 300 个查询，由两位业务同事标注相关文档，记录分歧和仲裁，区分事实查找与流程咨询。",
+                "建立 BM25 基线，对比向量召回及重排组合，使用固定查询集评估召回与排序质量，另列过期文档和无答案样例。",
+                "把检索过滤、索引更新和推理耗时纳入方案比较，形成离线实验报告；建议先试点并观察人工采纳，不提前宣称减少工单。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "算法项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "left"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "北川理工学院（虚构）",
+              "major": "计算机技术",
+              "degree": "硕士",
+              "startDate": "2021-09",
+              "endDate": "2024-06",
+              "current": false,
+              "description": "本科为同校计算机科学与技术（2017.09–2021.06）。研究生课程包括机器学习、概率模型与信息检索；学位研究完成文本分类复现与数据偏差分析。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "数据实验",
+              "items": [
+                "数据质量与划分",
+                "基线与消融",
+                "分层误差分析"
+              ]
+            },
+            {
+              "name": "模型工具",
+              "items": [
+                "Python/PyTorch",
+                "文本编码器",
+                "检索与重排基础"
+              ]
+            },
+            {
+              "name": "工程协作",
+              "items": [
+                "评估脚本",
+                "推理时延测试",
+                "灰度与回退约定"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "算法技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "right"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "每次实验保存数据清单、划分摘要、代码版本与运行参数，先检查数据泄漏和标签偏差再讨论指标。报告同时呈现总体、长尾类别及困难样本结果，说明置信度阈值和人工复核成本；对离线评估无法覆盖的新主题和过期知识，单独记录上线观察计划与退出条件。",
+          "_config": {
+            "moduleName": "实验复核"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "right"
+      }
+    ]
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "key": "web-frontend",
+  "name": "Web 前端·交互性能",
+  "description": "Web 前端开发工程师原创范文，适用于1–3 年。组件设计、交互反馈、性能优化；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "technical",
+  "tags": [
+    "Web 前端开发工程师",
+    "1–3 年",
+    "双栏",
+    "组件设计",
+    "交互反馈"
+  ],
+  "sortOrder": 13,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "web-frontend",
+    "layout": "two-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#1d4ed8",
+    "accentColor": "#1d4ed812",
+    "headerStyle": "bar",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "web-frontend",
+      "jobTitle": "Web 前端开发工程师",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "组件设计",
+        "交互反馈",
+        "性能优化"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "陆景澄",
+          "jobTitle": "Web 前端开发工程师",
+          "city": "杭州",
+          "phone": "138****1013",
+          "email": "jingcheng.lu@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2024 年起从事 Web 前端开发，主要参与企业后台与客户门户建设。能够使用 React、TypeScript 完成交互、状态和接口接入，关注复杂表单的反馈、页面加载和维护成本。习惯用浏览器性能记录与可重复场景定位问题，和设计、后端共同明确边界状态。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "left"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "轻舟协作科技（虚构）",
+              "position": "前端开发工程师",
+              "startDate": "2024-07",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责客户档案、任务分派和数据导入页面，使用 React 与 TypeScript 交付 18 个业务页面，统一加载、错误和空结果状态。",
+                "将重复的筛选、分页及列配置抽为可组合模块，保留业务侧自定义入口，支持 4 个列表页面逐步迁移并补充使用示例。",
+                "参与接口与设计评审，针对提交重复、权限失效和网络中断补齐反馈；上线后使用错误记录定位问题并跟进修复。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "开发经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "客户门户首屏与表单改进",
+              "role": "前端实现",
+              "startDate": "2025-01",
+              "endDate": "2025-05",
+              "current": false,
+              "tech": "React · Vite · Performance 面板",
+              "bullets": [
+                "在固定设备和限速条件下记录首页资源与长任务，发现图表包提前加载和重复取数，拆分路由资源并合并请求。",
+                "对照相同缓存与网络条件复测，首屏可交互时间中位数从 3.2 秒降至 1.9 秒，同时记录低性能设备和冷启动结果。",
+                "改写资料表单的字段级校验、保存提示和草稿恢复，邀请客服按真实任务走查，修正键盘焦点与错误定位问题。"
+              ]
+            },
+            {
+              "name": "批量导入进度组件",
+              "role": "组件与交互开发",
+              "startDate": "2025-08",
+              "endDate": "2025-11",
+              "current": false,
+              "tech": "TypeScript · 状态机 · 文件处理",
+              "bullets": [
+                "将上传、解析、确认和完成拆为明确状态，与后端约定错误文件、部分失败和任务过期的返回结构及处理动作。",
+                "实现分步校验、轮询取消和重复提交保护，在切换页面后保留任务标识，重新进入时能够恢复进度与结果说明。",
+                "以 15 组脱敏文件验证空表、错列、大文件和重复编号等情况，补齐使用文档，供两个业务模块复用。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工程项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "left"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江城信息学院（虚构）",
+              "major": "计算机科学与技术",
+              "degree": "本科",
+              "startDate": "2020-09",
+              "endDate": "2024-06",
+              "current": false,
+              "description": "课程包括数据结构、Web 开发、数据库与计算机网络。毕业设计为实验室预约工具，负责交互、接口联调和移动端适配。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "前端基础",
+              "items": [
+                "HTML 语义与 CSS",
+                "JavaScript/TypeScript",
+                "浏览器事件"
+              ]
+            },
+            {
+              "name": "应用开发",
+              "items": [
+                "React Hooks",
+                "组件组合",
+                "表单与请求状态"
+              ]
+            },
+            {
+              "name": "工程调试",
+              "items": [
+                "Vite 资源分析",
+                "性能记录",
+                "键盘与响应式走查"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "技术技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "right"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "提交组件时同步提供最小使用示例、状态说明和业务扩展点。接口联调前列出分页、鉴权、超时及字段缺失场景，避免依赖正常返回的演示数据。修复问题先记录触发条件和浏览器环境，再核对影响页面；发布后根据错误记录和业务反馈追踪结果，持续缩小回归范围。",
+          "_config": {
+            "moduleName": "协作与维护"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "right"
+      }
+    ]
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "key": "graduate-developer",
+  "name": "研发校招·实习项目",
+  "description": "Java 开发工程师（应届）原创范文，适用于应届/实习。基础课程、开发实习、课程项目；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "graduate",
+  "tags": [
+    "Java 开发工程师（应届）",
+    "应届/实习",
+    "单栏",
+    "基础课程",
+    "开发实习"
+  ],
+  "sortOrder": 9,
+  "legacyNames": [
+    "应届校招"
+  ],
+  "config": {
+    "systemKey": "graduate-developer",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0284c7",
+    "accentColor": "#0284c712",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "education",
+      "summary",
+      "experience",
+      "projects",
+      "skills",
+      "awards"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "graduate-developer",
+      "jobTitle": "Java 开发工程师（应届）",
+      "experienceLevel": "应届/实习",
+      "highlights": [
+        "基础课程",
+        "开发实习",
+        "课程项目"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "赵晓屿",
+          "jobTitle": "Java 开发工程师（应届）",
+          "city": "武汉",
+          "phone": "138****1009",
+          "email": "xiaoyu.zhao@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江城软件学院（虚构）",
+              "major": "软件工程",
+              "degree": "本科",
+              "startDate": "2022-09",
+              "endDate": "2026-06",
+              "current": false,
+              "description": "相关课程：数据结构、计算机网络、数据库、操作系统与软件工程。GPA 3.5/4.0（示例）；毕业设计为校园设备借用服务，完成需求说明、接口实现和部署文档。参加学院代码阅读小组，按周讲解集合、事务与网络请求的小例子，练习用运行结果说明理解，并保留同伴提出的问题及修正记录。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "软件工程专业 2026 届毕业生，完成一段后端开发实习、一个课程项目与一个毕业项目。能使用 Java、Spring Boot 和关系数据库完成基本业务接口，愿意从边界用例、日志和代码评审中改进实现。项目描述区分小组目标与本人贡献，希望从初级研发岗位积累工程经验。",
+          "_config": {
+            "moduleName": "求职概述"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "星桥应用软件（虚构）",
+              "position": "后端开发实习生",
+              "startDate": "2025-07",
+              "endDate": "2025-11",
+              "current": false,
+              "bullets": [
+                "在导师指导下维护客户资料模块，完成 8 个新增与修改接口，按已有规范补充参数校验、错误码和接口文档。",
+                "针对批量导入中的重复记录，先编写复现数据再调整校验顺序，为空值、重复编号和部分失败补充回归用例。",
+                "参与两次版本发布准备，协助核对配置、数据库变更与回退步骤，记录联调问题的复现条件和处理结果。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "实习经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "校园设备借用服务",
+              "role": "4 人小组/后端开发",
+              "startDate": "2025-12",
+              "endDate": "2026-05",
+              "current": false,
+              "tech": "Spring Boot · PostgreSQL · JUnit",
+              "bullets": [
+                "负责预约与归还模块，绘制设备状态流转，和前端约定日期、权限及冲突提示，完成 11 个业务接口。",
+                "为同一设备重复预约加入数据库约束和事务处理，在课程测试集验证重叠时间、取消和重复提交等 24 个场景。",
+                "编写初始化数据、运行说明和演示脚本，邀请 12 位同学完成任务试用，按反馈修正日期提示与错误信息。"
+              ]
+            },
+            {
+              "name": "课程资料检索工具",
+              "role": "个人课程项目",
+              "startDate": "2024-10",
+              "endDate": "2024-12",
+              "current": false,
+              "tech": "Java · SQL · HTML",
+              "bullets": [
+                "整理课程资料的标题、标签与文件位置，建立索引表和组合查询接口，支持按课程、年份和关键词筛选。",
+                "对比模糊查询与前缀查询的执行计划，在固定的 2 万条模拟数据上记录耗时，说明数据规模与测试环境。",
+                "完成异常提示、空结果页面和使用文档，保留需求变更与调试记录，在课堂答辩中展示实现取舍。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "课程与毕业项目"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "编程基础",
+              "items": [
+                "Java 集合与异常",
+                "面向对象",
+                "常见数据结构"
+              ]
+            },
+            {
+              "name": "应用开发",
+              "items": [
+                "Spring Boot",
+                "PostgreSQL/MySQL",
+                "REST 接口"
+              ]
+            },
+            {
+              "name": "工程习惯",
+              "items": [
+                "Git 分支协作",
+                "JUnit 边界用例",
+                "Linux 基础命令"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "技术基础"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "awards",
+        "data": {
+          "items": [
+            {
+              "title": "校级综合奖学金（示例）",
+              "date": "2024-11",
+              "level": "学习与实践"
+            },
+            {
+              "title": "软件课程设计优秀小组（示例）",
+              "date": "2025-01",
+              "level": "本人负责后端模块"
+            }
+          ],
+          "_config": {
+            "moduleName": "校园成果"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

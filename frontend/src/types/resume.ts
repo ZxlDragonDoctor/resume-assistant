@@ -195,13 +195,31 @@ export type ResumeLayout = 'single-column' | 'two-column' | 'sidebar';
 // 模板
 // ==================================================================
 
-export interface TemplateConfig {
-  layout?: ResumeLayout;
+export interface TemplateConfig extends LayoutConfig {
+  systemKey?: string;
   fonts?: string[];
   primaryColor?: string;
   accentColor?: string;
   headerStyle?: 'underline' | 'bar' | 'pill' | 'solid' | 'plain';
   sections?: SectionType[];
+}
+
+/** 模板库与新建简历共同使用的完整、可编辑范文。 */
+export interface TemplateSample {
+  version: 1;
+  profile: {
+    key: string;
+    jobTitle: string;
+    experienceLevel: string;
+    highlights: string[];
+    suggestedPages: number;
+  };
+  sections: {
+    sectionType: SectionType;
+    sortOrder: number;
+    layout: 'auto' | 'left' | 'right' | 'single-column';
+    data: SectionData;
+  }[];
 }
 
 export interface Template {
@@ -211,7 +229,7 @@ export interface Template {
   category: string;
   tags?: string[];
   thumbnailUrl?: string;
-  previewConfig?: string;
+  previewConfig?: string | TemplateSample | null;
   isPremium: boolean;
   isActive: boolean;
   sortOrder: number;
@@ -327,12 +345,13 @@ export function normalizeTemplateConfig(config: string | TemplateConfig | undefi
   if (!config) return {};
   if (typeof config === 'string') {
     try {
-      return JSON.parse(config) as TemplateConfig;
+      const parsed = JSON.parse(config);
+      return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? parsed : {};
     } catch {
       return {};
     }
   }
-  return config;
+  return typeof config === 'object' && !Array.isArray(config) ? config : {};
 }
 
 /** 从 data 中拆出 _config 与业务字段 */

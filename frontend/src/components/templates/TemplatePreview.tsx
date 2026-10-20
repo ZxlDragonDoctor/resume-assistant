@@ -1,19 +1,102 @@
 /**
  * 模板版式预览
  * ------------------------------------------------------------------
- * 用纯 DOM + 模板的 primaryColor 渲染一份抽象简历骨架，
- * 直观展示该模板的版式差异（单栏 / 双栏 / 侧边栏、标题装饰样式）。
+ * 用轻量 DOM 绘制真实范文节选与版式差异；
+ * 缺少有效范文时使用明确标注的版式骨架。
  */
-import type { TemplateConfig } from '../../types/resume';
+import type { CSSProperties } from 'react';
+import type { ResumeItem, TemplateConfig, TemplateSample } from '../../types/resume';
+import { SECTION_META } from '../../constants/sections';
+import { sampleExcerpt } from '../../utils/templateSample';
 import { brand, neutral, radius } from '../../styles/tokens';
 import { backgroundColorFor } from '../../utils/thumbnail';
 
 interface Props {
   config: TemplateConfig;
+  sample?: TemplateSample | null;
   width?: number;
 }
 
-export default function TemplatePreview({ config, width = 148 }: Props) {
+/** Lightweight excerpts: pagination and full rich text are only mounted in the modal. */
+export default function TemplatePreview({ config, sample, width = 224 }: Props) {
+  if (!sample) return <LegacyTemplatePreview config={config} width={width} />;
+  const accent = config.primaryColor || brand.primary;
+  const soft = config.accentColor || backgroundColorFor(accent, 0.08);
+  const mode = config.layout || 'single-column';
+  const sections = [...sample.sections].sort((a, b) => a.sortOrder - b.sortOrder);
+  const basic = sections.find((section) => section.sectionType === 'basic')?.data || {};
+  const body = sections.filter((section) => section.sectionType !== 'basic');
+  const main: typeof body = [];
+  const side: typeof body = [];
+  body.forEach((section, index) => {
+    const inSide = mode === 'sidebar'
+      ? section.layout === 'left' || (section.layout !== 'right' && ['skills', 'awards', 'certificates', 'custom'].includes(section.sectionType))
+      : mode === 'two-column' && (section.layout === 'right' || (section.layout === 'auto' && index >= Math.ceil(body.length / 2)));
+    (inSide ? side : main).push(section);
+  });
+  const titleDecoration = (style = config.headerStyle || 'underline'): CSSProperties => {
+    if (style === 'bar') return { borderLeft: `4px solid ${accent}`, paddingLeft: 8 };
+    if (style === 'pill') return { background: soft, borderRadius: 18, padding: '2px 10px', display: 'inline-block' };
+    if (style === 'solid') return { background: accent, color: '#fff', padding: '2px 9px', display: 'inline-block' };
+    if (style === 'plain') return {};
+    return { borderBottom: `2px solid ${accent}`, paddingBottom: 4 };
+  };
+  const renderSection = (section: typeof body[number]) => {
+    const { data } = section;
+    const cfg = data._config || {};
+    const items = Array.isArray(data.items) ? data.items : [];
+    const item = items[0] as ResumeItem | undefined;
+    const title = item && typeof item === 'object' ? item.title || item.company || item.school || item.name : '';
+    const bullets = item && typeof item === 'object' && Array.isArray(item.bullets) ? item.bullets : [];
+    return (
+      <div key={`${section.sectionType}-${section.sortOrder}`} style={{ marginBottom: 19 }}>
+        {!cfg.hideTitle && <div style={{ fontSize: 16, fontWeight: 700, color: accent, marginBottom: 7, ...titleDecoration(cfg.titleStyle) }}>
+          {cfg.moduleName || SECTION_META[section.sectionType].label}
+        </div>}
+        {section.sectionType === 'skills' ? (
+          <div style={{ lineHeight: 1.65 }}>
+            {items.slice(0, 3).map((skill, index) => {
+              if (typeof skill === 'string') return <span key={index}>{skill}{index < Math.min(items.length, 3) - 1 ? ' · ' : ''}</span>;
+              const group = skill as { name?: string; category?: string; items?: string[]; value?: string };
+              return <div key={index} style={{ marginBottom: 4 }}><b style={{ color: accent }}>{group.name || group.category} </b>{sampleExcerpt(group.items?.join(' · ') || group.value, 70)}</div>;
+            })}
+          </div>
+        ) : data.content ? (
+          <p style={{ margin: 0, lineHeight: 1.6 }}>{sampleExcerpt(data.content, mode === 'single-column' ? 160 : 115)}</p>
+        ) : (
+          <>
+            {title && <div style={{ fontWeight: 600, marginBottom: 3 }}>{sampleExcerpt(title, 44)}</div>}
+            {item && typeof item === 'object' && <div style={{ color: neutral[500], marginBottom: 5, fontSize: 12 }}>{[item.position || item.role || item.degree || item.major, item.startDate, item.endDate || (item.current ? '至今' : '')].filter(Boolean).join(' · ')}</div>}
+            {bullets.length ? <ul style={{ margin: '4px 0 0', paddingLeft: 16 }}><li style={{ lineHeight: 1.6 }}>{sampleExcerpt(bullets[0], mode === 'single-column' ? 140 : 110)}</li></ul>
+              : item && typeof item === 'object' && item.description ? <p style={{ margin: 0, lineHeight: 1.6 }}>{sampleExcerpt(item.description, 100)}</p> : null}
+          </>
+        )}
+      </div>
+    );
+  };
+  const scale = width / 600;
+  return (
+    <div aria-hidden="true" className="template-document-excerpt" style={{ width, height: width * 1.414, background: '#fff', boxShadow: shadowPaper, border: `1px solid ${neutral[200]}`, overflow: 'hidden', flexShrink: 0, textAlign: 'left' }}>
+      <div style={{ width: 600, minHeight: 848.4, boxSizing: 'border-box', transform: `scale(${scale})`, transformOrigin: 'top left', padding: '32px 36px', fontFamily: config.fonts?.[0] || "'Microsoft YaHei', sans-serif", fontSize: 14, color: neutral[700], lineHeight: 1.5 }}>
+        <header style={{ textAlign: 'center', paddingBottom: 17, marginBottom: 22, borderBottom: `1px solid ${neutral[200]}` }}>
+          <div style={{ fontSize: 32, lineHeight: 1.35, fontWeight: 700, color: accent, letterSpacing: 3 }}>{String(basic.name || '')}</div>
+          <div style={{ fontSize: 16, marginTop: 4, color: neutral[800] }}>{String(basic.jobTitle || sample.profile.jobTitle)}</div>
+          <div style={{ fontSize: 11, color: neutral[500], marginTop: 8 }}>{[basic.city, basic.phone, basic.email].filter((part) => typeof part === 'string' && part).join(' · ')}</div>
+        </header>
+        {mode === 'single-column' || !side.length ? main.map(renderSection) : (
+          <div style={{ display: 'grid', gridTemplateColumns: mode === 'sidebar' ? '168px 1fr' : '1.15fr .85fr', gap: 22, alignItems: 'start' }}>
+            {mode === 'sidebar' ? <><aside style={{ borderRight: `1px solid ${accent}30`, paddingRight: 16 }}>{side.map(renderSection)}</aside><div>{main.map(renderSection)}</div></>
+              : <><div>{main.map(renderSection)}</div><aside style={{ borderLeft: `1px solid ${accent}30`, paddingLeft: 14 }}>{side.map(renderSection)}</aside></>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const shadowPaper = '0 3px 14px rgba(15,23,42,0.10)';
+
+function LegacyTemplatePreview({ config, width = 148 }: Props) {
   const accent = config.primaryColor || brand.primary;
   const accentSoft = config.accentColor || backgroundColorFor(accent, 0.1);
   const headerStyle = config.headerStyle || 'underline';

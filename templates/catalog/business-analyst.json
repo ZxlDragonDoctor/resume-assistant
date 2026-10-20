@@ -1,0 +1,219 @@
+{
+  "key": "business-analyst",
+  "name": "商业分析·经营洞察",
+  "description": "商业分析师原创范文，适用于3–5 年。经营模型、渠道诊断、决策支持；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "business",
+  "tags": [
+    "商业分析师",
+    "3–5 年",
+    "双栏",
+    "经营模型",
+    "渠道诊断"
+  ],
+  "sortOrder": 2,
+  "legacyNames": [
+    "商务经典"
+  ],
+  "config": {
+    "systemKey": "business-analyst",
+    "layout": "two-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#1e293b",
+    "accentColor": "#1e293b12",
+    "headerStyle": "bar",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "business-analyst",
+      "jobTitle": "商业分析师",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "经营模型",
+        "渠道诊断",
+        "决策支持"
+      ],
+      "suggestedPages": 2
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "沈思衡",
+          "jobTitle": "商业分析师",
+          "city": "上海",
+          "phone": "138****1002",
+          "email": "siheng.shen@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起从事零售经营与商业分析，能够围绕收入、毛利和库存拆解业务问题，结合交易数据与一线访谈检验假设。熟悉经营复盘和情景测算，重视口径、成本假设与结论边界，支持业务负责人判断方案的实施优先级。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "left"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "知衡零售集团（虚构）",
+              "position": "商业分析师",
+              "startDate": "2023-09",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责 28 家门店的月度经营分析，统一销售净额、折扣与可比店口径，向区域负责人解释毛利变化和门店差异。",
+                "针对低效促销回溯 12 周交易与费用，区分客流、客单价和商品组合影响，提出分门店试行的折扣边界。",
+                "与财务核对租金、人效和损耗等成本，建立开店测算表，以保守、基准和增长三种场景讨论回收周期。"
+              ]
+            },
+            {
+              "company": "原点商业咨询（虚构）",
+              "position": "分析助理",
+              "startDate": "2022-07",
+              "endDate": "2023-08",
+              "current": false,
+              "bullets": [
+                "参与区域消费研究，采集并复核 40 个商圈样本，将来源、日期和缺失项记录到资料底表，支持团队交叉核验。",
+                "整理客户访谈与竞品资料，将渠道价格差异归为促销、规格和服务三类因素，避免直接比较不可比商品。",
+                "负责两份项目报告的数据附录与图表校验，在交付前逐项回查计算过程，使结论可追溯至原始资料。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "会员促销投入产出复盘",
+              "role": "分析执行",
+              "startDate": "2024-05",
+              "endDate": "2024-09",
+              "current": false,
+              "tech": "SQL · Excel · 情景测算",
+              "bullets": [
+                "将活动新增、原有会员复购及提前购买拆开观察，排除退货订单，并与财务统一优惠券费用的归属周期。",
+                "按会员活跃度对比购买变化，发现低活跃组响应集中在高折扣商品，建议缩小普发券范围并设置毛利底线。",
+                "在 6 家可比门店进行四周试行，跟踪每单毛利与活跃会员数；报告注明门店差异与观察周期，支持下一季预算讨论。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "分析项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "left"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "海川财经学院（虚构）",
+              "major": "经济统计学",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "相关课程：计量经济学、管理会计、市场研究和运筹学。课程设计使用公开零售数据比较区域需求，练习模型假设、敏感性分析与结论表达。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "业务拆解",
+              "items": [
+                "收入与毛利分析",
+                "单位经济模型",
+                "渠道比较"
+              ]
+            },
+            {
+              "name": "数据工具",
+              "items": [
+                "SQL 多表与窗口函数",
+                "Excel 情景分析",
+                "Power BI"
+              ]
+            },
+            {
+              "name": "研究表达",
+              "items": [
+                "访谈提纲",
+                "资料交叉核验",
+                "管理汇报"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "分析能力"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "right"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "为经营报告维护指标字典与假设页，说明数据范围、更新周期、异常处理及尚未验证的问题。每次评审将结论拆为可立即执行、需要小范围验证和需要补充资料三类建议，注明负责人及观察指标，方便业务在下次复盘中回看实际执行结果。",
+          "_config": {
+            "moduleName": "分析交付规范"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "right"
+      }
+    ]
+  }
+}

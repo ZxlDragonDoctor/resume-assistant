@@ -1,0 +1,219 @@
+{
+  "key": "product-manager",
+  "name": "产品经理·业务成果",
+  "description": "B 端产品经理原创范文，适用于3–5 年。用户问题、需求判断、上线验证；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "product",
+  "tags": [
+    "B 端产品经理",
+    "3–5 年",
+    "单栏",
+    "用户问题",
+    "需求判断"
+  ],
+  "sortOrder": 7,
+  "legacyNames": [
+    "产品运营"
+  ],
+  "config": {
+    "systemKey": "product-manager",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#2563eb",
+    "accentColor": "#2563eb12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "product-manager",
+      "jobTitle": "B 端产品经理",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "用户问题",
+        "需求判断",
+        "上线验证"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "王予诺",
+          "jobTitle": "B 端产品经理",
+          "city": "北京",
+          "phone": "138****1007",
+          "email": "yunnuo.wang@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起从事企业服务产品工作，负责审批协作与客户自助服务方向。习惯结合访谈、服务记录和行为数据确定问题，明确需求边界、异常状态与验收条件；与设计、研发和运营共同推进上线，并用使用反馈检验方案是否解决原始问题。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "远树协作科技（虚构）",
+              "position": "产品经理",
+              "startDate": "2023-10",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责企业审批与任务协作模块，访谈 12 名管理员与业务用户，将反馈按使用频率、阻塞程度和实现成本整理成需求池。",
+                "围绕跨部门审批追踪难题，补齐状态、催办与代理规则，推动设计和研发评审异常流程，按两期交付避免扩大首期范围。",
+                "建立上线后四周观察清单，对照工单与关键任务路径复盘；为未达预期的功能继续回访，明确保留、优化或撤回的依据。"
+              ]
+            },
+            {
+              "company": "初原企业软件（虚构）",
+              "position": "产品助理",
+              "startDate": "2022-07",
+              "endDate": "2023-09",
+              "current": false,
+              "bullets": [
+                "整理客户自助服务的高频问题，编写需求说明和交互原型，配合负责人完成订阅查询、发票申请和联系人维护功能。",
+                "维护埋点字典与验收用例，在联调时核查权限、空状态及失败提示，避免仅按正常操作路径验收功能。",
+                "每月汇总使用数据和客服意见，为需求评审准备问题证据、影响范围及已有替代方案，支持负责人安排迭代。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "审批进度透明化",
+              "role": "产品设计与上线复盘",
+              "startDate": "2024-04",
+              "endDate": "2024-10",
+              "current": false,
+              "tech": "访谈 · 状态建模 · 行为分析",
+              "bullets": [
+                "从 146 条审批咨询中归纳看不到处理人、无法判断等待原因两类问题，绘制提交者与审批者的完整任务路径。",
+                "定义节点状态、预计处理提示与提醒频率，针对转交、撤回及重复提交补齐规则，并用原型完成 8 位用户的任务走查。",
+                "在 20 家试点企业上线后跟踪四周，同口径进度咨询从每百笔 11 次降至 6 次；报告同时说明试点规模和使用差异。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "产品项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "北川信息学院（虚构）",
+              "major": "信息管理与信息系统",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "学习管理学、数据库、统计与人机交互。课程项目完成校园设备借用流程调研，交付需求文档、原型和验证记录。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "发现问题",
+              "items": [
+                "访谈与工单归类",
+                "任务流程",
+                "需求优先级"
+              ]
+            },
+            {
+              "name": "方案交付",
+              "items": [
+                "原型与状态规则",
+                "验收用例",
+                "跨团队评审"
+              ]
+            },
+            {
+              "name": "效果验证",
+              "items": [
+                "SQL 基础查询",
+                "漏斗与分群",
+                "上线复盘"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "产品技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "需求说明固定包含问题证据、目标用户、流程、权限、异常状态及观察指标；变更时注明影响页面和接口。推动设计、研发及客服在开发前各走查一次实际任务，使用统一问题清单收口。复盘区分功能被使用与问题被解决，保留未解决反馈供后续迭代判断。",
+          "_config": {
+            "moduleName": "文档与协作"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

@@ -307,6 +307,43 @@ const multiPageOk = multiPageHtml.includes('class="page" data-page="2"')
 if (!multiPageOk) failures += 1;
 console.log(`${multiPageOk ? 'PASS' : 'FAIL'}  多页双栏在新页从左栏继续`);
 
+for (const mode of ['single-column', 'sidebar']) {
+  const flowSections = [
+    { id: 'main-a', sectionType: 'work', height: 80 },
+    { id: 'side-a', sectionType: 'skills', height: 60 },
+    { id: 'main-b', sectionType: 'work', height: 50 },
+    { id: 'side-b', sectionType: 'custom', height: 50 },
+  ];
+  const pages = paginateSectionsByHeight(flowSections, {
+    mode, firstPageCapacity: 100, columnCapacity: 150,
+  });
+  const actual = pages.map(({ main, side }) => ({ main: main.map((s) => s.id), side: side.map((s) => s.id) }));
+  const expected = mode === 'single-column'
+    ? [{ main: ['main-a'], side: [] }, { main: ['side-a', 'main-b'], side: [] }, { main: ['side-b'], side: [] }]
+    : [{ main: ['main-a'], side: ['side-a'] }, { main: ['main-b'], side: ['side-b'] }];
+  const pass = JSON.stringify(actual) === JSON.stringify(expected);
+  if (!pass) failures += 1;
+  console.log(`${pass ? 'PASS' : 'FAIL'}  ${mode} 按首屏页眉和后续完整页高连续分页`);
+
+  const longHtml = renderResumeHtml({
+    ...multiPageResume, layoutConfig: JSON.stringify({ layout: mode }),
+    sections: multiPageResume.sections,
+  });
+  const pagesWithContent = [...longHtml.matchAll(/<main class="page" data-page="\d+">([\s\S]*?)<\/main>/g)];
+  const allSectionsOnce = multiPageResume.sections.slice(1).every((section) =>
+    longHtml.split(`data-section-id="${section.id}"`).length === 2);
+  const paginated = pagesWithContent.length > 1 && pagesWithContent.every(([, page]) => page.includes('data-section-id=')) && allSectionsOnce;
+  if (!paginated) failures += 1;
+  console.log(`${paginated ? 'PASS' : 'FAIL'}  ${mode} 输出多页且无模块丢失、重复或首尾空白页`);
+}
+
+const oversizedPages = paginateSectionsByHeight([{ id: 'oversized', height: 160 }], {
+  mode: 'single-column', firstPageCapacity: 80, columnCapacity: 100,
+});
+const oversizedVisible = oversizedPages.length === 1 && oversizedPages[0].main[0]?.id === 'oversized';
+if (!oversizedVisible) failures += 1;
+console.log(`${oversizedVisible ? 'PASS' : 'FAIL'}  超长模块保留全部内容且不生成空白首页`);
+
 console.log(
   failures === 0
     ? '\n=== 渲染契约测试全部通过 ==='

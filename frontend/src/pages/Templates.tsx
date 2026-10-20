@@ -1,69 +1,58 @@
-/**
- * 模板库
- * ------------------------------------------------------------------
- * 左侧分类筛选，右侧模板卡片网格。
- * 每张卡片用 CSS 渲染模板的版式骨架（而非图片），
- * 配色跟随模板的 primaryColor，鼠标悬浮时展示「使用此模板」。
- */
+/** 模板库：轻量范文节选、匿名全文预览和独立创建操作。 */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App as AntApp, Button, Empty, Input, Segmented, Spin } from 'antd';
-import { CheckOutlined, SearchOutlined, ThunderboltOutlined } from '@ant-design/icons';
-
+import { CheckOutlined, EyeOutlined, SearchOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import TemplatePreview from '../components/templates/TemplatePreview';
+import TemplateSampleModal from '../components/templates/TemplateSampleModal';
 import { templateApi, auth } from '../services/api';
 import { useResumeStore } from '../stores/resumeStore';
-import {
-  normalizeTemplateConfig,
-  type Template,
-  type TemplateCategory,
-} from '../types/resume';
-import { brand, layout as layoutTokens, neutral, radius, semantic, shadow, space } from '../styles/tokens';
+import { normalizeTemplateConfig, type Template, type TemplateCategory } from '../types/resume';
+import { normalizeTemplateSample, templateSearchText } from '../utils/templateSample';
+import { neutral, semantic } from '../styles/tokens';
+import '../components/templates/templates.css';
 
 export default function Templates() {
   const navigate = useNavigate();
   const { message } = AntApp.useApp();
   const { createResume } = useResumeStore();
-
   const [templates, setTemplates] = useState<Template[]>([]);
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [usingId, setUsingId] = useState<string | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
 
   useEffect(() => {
-    Promise.all([templateApi.list(), templateApi.categories()])
-      .then(([list, cats]) => {
-        setTemplates(list);
-        setCategories(cats);
-      })
-      .catch(() => {
-        setTemplates([]);
-        setCategories([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    let active = true;
+    setLoading(true);
+    setLoadFailed(false);
+    Promise.allSettled([templateApi.list(), templateApi.categories()]).then(([list, cats]) => {
+      if (!active) return;
+      if (list.status === 'fulfilled') setTemplates(list.value);
+      else { setTemplates([]); setLoadFailed(true); }
+      setCategories(cats.status === 'fulfilled' ? cats.value : []);
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [retry]);
+
+  const entries = useMemo(() => templates.map((template) => {
+    const sample = normalizeTemplateSample(template.previewConfig);
+    return { template, sample, config: normalizeTemplateConfig(template.config), searchable: templateSearchText(template, sample) };
+  }), [templates]);
 
   const filtered = useMemo(() => {
-    let list = templates;
-    if (activeCategory !== 'all') {
-      list = list.filter((t) => t.category === activeCategory);
-    }
-    if (keyword.trim()) {
-      const kw = keyword.trim().toLowerCase();
-      list = list.filter(
-        (t) =>
-          t.name.toLowerCase().includes(kw) ||
-          (t.description || '').toLowerCase().includes(kw) ||
-          (t.tags || []).some((tag) => tag.toLowerCase().includes(kw))
-      );
-    }
-    return list;
-  }, [templates, activeCategory, keyword]);
+    const term = keyword.trim().toLowerCase();
+    return entries.filter(({ template, searchable }) =>
+      (activeCategory === 'all' || template.category === activeCategory) && (!term || searchable.includes(term)));
+  }, [entries, activeCategory, keyword]);
 
-  /** 用某套模板创建简历并进入编辑器 */
   const handleUse = async (template: Template) => {
+    if (usingId) return;
     if (!auth.getToken()) {
       message.info('请先登录后再使用模板');
       navigate('/login', { state: { from: '/templates' } });
@@ -72,8 +61,12 @@ export default function Templates() {
     setUsingId(template.id);
     try {
       const resume = await createResume(`${template.name}简历`, template.id);
-      message.success('已基于该模板创建简历');
+      message.success(normalizeTemplateSample(template.previewConfig)
+        ? '已创建简历。示例内容，请替换为真实经历'
+        : '已创建简历，请在编辑器中核对示例并替换为真实经历', 5);
       navigate(`/editor/${resume.id}`);
+    } catch {
+      message.error('创建简历失败，请稍后重试');
     } finally {
       setUsingId(null);
     }
@@ -81,275 +74,65 @@ export default function Templates() {
 
   const categoryOptions = [
     { value: 'all', label: `全部 ${templates.length}` },
-    ...categories.map((c) => ({ value: c.key, label: `${c.label} ${c.count}` })),
+    ...categories.map((category) => ({ value: category.key, label: `${category.label} ${category.count}` })),
   ];
 
   return (
     <div style={{ background: neutral[25], minHeight: 'calc(100vh - 56px)' }}>
-      {/* ---------------- 页头 ---------------- */}
-      <div
-        style={{
-          background: '#fff',
-          borderBottom: `1px solid ${neutral[150]}`,
-          padding: `${space.xxxl}px 32px ${space.xxl}px`,
-        }}
-      >
-        <div style={{ maxWidth: layoutTokens.contentMaxWidth, margin: '0 auto' }}>
-          <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: neutral[900],
-              letterSpacing: -0.5,
-              marginBottom: 8,
-            }}
-          >
-            简历模板
-          </h1>
-          <p style={{ fontSize: 14.5, color: neutral[500], maxWidth: 620, lineHeight: 1.7 }}>
-            每套模板都是独立的版式与配色方案。选定后仍可在编辑器内自由调整字体、颜色和间距，
-            切换到其它模板时内容不会丢失。
-          </p>
+      <header className="template-library-header">
+        <div className="template-library-container">
+          <h1>简历模板</h1>
+          <p>从适合岗位的范文开始，看看经历、技能和项目如何组织。打开预览可阅读完整内容，使用后可自由修改文字、字体、配色与间距。</p>
         </div>
-      </div>
-
-      {/* ---------------- 筛选条 ---------------- */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 56,
-          zIndex: 50,
-          background: 'rgba(255,255,255,0.92)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: `1px solid ${neutral[150]}`,
-          padding: '14px 32px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: layoutTokens.contentMaxWidth,
-            margin: '0 auto',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 16,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Segmented
-            value={activeCategory}
-            onChange={(v) => setActiveCategory(v as string)}
-            options={categoryOptions}
-          />
-          <Input
-            placeholder="搜索模板名称或标签"
-            prefix={<SearchOutlined style={{ color: neutral[400] }} />}
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            allowClear
-            style={{ width: 240, borderRadius: radius.md }}
-          />
-        </div>
-      </div>
-
-      {/* ---------------- 网格 ---------------- */}
-      <div
-        style={{
-          maxWidth: layoutTokens.contentMaxWidth,
-          margin: '0 auto',
-          padding: `${space.xxl}px 32px ${space.giant}px`,
-        }}
-      >
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <Spin size="large" />
+      </header>
+      <div className="template-library-filters">
+        <div className="template-library-container template-library-filter-content">
+          <div className="template-library-categories">
+            <Segmented aria-label="模板分类" value={activeCategory} onChange={(value) => setActiveCategory(String(value))} options={categoryOptions} />
           </div>
-        ) : filtered.length === 0 ? (
-          <Empty description="没有匹配的模板" style={{ padding: '80px 0' }} />
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(272px, 1fr))',
-              gap: 22,
-            }}
-          >
-            {filtered.map((template) => {
-              const config = normalizeTemplateConfig(template.config);
-              return (
-                <div
-                  key={template.id}
-                  className="template-card"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleUse(template)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleUse(template);
-                    }
-                  }}
-                  style={{
-                    background: '#fff',
-                    borderRadius: radius.xl,
-                    border: `1px solid ${neutral[150]}`,
-                    boxShadow: shadow.xs,
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {/* 预览区 */}
-                  <div
-                    style={{
-                      position: 'relative',
-                      height: 210,
-                      background: `linear-gradient(160deg, ${neutral[50]}, ${neutral[100]})`,
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'flex-start',
-                      paddingTop: 20,
-                      borderBottom: `1px solid ${neutral[150]}`,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <TemplatePreview config={config} width={148} />
-
-                    {/* 悬浮操作 */}
-                    <div
-                      className="template-card-actions"
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(15,23,42,0.44)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Button
-                        type="primary"
-                        icon={<ThunderboltOutlined />}
-                        loading={usingId === template.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUse(template);
-                        }}
-                        style={{
-                          height: 38,
-                          padding: '0 20px',
-                          borderRadius: radius.md,
-                          fontWeight: 500,
-                          background: brand.gradient,
-                          border: 'none',
-                        }}
-                      >
-                        使用此模板
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* 信息区 */}
-                  <div style={{ padding: '15px 17px 17px', flex: 1 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 8,
-                        marginBottom: 6,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 600,
-                          color: neutral[900],
-                        }}
-                      >
-                        {template.name}
-                      </span>
-                      {!template.isPremium && (
-                        <span
-                          style={{
-                            fontSize: 10.5,
-                            fontWeight: 600,
-                            color: semantic.success,
-                            background: semantic.successSoft,
-                            padding: '2px 7px',
-                            borderRadius: radius.xs,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 3,
-                          }}
-                        >
-                          <CheckOutlined style={{ fontSize: 9 }} />
-                          免费
-                        </span>
-                      )}
-                    </div>
-
-                    <p
-                      style={{
-                        fontSize: 12.5,
-                        color: neutral[500],
-                        lineHeight: 1.65,
-                        marginBottom: 12,
-                        minHeight: 40,
-                      }}
-                    >
-                      {template.description}
-                    </p>
-
-                    {/* 标签 */}
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {(template.tags || []).slice(0, 4).map((tag) => (
-                        <span
-                          key={tag}
-                          style={{
-                            fontSize: 11,
-                            color: neutral[600],
-                            background: neutral[100],
-                            padding: '2px 8px',
-                            borderRadius: radius.xs,
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: config.primaryColor || brand.primary,
-                          background: `${config.primaryColor || brand.primary}12`,
-                          padding: '2px 8px',
-                          borderRadius: radius.xs,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {layoutLabel(config.layout)}
-                      </span>
-                    </div>
-                  </div>
+          <Input aria-label="搜索模板、岗位、求职阶段或内容亮点" placeholder="搜索岗位、阶段或内容亮点" prefix={<SearchOutlined style={{ color: neutral[400] }} />} value={keyword} onChange={(event) => setKeyword(event.target.value)} allowClear className="template-library-search" style={{ width: 260 }} />
+        </div>
+      </div>
+      <main className="template-library-container template-library-results">
+        {loading ? <div style={{ textAlign: 'center', padding: '80px 0' }} role="status" aria-label="正在加载模板"><Spin size="large" /></div>
+          : loadFailed ? <Empty description="模板加载失败，请稍后重试" style={{ padding: '60px 0' }}><Button onClick={() => setRetry((value) => value + 1)}>重新加载</Button></Empty>
+            : filtered.length === 0 ? <Empty description="没有匹配的模板，试试其他岗位或关键词" style={{ padding: '80px 0' }} />
+              : <>
+                <p className="template-library-count" aria-live="polite">{filtered.length} 套模板 · 预览无需登录 · 示例内容，请替换为真实经历</p>
+                <div className="template-library-grid">
+                  {filtered.map(({ template, sample, config }) => (
+                    <article key={template.id} className="template-sample-card" data-testid="template-card" data-template-id={template.id} aria-labelledby={`template-title-${template.id}`}>
+                      <button type="button" className="template-sample-cover" aria-label={`预览${template.name}${sample ? '完整范文' : '版式'}`} onClick={() => setPreviewTemplate(template)}>
+                        <TemplatePreview config={config} sample={sample} width={224} />
+                        <span className="template-sample-cover-caption">{sample ? '真实范文节选 · 点击阅读全文' : '版式示意 · 暂无完整范文'}</span>
+                      </button>
+                      <div className="template-sample-card-info">
+                        <div className="template-sample-card-heading">
+                          <h2 id={`template-title-${template.id}`}>{template.name}</h2>
+                          {!template.isPremium && <span style={{ color: semantic.success, background: semantic.successSoft, padding: '2px 6px', borderRadius: 4, fontSize: 10, whiteSpace: 'nowrap' }}><CheckOutlined /> 免费</span>}
+                        </div>
+                        {sample && <p className="template-sample-card-stage">{sample.profile.jobTitle} · {sample.profile.experienceLevel}</p>}
+                        <p className="template-sample-card-description">{template.description}</p>
+                        <div className="template-sample-card-tags">
+                          <span>{layoutLabel(config.layout)}</span>
+                          {(sample?.profile.highlights || template.tags || []).slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}
+                          {sample && <span>{sample.sections.length} 个可编辑模块</span>}
+                        </div>
+                      </div>
+                      <div className="template-sample-card-controls">
+                        <Button icon={<EyeOutlined />} onClick={() => setPreviewTemplate(template)} aria-label={`预览${template.name}${sample ? '范文' : '版式'}`}>{sample ? '预览范文' : '预览版式'}</Button>
+                        <Button type="primary" icon={<ThunderboltOutlined />} loading={usingId === template.id} disabled={Boolean(usingId && usingId !== template.id)} onClick={() => handleUse(template)} aria-label={`使用${template.name}模板`}>使用此模板</Button>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </>}
+      </main>
+      {previewTemplate && <TemplateSampleModal key={previewTemplate.id} template={previewTemplate} using={usingId === previewTemplate.id} onClose={() => setPreviewTemplate(null)} onUse={handleUse} />}
     </div>
   );
 }
 
 function layoutLabel(layout?: string): string {
-  switch (layout) {
-    case 'two-column':
-      return '双栏';
-    case 'sidebar':
-      return '侧边栏';
-    default:
-      return '单栏';
-  }
+  return layout === 'two-column' ? '双栏' : layout === 'sidebar' ? '侧边栏' : '单栏';
 }

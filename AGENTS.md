@@ -102,7 +102,8 @@ Open http://localhost:5173 and log in / register.
 - **Old v1 scaffold** (`src/`) has been removed; old `pom.xml` replaced by new multi-module pom
 
 ## Templates & sample content
-- `docs/sql/init.sql` seeds **12 templates** (categories: modern/classic/creative/technical/academic/business/product/design/graduate/data/education/medical).
-- Existing DBs: run `docs/sql/add-templates.sql`.
-- `ResumeService.create` calls `seedSampleSections(resumeId, templateId)` — picks a **category-specific sample resume** (tech/business/product/academic/graduate/data/medical) so every new resume is editable immediately.
+- `templates/catalog/*.json` defines **24 role-specific system templates** across general/graduate/technical/product/design/business/academic/medical.
+- Run `node scripts/sync-template-catalog.mjs` after editing content; `--check` validates content and generated SQL. `docs/sql/init.sql` seeds the same catalog.
+- Existing DBs: apply `docs/sql/migrate-template-content.sql` with `psql -v ON_ERROR_STOP=1`; system IDs are preserved and custom templates are retained.
+- `ResumeService.create` validates and copies the chosen template's `preview_config` modules with new UUIDs; missing/invalid legacy preview data uses the category fallback. Frontend full preview consumes this same sample.
 - Sample names/contacts are fictional placeholders only.

@@ -1,0 +1,230 @@
+{
+  "key": "project-manager",
+  "name": "项目管理·交付协同",
+  "description": "实施项目经理原创范文，适用于5 年以上。里程碑管理、范围与风险、客户验收；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "business",
+  "tags": [
+    "实施项目经理",
+    "5 年以上",
+    "单栏",
+    "里程碑管理",
+    "范围与风险"
+  ],
+  "sortOrder": 6,
+  "legacyNames": [
+    "商务管理"
+  ],
+  "config": {
+    "systemKey": "project-manager",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0f172a",
+    "accentColor": "#0f172a12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "certificates"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "project-manager",
+      "jobTitle": "实施项目经理",
+      "experienceLevel": "5 年以上",
+      "highlights": [
+        "里程碑管理",
+        "范围与风险",
+        "客户验收"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "顾明川",
+          "jobTitle": "实施项目经理",
+          "city": "苏州",
+          "phone": "138****1006",
+          "email": "mingchuan.gu@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2018 年起参与制造企业信息化项目，经历实施顾问与项目经理岗位，熟悉从需求澄清、试点到验收移交的交付过程。能够协调客户业务、研发和实施资源，识别范围变化与依赖风险，采用可检查的里程碑和问题清单推动决策与落地。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "知行工业软件（虚构）",
+              "position": "实施项目经理",
+              "startDate": "2022-03",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责 4 个制造客户的协同排产项目，依据合同范围拆解交付物和验收条件，组织业务、技术与客户负责人共同确认基线。",
+                "协调 8 人项目小组，按周跟踪接口、主数据与现场准备的依赖；对资源冲突形成方案和影响说明，提交项目委员会决策。",
+                "建立试运行问题分级、责任人与关闭证据，完成 3 个项目阶段验收；将遗留事项约定到服务交接表并持续跟进。"
+              ]
+            },
+            {
+              "company": "启程管理科技（虚构）",
+              "position": "实施顾问",
+              "startDate": "2018-07",
+              "endDate": "2022-02",
+              "current": false,
+              "bullets": [
+                "参与 6 个采购与库存系统实施，走访仓库和财务岗位梳理单据流，形成配置、接口与权限需求，供负责人核对范围。",
+                "组织用户操作培训和关键用户演练，按岗位整理操作手册，以真实业务样例检验盘点、退货和跨月处理流程。",
+                "驻场期间记录每日异常与临时处理方式，跟进研发修复和用户复核，将重复问题归纳为上线准备清单。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "三工厂排产协同系统上线",
+              "role": "项目经理",
+              "startDate": "2024-02",
+              "endDate": "2025-01",
+              "current": false,
+              "tech": "阶段交付 · 依赖管理 · 验收",
+              "bullets": [
+                "将三家工厂的排产差异拆分为公共流程和本地规则，先在一家工厂试点，冻结首期边界并设定每阶段的进入条件。",
+                "识别设备接口交付延迟风险，调整联调顺序并启用模拟数据验证非接口流程，使业务培训和主数据检查按原计划推进。",
+                "组织两轮整体验证与四周试运行，按 68 项验收条目提交证据；上线后移交值班安排、回退条件与未完成事项责任人。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "重点项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "东江工程学院（虚构）",
+              "major": "信息管理与信息系统",
+              "degree": "本科",
+              "startDate": "2014-09",
+              "endDate": "2018-06",
+              "current": false,
+              "description": "课程包括项目管理、管理信息系统、数据库和供应链管理。毕业实践参与校内资产管理系统需求调研，形成流程图与验收案例。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "计划管理",
+              "items": [
+                "工作分解结构",
+                "里程碑与依赖",
+                "资源排期"
+              ]
+            },
+            {
+              "name": "范围风险",
+              "items": [
+                "变更影响分析",
+                "风险台账",
+                "决策纪要"
+              ]
+            },
+            {
+              "name": "客户协作",
+              "items": [
+                "关键用户培训",
+                "验收证据",
+                "服务移交"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "交付能力"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "certificates",
+        "data": {
+          "items": [
+            {
+              "title": "项目管理专业培训结业（示例）",
+              "date": "2022-11",
+              "level": "项目计划与风险专题"
+            },
+            {
+              "title": "信息系统项目管理师资格（示例）",
+              "date": "2023-11",
+              "level": "按真实取得情况替换"
+            }
+          ],
+          "_config": {
+            "moduleName": "专业学习"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

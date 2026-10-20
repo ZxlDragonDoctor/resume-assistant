@@ -62,8 +62,8 @@
 <td width="50%" valign="top">
 
 ### 🗂 模板市场与示例内容
-12 套中文模板按 **通用求职、应届校招、技术研发、产品运营、设计创意、商务职能、学术教育、医疗健康** 八个求职方向分类；
-单栏、双栏等版式作为模板标签。**新建简历会按方向填入对应示例内容**，打开即可直接修改。
+24 套中文岗位模板按 **通用求职、应届校招、技术研发、产品运营、设计创意、商务职能、学术教育、医疗健康** 八个求职方向分类；
+单栏、双栏、侧边栏等版式作为模板标签。**可匿名预览完整岗位范文，新建简历使用同一份可编辑内容**，打开即可直接修改。
 
 ### 📐 模块化编辑
 10 种内容模块（基本信息 / 个人总结 / 实习 / 工作 / 项目 / 教育 / 技能 / 奖项 / 证书 / 自定义），
@@ -419,9 +419,10 @@ ResumeAssistant/
 │   ├── FRONTEND.md                 # 前端设计系统规范
 │   ├── assets/                     # README 视觉资源（banner / 截图）
 │   ├── conf/rabbitmq.conf          # 低内存服务器的 RabbitMQ 配置
-│   ├── sql/init.sql                # 建表 + 触发器 + 12 个种子模板
+│   ├── sql/init.sql                # 建表 + 触发器 + 24 套岗位模板和范文
 │   ├── sql/add-templates.sql       # 为旧数据库幂等补齐缺少模板
-│   └── sql/migrate-template-categories.sql # 已有数据库分类迁移
+│   ├── sql/migrate-template-categories.sql # 已有数据库分类迁移
+│   └── sql/migrate-template-content.sql # 24 套岗位范文幂等迁移
 ├── docker-compose.yml              # 全栈编排
 ├── docker-compose.server.yml       # 低内存服务器覆盖层
 └── DEPLOY.md                       # 部署指南
@@ -525,9 +526,9 @@ PostgreSQL，默认连接 `resume / resume123 @ localhost:5432/resume_assistant`
 | `templates` | 模板 |
 | `ai_operations` | AI 调用审计 |
 
-`docs/sql/init.sql` 含建表语句、触发器与 12 个种子模板。已有数据库升级时，先执行
+`docs/sql/init.sql` 含建表语句、触发器与 24 套岗位模板及完整范文。内容源位于 `templates/catalog/`，运行 `node scripts/sync-template-catalog.mjs --check` 可验证内容与 SQL 同步。已有数据库升级时，先执行
 [`docs/sql/add-templates.sql`](./docs/sql/add-templates.sql) 补齐缺少的模板，再执行
-[`docs/sql/migrate-template-categories.sql`](./docs/sql/migrate-template-categories.sql) 迁移分类，然后更新应用。
+[`docs/sql/migrate-template-categories.sql`](./docs/sql/migrate-template-categories.sql) 迁移分类，再执行 [`docs/sql/migrate-template-content.sql`](./docs/sql/migrate-template-content.sql)，然后更新应用。模板卡片支持阅读完整范文，预览和新建简历共用模板内容；已有简历保留用户编辑的数据。
 
 <br>
 

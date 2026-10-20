@@ -127,7 +127,7 @@ public class ResumeService {
         resume.setFontSize(14);
         resume.setThemeColor("#2563eb");
         resume.setLineSpacing(1.6);
-        resume.setLayoutConfig("{}");
+        resume.setLayoutConfig("{\"globalFontSize\":14,\"globalLineSpacing\":1.6}");
         applyTemplateStyle(resume, req.getTemplateId());
         resumeMapper.insert(resume);
 
@@ -146,6 +146,8 @@ public class ResumeService {
             if (cfg == null || cfg.isBlank() || "{}".equals(cfg.trim())) return;
             JsonNode node = objectMapper.readTree(cfg);
             java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+            out.put("globalFontSize", resume.getFontSize().doubleValue());
+            out.put("globalLineSpacing", resume.getLineSpacing());
             if (node.hasNonNull("layout")) out.put("layout", node.get("layout").asText());
             if (node.hasNonNull("headerStyle")) out.put("headerStyle", node.get("headerStyle").asText());
             if (node.hasNonNull("primaryColor")) {
@@ -158,6 +160,16 @@ public class ResumeService {
                 out.put("globalFontFamily", font);
                 resume.setFontFamily(font);
             }
+            copyLayoutNumber(node, out, "globalFontSize", 10, 24);
+            copyLayoutNumber(node, out, "globalLineSpacing", 1, 3);
+            for (String field : List.of("pageTopMargin", "pageBottomMargin", "pageLeftMargin", "pageRightMargin")) {
+                copyLayoutNumber(node, out, field, 0, 120);
+            }
+            for (String field : List.of("moduleMargin", "titleTopPadding", "titleBottomMargin")) {
+                copyLayoutNumber(node, out, field, 0, 48);
+            }
+            if (out.containsKey("globalFontSize")) resume.setFontSize((int) Math.round((double) out.get("globalFontSize")));
+            if (out.containsKey("globalLineSpacing")) resume.setLineSpacing((double) out.get("globalLineSpacing"));
             if (!out.isEmpty()) {
                 resume.setLayoutConfig(objectMapper.writeValueAsString(out));
             }
@@ -166,12 +178,29 @@ public class ResumeService {
         }
     }
 
+    private static void copyLayoutNumber(JsonNode source, Map<String, Object> target, String key, double min, double max) {
+        JsonNode value = source.path(key);
+        if (value.isNumber() && Double.isFinite(value.asDouble()) && value.asDouble() >= min && value.asDouble() <= max) {
+            target.put(key, value.asDouble());
+        }
+    }
+
     /**
      * 预置可编辑示例简历。
-     * 按模板 category 切换不同行业样例，打开模板即可直接改；无模板时使用中性通用样例。
+     * 优先复制模板自身的范文；历史模板按 category 回退，无模板时使用中性通用样例。
      * 人名/联系方式均为虚构占位。
      */
     private void seedSampleSections(UUID resumeId, UUID templateId) {
+        if (templateId != null) {
+            List<TemplateSampleContent.Section> sample = TemplateSampleContent.parse(objectMapper,
+                    templateCategoryMapper.findPreviewById(templateId));
+            if (!sample.isEmpty()) {
+                for (TemplateSampleContent.Section section : sample) {
+                    insertSection(resumeId, section.type(), section.order(), section.layout(), section.data());
+                }
+                return;
+            }
+        }
         String category = null;
         if (templateId != null) {
             try {
@@ -382,20 +411,20 @@ public class ResumeService {
                         + "\"city\":\"武汉\",\"jobTitle\":\"Java 开发工程师（应届）\",\"links\":[],\"_config\":{}}");
         insertSection(resumeId, "education", 1, "single-column",
                 "{\"items\":[{\"school\":\"某大学\",\"degree\":\"本科\",\"major\":\"软件工程\","
-                        + "\"startDate\":\"2020-09\",\"endDate\":\"2024-06\",\"current\":false}],\"_config\":{}}");
+                        + "\"startDate\":\"2022-09\",\"endDate\":\"2026-06\",\"current\":false}],\"_config\":{}}");
         insertSection(resumeId, "summary", 2, "single-column",
-                "{\"content\":\"软件工程专业应届生，专业排名前 15%。有两段实习经历，"
-                        + "熟悉 Java 技术栈与常用中间件。做过 2 个完整课程/开源项目，"
+                "{\"content\":\"软件工程专业应届生，专业排名前 15%。有一段实习经历，"
+                        + "熟悉 Java 技术栈与常用中间件。做过完整的课程实践项目，"
                         + "代码规范、文档完整，希望加入后端研发团队持续成长。\",\"_config\":{}}");
         insertSection(resumeId, "projects", 3, "single-column",
                 "{\"items\":[{\"name\":\"校园二手交易平台\",\"role\":\"全栈开发\","
                         + "\"tech\":\"Spring Boot · Vue · MySQL\","
-                        + "\"startDate\":\"2023-03\",\"endDate\":\"2023-06\",\"current\":false,\"bullets\":["
+                        + "\"startDate\":\"2025-03\",\"endDate\":\"2025-06\",\"current\":false,\"bullets\":["
                         + "\"实现发布、检索、下单与消息通知全流程，覆盖 500+ 校内用户测试\","
                         + "\"使用 Redis 缓存热门商品，列表接口响应 < 100ms\"]}],\"_config\":{}}");
         insertSection(resumeId, "experience", 4, "single-column",
                 "{\"items\":[{\"company\":\"某科技公司\",\"position\":\"后端开发实习生\","
-                        + "\"startDate\":\"2023-07\",\"endDate\":\"2023-12\",\"current\":false,\"bullets\":["
+                        + "\"startDate\":\"2025-07\",\"endDate\":\"2025-12\",\"current\":false,\"bullets\":["
                         + "\"参与订单中台开发，交付 8 个接口并通过代码评审\","
                         + "\"编写自动化脚本提升联调效率，节省约 20% 测试时间\"]}],\"_config\":{}}");
         insertSection(resumeId, "skills", 5, "single-column",

@@ -12,6 +12,7 @@ import {
   LogoutOutlined,
   UserOutlined,
   DownOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 
 import Logo from './Logo';
@@ -96,6 +97,7 @@ export default function AppLayout({ children }: Props) {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* ---------------- 导航栏 ---------------- */}
       <header
+        className="app-header"
         style={{
           position: 'sticky',
           top: 0,
@@ -113,8 +115,8 @@ export default function AppLayout({ children }: Props) {
         }}
       >
         {/* 左：Logo + 导航 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+        <div className="app-header-main" style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 9, whiteSpace: 'nowrap', flexShrink: 0 }}>
             <Logo size={28} />
             <span
               style={{
@@ -128,7 +130,7 @@ export default function AppLayout({ children }: Props) {
             </span>
           </Link>
 
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <nav className="app-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {NAV_ITEMS.map((item) => {
               const active = isActive(item.key);
               return (
@@ -150,6 +152,9 @@ export default function AppLayout({ children }: Props) {
               );
             })}
           </nav>
+          <Dropdown trigger={['click']} menu={{ items: NAV_ITEMS.map((item) => ({ key: item.key, label: <Link to={item.key}>{item.label}</Link> })), selectedKeys: NAV_ITEMS.filter((item) => isActive(item.key)).map((item) => item.key) }}>
+            <Button className="app-mobile-menu" type="text" icon={<MenuOutlined />} aria-label="打开导航菜单" />
+          </Dropdown>
         </div>
 
         {/* 右：用户区 */}

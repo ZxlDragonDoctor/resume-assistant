@@ -1,0 +1,220 @@
+{
+  "key": "java-backend",
+  "name": "Java 后端·工程实践",
+  "description": "Java 后端开发工程师原创范文，适用于3–5 年。订单履约、幂等补偿、性能观测；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "technical",
+  "tags": [
+    "Java 后端开发工程师",
+    "3–5 年",
+    "双栏",
+    "订单履约",
+    "幂等补偿"
+  ],
+  "sortOrder": 4,
+  "legacyNames": [
+    "技术研发"
+  ],
+  "config": {
+    "systemKey": "java-backend",
+    "layout": "two-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#0f766e",
+    "accentColor": "#0f766e12",
+    "headerStyle": "bar",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "java-backend",
+      "jobTitle": "Java 后端开发工程师",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "订单履约",
+        "幂等补偿",
+        "性能观测"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "林知远",
+          "jobTitle": "Java 后端开发工程师",
+          "city": "杭州",
+          "phone": "138****1004",
+          "email": "zhiyuan.lin@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2021 年 11 月开始从事 Java 后端开发，参与订单履约与企业任务平台建设。能够独立完成需求澄清、接口设计、数据建模和上线观测，关注高峰流量下的数据一致性、接口响应与故障恢复，习惯通过验收用例和运行记录说明方案效果。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "left"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "远舟数字科技（虚构）",
+              "position": "Java 后端工程师",
+              "startDate": "2023-03",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责库存预占、订单状态和对账接口，与产品、仓储及财务梳理 18 种异常场景，明确补偿规则与验收用例。",
+                "针对查询抖动调整复合索引与热点缓存，在同等压测负载下，订单详情接口 P95 从 620ms 降至 180ms。",
+                "为回调与消息消费加入业务幂等键、事务消息表和失败重试，建立每日核对任务，将人工排查从约 2 小时缩至 30 分钟。"
+              ]
+            },
+            {
+              "company": "星桥软件服务（虚构）",
+              "position": "Java 开发工程师",
+              "startDate": "2021-11",
+              "endDate": "2023-02",
+              "current": false,
+              "bullets": [
+                "参与客户、权限与报表模块建设，交付 24 个接口，补充参数边界与错误码文档，支持 3 个客户项目上线。",
+                "将批量导出改为异步任务和分页读取，在 10 万行验收集上验证超时、取消和文件过期处理，减少同步请求占用。",
+                "参与代码评审和轮值问题处理，整理 12 条排障步骤，记录日志位置、复现方法与恢复条件，便于新成员接手维护。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "right"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "订单异常自动核对",
+              "role": "核心开发",
+              "startDate": "2024-02",
+              "endDate": "2024-06",
+              "current": false,
+              "tech": "Spring Boot · PostgreSQL · RabbitMQ",
+              "bullets": [
+                "将支付、订单和仓储状态映射为统一规则，按时间窗口分批扫描，保存核对游标，避免全表查询影响在线请求。",
+                "为缺失回调、重复通知和超时关闭设计可重入补偿，支持预演与人工复核，在重试前检查业务状态，避免重复处理库存。",
+                "以脱敏历史异常构建验收集，覆盖 42 个边界场景；上线后输出核对日报，跟踪未解决事项并保留人工处理记录。"
+              ]
+            },
+            {
+              "name": "企业任务调度台",
+              "role": "后端开发",
+              "startDate": "2022-06",
+              "endDate": "2022-11",
+              "current": false,
+              "tech": "Java · Redis · Docker",
+              "bullets": [
+                "建立任务定义、执行记录与失败原因的数据结构，支持定时触发、执行超时和取消，向使用方说明各状态的含义。",
+                "为任务分片引入租约和执行令牌，验证工作节点重启与租约过期后的接管过程，避免相同任务被重复执行。",
+                "提供按任务、时间和状态检索的日志接口，将常见失败原因整理成处理提示，并补充部署与回滚说明供值班人员使用。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "项目经历"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "left"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江城理工学院（虚构）",
+              "major": "计算机科学与技术",
+              "degree": "本科",
+              "startDate": "2017-09",
+              "endDate": "2021-06",
+              "current": false,
+              "description": "课程实践：数据库原理、计算机网络、操作系统与软件工程。毕业设计为校园预约服务，负责接口、数据表和部署说明，并完成预约冲突边界验证。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "right"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "后端开发",
+              "items": [
+                "Java",
+                "Spring Boot/Cloud",
+                "接口设计与鉴权"
+              ]
+            },
+            {
+              "name": "数据可靠性",
+              "items": [
+                "PostgreSQL/MySQL",
+                "Redis 缓存",
+                "RabbitMQ 与幂等补偿"
+              ]
+            },
+            {
+              "name": "工程交付",
+              "items": [
+                "JUnit",
+                "Docker/Linux",
+                "日志与指标定位"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "专业技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "right"
+      }
+    ]
+  }
+}

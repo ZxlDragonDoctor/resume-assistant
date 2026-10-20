@@ -91,14 +91,19 @@ docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/ad
 # 4. 迁移旧分类；新数据库/已迁移数据时自动跳过
 docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/migrate-template-categories.sql
 
-# 5. 构建并启动全部服务
+# 5. 升级 24 套系统模板及完整范文（幂等，保留系统 ID、自定义模板与用户简历）
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U resume -d resume_assistant < docs/sql/migrate-template-content.sql
+
+# 6. 构建并启动全部服务
 docker compose up -d --build
 
-# 6. 查看状态
+# 7. 查看状态
 docker compose ps
 ```
 
-若 `.env` 中 `DB_USERNAME` 或数据库名不是默认值 `resume` / `resume_assistant`，请替换迁移命令中的 `psql` 参数。迁移只更新系统模板的中文名称、说明、分类与标签，不改模板 ID、版式配置或用户简历。
+若 `.env` 中 `DB_USERNAME` 或数据库名不是默认值 `resume` / `resume_assistant`，请替换迁移命令中的 `psql` 参数。分类迁移只调整元信息；内容迁移更新系统模板的配置与范文并补齐 24 套目录，保留已有系统 ID、自定义模板和用户简历。
+
+范文内容源为 `templates/catalog/*.json`。改动后先运行 `node scripts/sync-template-catalog.mjs`，发布前运行 `node scripts/sync-template-catalog.mjs --check`，避免内容源与生成的 SQL 不一致。上线前备份数据库，使用与本次发布匹配的简历服务和前端；富内容分页变更还需同步导出服务。回滚应用镜像时，范文字段与旧应用兼容，不应直接恢复整库覆盖发布后的用户数据。
 
 启动后访问：
 
@@ -185,6 +190,7 @@ docker compose up -d postgres
 docker compose exec -T postgres sh -c 'until pg_isready -U resume -d resume_assistant; do sleep 2; done'
 docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/add-templates.sql
 docker compose exec -T postgres psql -U resume -d resume_assistant < docs/sql/migrate-template-categories.sql
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U resume -d resume_assistant < docs/sql/migrate-template-content.sql
 docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
 ```
 

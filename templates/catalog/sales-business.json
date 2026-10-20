@@ -1,0 +1,217 @@
+{
+  "key": "sales-business",
+  "name": "销售商务·客户经营",
+  "description": "企业客户销售原创范文，适用于3–5 年。需求与方案、商机推进、客户续约；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "business",
+  "tags": [
+    "企业客户销售",
+    "3–5 年",
+    "单栏",
+    "需求与方案",
+    "商机推进"
+  ],
+  "sortOrder": 20,
+  "legacyNames": [],
+  "config": {
+    "systemKey": "sales-business",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#92400e",
+    "accentColor": "#92400e12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "sales-business",
+      "jobTitle": "企业客户销售",
+      "experienceLevel": "3–5 年",
+      "highlights": [
+        "需求与方案",
+        "商机推进",
+        "客户续约"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "韩予程",
+          "jobTitle": "企业客户销售",
+          "city": "上海",
+          "phone": "138****1020",
+          "email": "yucheng.han@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2022 年起从事企业软件销售，服务中小制造与企业服务客户，经历线索沟通、方案演示、合同及续约协作。能够识别业务需求、决策角色和采购节奏，协调售前与实施资源，将商机推进过程记录到客户台账，关注承诺可交付、回款和长期使用情况。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "远景协同软件（虚构）",
+              "position": "企业客户经理",
+              "startDate": "2023-10",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "经营 23 家存量客户并跟进新商机，按使用场景、预算和决策角色维护机会，避免将未确认需求直接计为销售预测。",
+                "与售前共同准备演示和试用方案，明确客户验收问题及实施依赖，2025 年完成 9 份新签合同，合同金额合计 186 万元。",
+                "按合同节点跟踪回款与上线，季度回访使用阻碍，将需研发或服务支持的事项转交负责人；当年到期 12 家客户中续约 10 家。"
+              ]
+            },
+            {
+              "company": "星原办公服务（虚构）",
+              "position": "商务拓展专员",
+              "startDate": "2022-07",
+              "endDate": "2023-09",
+              "current": false,
+              "bullets": [
+                "通过行业活动与客户推荐建立线索，完成首次沟通、需求记录和跟进安排，向负责人说明下一步动作与预计时间。",
+                "协助整理报价、招采材料和合同版本，核对服务范围、付款与交付条件，涉及变更时及时申请内部确认。",
+                "维护客户问题与竞品反馈清单，将价格异议拆为范围、实施和长期成本，帮助销售团队完善方案说明与常见问答。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "销售经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "制造客户协同系统采购推进",
+              "role": "商机与商务协调",
+              "startDate": "2024-11",
+              "endDate": "2025-06",
+              "current": false,
+              "tech": "需求访谈 · 试用验证 · 合同协调",
+              "bullets": [
+                "访谈生产、采购和财务 6 位相关人员，将需求整理为协同排程、权限和报表三类，确认各角色的判断标准。",
+                "协调售前设计两周试用与问题清单，对客户提出的接口要求先核实现有能力，再讨论分期实施与费用范围。",
+                "推进合同、实施交接及首期验收，记录销售承诺和待完成事项；项目签约金额 32 万元，后续服务由实施团队共同交付。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "客户项目"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "海川工商学院（虚构）",
+              "major": "工商管理",
+              "degree": "本科",
+              "startDate": "2018-09",
+              "endDate": "2022-06",
+              "current": false,
+              "description": "学习市场营销、商务谈判、财务管理与运营管理。课程项目完成企业采购流程访谈，训练需求分析、方案比较和商务表达。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "机会管理",
+              "items": [
+                "需求与决策角色",
+                "采购节奏",
+                "销售预测口径"
+              ]
+            },
+            {
+              "name": "方案商务",
+              "items": [
+                "场景演示协作",
+                "报价与合同核对",
+                "异议澄清"
+              ]
+            },
+            {
+              "name": "客户维护",
+              "items": [
+                "CRM 记录",
+                "回款节点",
+                "续约与服务交接"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "客户经营技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "每次客户会议形成需求、已确认事项、待确认风险与下一步计划，明确双方负责人。报价前核对交付边界，试用后保留验收问题和使用反馈，合同交接时同步完整承诺清单。复盘失单时区分需求不匹配、采购推迟和竞品因素，为下一轮方案准备提供具体材料。",
+          "_config": {
+            "moduleName": "客户协作方式"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

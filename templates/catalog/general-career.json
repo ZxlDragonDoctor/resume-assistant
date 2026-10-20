@@ -1,0 +1,219 @@
+{
+  "key": "general-career",
+  "name": "通用社招·经历清晰",
+  "description": "项目协调专员原创范文，适用于1–3 年。交付节点、客户服务、流程记录；含可编辑完整经历与项目，示例内容请替换为真实经历。",
+  "category": "general",
+  "tags": [
+    "项目协调专员",
+    "1–3 年",
+    "单栏",
+    "交付节点",
+    "客户服务"
+  ],
+  "sortOrder": 1,
+  "legacyNames": [
+    "通用简历"
+  ],
+  "config": {
+    "systemKey": "general-career",
+    "layout": "single-column",
+    "fonts": [
+      "Noto Sans SC",
+      "Microsoft YaHei",
+      "system-ui"
+    ],
+    "primaryColor": "#2563eb",
+    "accentColor": "#2563eb12",
+    "headerStyle": "underline",
+    "sections": [
+      "basic",
+      "summary",
+      "experience",
+      "projects",
+      "education",
+      "skills",
+      "custom"
+    ],
+    "globalFontSize": 13,
+    "globalLineSpacing": 1.55,
+    "pageTopMargin": 36,
+    "pageBottomMargin": 36,
+    "pageLeftMargin": 38,
+    "pageRightMargin": 38,
+    "moduleMargin": 14,
+    "titleTopPadding": 4,
+    "titleBottomMargin": 7
+  },
+  "sample": {
+    "version": 1,
+    "profile": {
+      "key": "general-career",
+      "jobTitle": "项目协调专员",
+      "experienceLevel": "1–3 年",
+      "highlights": [
+        "交付节点",
+        "客户服务",
+        "流程记录"
+      ],
+      "suggestedPages": 1
+    },
+    "sections": [
+      {
+        "sectionType": "basic",
+        "data": {
+          "name": "林予安",
+          "jobTitle": "项目协调专员",
+          "city": "杭州",
+          "phone": "138****1001",
+          "email": "yuan.lin@example.com",
+          "links": [],
+          "_config": {
+            "moduleName": "基本信息"
+          }
+        },
+        "sortOrder": 0,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "summary",
+        "data": {
+          "content": "2023 年起从事企业服务项目协调，围绕客户需求、实施排期与交付资料开展日常工作。能够把模糊诉求整理为明确事项，维护责任人与截止时间，持续跟进客户反馈。曾参与办公服务开通与服务台改进，习惯用记录和复盘帮助团队减少遗漏。",
+          "_config": {
+            "moduleName": "职业概述"
+          }
+        },
+        "sortOrder": 1,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "experience",
+        "data": {
+          "items": [
+            {
+              "company": "澄光企业服务（虚构）",
+              "position": "项目协调专员",
+              "startDate": "2024-04",
+              "endDate": "",
+              "current": true,
+              "bullets": [
+                "负责 6 家企业客户的服务开通排期，将场地、设备和人员准备拆为 32 项检查任务，每周向客户同步待办及风险。",
+                "整理邮件与服务台中的重复需求，建立分类、受理和回访规则；对超期事项逐一确认原因，支持团队按约定时间交付。",
+                "维护会议纪要、变更单及验收资料，对照合同检查交付范围，提前识别 4 次新增需求，交由负责人确认费用与排期。"
+              ]
+            },
+            {
+              "company": "远帆商旅服务（虚构）",
+              "position": "客户服务助理",
+              "startDate": "2023-11",
+              "endDate": "2024-03",
+              "current": false,
+              "bullets": [
+                "处理企业客户的预订修改与账单咨询，记录诉求、承诺时点和处理结果，将需升级的异常交给值班负责人。",
+                "汇总每周约 60 条服务记录，标记发票信息缺失和重复确认问题，参与改写受理表的必填提示与客户说明。",
+                "协助新人熟悉业务流程，整理 15 个常见问题及示例答复，通过同事复核后纳入班组交接手册。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "工作经历"
+          }
+        },
+        "sortOrder": 2,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "projects",
+        "data": {
+          "items": [
+            {
+              "name": "客户服务开通资料标准化",
+              "role": "协调与文档整理",
+              "startDate": "2024-09",
+              "endDate": "2025-01",
+              "current": false,
+              "tech": "任务拆解 · 验收清单",
+              "bullets": [
+                "复盘 8 次开通记录，定位资料版本不一致和签字遗漏两类问题，与实施负责人共同定义交付检查点。",
+                "将客户信息、设备清单和验收表关联到统一目录，保留变更时间与责任人，方便交接时核对最新版本。",
+                "选择 3 个新客户试行，在每次交付后收集意见；两轮调整后，资料补交事项从首轮的 9 项减少到末轮的 3 项。"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "项目实践"
+          }
+        },
+        "sortOrder": 3,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "education",
+        "data": {
+          "items": [
+            {
+              "school": "江城管理学院（虚构）",
+              "major": "行政管理",
+              "degree": "本科",
+              "startDate": "2019-09",
+              "endDate": "2023-06",
+              "current": false,
+              "description": "相关课程：管理学、组织行为学、应用统计与商务沟通。毕业实践围绕社区服务窗口办理流程，完成访谈记录、问题分类和改进建议。"
+            }
+          ],
+          "_config": {
+            "moduleName": "教育背景"
+          }
+        },
+        "sortOrder": 4,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "skills",
+        "data": {
+          "items": [
+            {
+              "name": "项目协作",
+              "items": [
+                "任务分解",
+                "排期与风险记录",
+                "会议纪要"
+              ]
+            },
+            {
+              "name": "办公应用",
+              "items": [
+                "Excel 常用函数与透视表",
+                "Word 长文档",
+                "演示文稿"
+              ]
+            },
+            {
+              "name": "服务执行",
+              "items": [
+                "需求澄清",
+                "客户回访",
+                "交付资料管理"
+              ]
+            }
+          ],
+          "_config": {
+            "moduleName": "业务技能"
+          }
+        },
+        "sortOrder": 5,
+        "layout": "auto"
+      },
+      {
+        "sectionType": "custom",
+        "data": {
+          "content": "在班组复盘中整理“受理前确认信息—处理中同步进度—完成后核对结果”的服务记录模板，保留客户原始表述与后续决定。对无法按期处理的事项先说明原因和下一步时点，避免使用笼统的完成承诺；每月抽取记录复查，持续完善交接说明。",
+          "_config": {
+            "moduleName": "服务改进记录"
+          }
+        },
+        "sortOrder": 6,
+        "layout": "auto"
+      }
+    ]
+  }
+}

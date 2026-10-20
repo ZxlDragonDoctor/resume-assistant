@@ -264,10 +264,10 @@ function emptyHint(fontSize) {
 }
 
 /**
- * 按每页可用高度顺序排入两栏。heightFor 由调用方提供实际或估算高度，
- * manual left/right placement 固定目标栏；auto 的阅读顺序为左栏、右栏、下一页左栏。
+ * 按每页可用高度分页。单栏顺排、侧栏独立续排；双栏的 auto 阅读顺序
+ * 为左栏、右栏、下一页左栏，manual left/right placement 固定目标栏。
  */
-function paginateSectionsByHeight(sections, { firstPageCapacity, columnCapacity, heightFor = (s) => s.height || 0 }) {
+function paginateSectionsByHeight(sections, { mode = 'two-column', firstPageCapacity, columnCapacity, heightFor = (s) => s.height || 0 }) {
   const pages = [];
   const capacityFor = (pageIndex) => pageIndex === 0 ? firstPageCapacity : columnCapacity;
   const ensurePage = (pageIndex) => {
@@ -278,7 +278,9 @@ function paginateSectionsByHeight(sections, { firstPageCapacity, columnCapacity,
     const page = ensurePage(pageIndex);
     const used = column === 'main' ? page.mainHeight : page.sideHeight;
     const capacity = capacityFor(pageIndex);
-    if (used === 0) return height <= capacity || (pageIndex > 0 && height > columnCapacity + 48);
+    // Keep oversized modules visible and never search endlessly for a page
+    // taller than the configured full-page capacity.
+    if (used === 0) return height <= capacity || height > columnCapacity;
     return used + height <= capacity;
   };
   const place = (pageIndex, column, section, height) => {
@@ -288,15 +290,30 @@ function paginateSectionsByHeight(sections, { firstPageCapacity, columnCapacity,
     else page.sideHeight += height;
   };
 
+  if (mode !== 'two-column') {
+    const nextPage = { main: 0, side: 0 };
+    const sidebarTypes = new Set(['skills', 'awards', 'certificates', 'custom']);
+    for (const section of sections) {
+      const column = mode === 'sidebar' && (section.layout === 'left'
+        || (section.layout !== 'right' && sidebarTypes.has(section.sectionType))) ? 'side' : 'main';
+      const height = Math.max(1, Number(heightFor(section, column)) || 1);
+      while (!fits(nextPage[column], column, height)) nextPage[column] += 1;
+      place(nextPage[column], column, section, height);
+    }
+    return pages.map(({ main, side }) => ({ main, side }));
+  }
+  const manualPages = { main: 0, side: 0 };
   let flowPage = 0;
   let flowColumn = 'main';
   for (const section of sections) {
     if (section.layout === 'left' || section.layout === 'right') {
       const column = section.layout === 'left' ? 'main' : 'side';
       const height = Math.max(1, Number(heightFor(section, column)) || 1);
-      let pageIndex = flowPage;
-      while (!fits(pageIndex, column, height) && pageIndex < pages.length + 1) pageIndex += 1;
+      // Keep each pinned column in section order after it continues to a new page.
+      let pageIndex = Math.max(flowPage, manualPages[column]);
+      while (!fits(pageIndex, column, height)) pageIndex += 1;
       place(pageIndex, column, section, height);
+      manualPages[column] = pageIndex;
       continue;
     }
 
@@ -490,13 +507,13 @@ function renderResumeHtml(resume, options = {}) {
 
     if (cfg.hideTitle) {
       return `
-        <section class="resume-section" data-section="${escHtml(section.sectionType)}" data-section-id="${escHtml(section.id || `${section.sectionType}-${section.sortOrder}`)}" data-layout="${escHtml(section.layout || 'auto')}" style="margin-bottom:${moduleMargin}px">
+        <section class="resume-section" data-section="${escHtml(section.sectionType)}" data-sort-order="${Number(section.sortOrder) || 0}" data-section-id="${escHtml(section.id || `${section.sectionType}-${section.sortOrder}`)}" data-layout="${escHtml(section.layout || 'auto')}" style="margin-bottom:${moduleMargin}px">
           ${body}
         </section>`;
     }
 
     return `
-        <section class="resume-section" data-section="${escHtml(section.sectionType)}" data-section-id="${escHtml(section.id || `${section.sectionType}-${section.sortOrder}`)}" data-layout="${escHtml(section.layout || 'auto')}" style="margin-bottom:${moduleMargin}px">
+        <section class="resume-section" data-section="${escHtml(section.sectionType)}" data-sort-order="${Number(section.sortOrder) || 0}" data-section-id="${escHtml(section.id || `${section.sectionType}-${section.sortOrder}`)}" data-layout="${escHtml(section.layout || 'auto')}" style="margin-bottom:${moduleMargin}px">
           <h2 class="section-title ${resolvedHeaderStyle}" style="font-size:${titleSize}px;line-height:1.4;color:${titleColor};margin-top:${titleTop}px;margin-bottom:${titleBottom}px">
             ${escHtml(moduleName)}
           </h2>
@@ -504,61 +521,49 @@ function renderResumeHtml(resume, options = {}) {
         </section>`;
   };
 
-  const { main: mainSections, side: sideSections } = splitByLayout(bodySections, layoutMode);
 
   const emptyState = !sections.length
     ? '<div class="page-empty">还没有任何模块 —— 回到编辑器添加你的第一段经历</div>'
     : '';
 
-  let bodyHtml;
-  let documentMarkup;
-  if (layoutMode === 'sidebar') {
-    bodyHtml = `
-      <div class="layout-sidebar" style="display:grid;grid-template-columns:210px 1fr;gap:${moduleMargin + 8}px;align-items:start">
-        <aside class="col-side" style="border-right:1px solid ${themeColor}22;padding-right:14px">
-          ${sideSections.map(renderOneSection).join('')}
-        </aside>
-        <div class="col-main">
-          ${mainSections.map(renderOneSection).join('')}
-        </div>
-      </div>`;
-  } else if (layoutMode === 'two-column') {
-    const pageHeight = 1123;
-    const columnGap = Math.round(moduleMargin * 0.9) + 10;
-    const contentWidth = 794 - pageLeft - pageRight;
-    const columnWidth = Math.max(180, ((contentWidth - columnGap) * 0.85) / 2);
-    const pageCapacity = Math.max(120, pageHeight - pageTop - pageBottom);
-    const firstPageCapacity = Math.max(
-      120,
-      pageCapacity - estimateHeaderHeight(basicSection, resume, baseFontSize),
-    );
-    const pages = paginateSectionsByHeight(bodySections, {
+  const columnGap = Math.round(moduleMargin * 0.9) + 10;
+  const contentWidth = 794 - pageLeft - pageRight;
+  const mainWidth = layoutMode === 'single-column' ? contentWidth
+    : layoutMode === 'sidebar' ? contentWidth - 210 - (columnGap - 2) : (contentWidth - columnGap) * 1.15 / 2;
+  const sideWidth = layoutMode === 'sidebar' ? 195 : (contentWidth - columnGap) * 0.85 / 2 - 15;
+  const pageCapacity = Math.max(120, 1123 - pageTop - pageBottom);
+  const firstPageCapacity = Math.max(120, pageCapacity - estimateHeaderHeight(basicSection, resume, baseFontSize));
+  const pages = paginateSectionsByHeight(bodySections, {
+      mode: layoutMode,
       firstPageCapacity,
       columnCapacity: pageCapacity,
       heightFor: (section, column) => estimateSectionHeight(section, {
         fontSize: baseFontSize,
         lineHeight: baseLineHeight,
         moduleMargin,
-        columnWidth: column === 'side' ? Math.max(180, columnWidth - 14) : Math.max(180, columnWidth / 0.85 * 1.15),
+        columnWidth: column === 'side' ? sideWidth : mainWidth,
       }),
     });
-    if (!pages.length) pages.push({ main: [], side: [] });
-    documentMarkup = pages.map((page, index) => `
+  if (!pages.length) pages.push({ main: [], side: [] });
+  const renderBody = (page) => {
+    if (layoutMode === 'sidebar') return `
+      <div class="layout-sidebar" style="display:grid;grid-template-columns:210px minmax(0,1fr);gap:${columnGap - 2}px;align-items:start">
+        <aside class="col-side" style="border-right:1px solid ${themeColor}22;padding-right:14px">${page.side.map(renderOneSection).join('')}</aside>
+        <div class="col-main">${page.main.map(renderOneSection).join('')}</div>
+      </div>`;
+    if (layoutMode === 'two-column') return `
+      <div class="layout-two-column" style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,0.85fr);gap:${columnGap}px;align-items:start">
+        <div class="col-main">${page.main.map(renderOneSection).join('')}</div>
+        <div class="col-side" style="border-left:1px solid ${themeColor}18;padding-left:14px">${page.side.map(renderOneSection).join('')}</div>
+      </div>`;
+    return `<div class="layout-single col-main">${page.main.map(renderOneSection).join('')}</div>`;
+  };
+  const documentMarkup = pages.map((page, index) => `
       <main class="page" data-page="${index + 1}">
         ${index === 0 ? headerHtml : ''}
-        <div class="layout-two-column" style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:${columnGap}px;align-items:start">
-          <div class="col-main">${page.main.map(renderOneSection).join('')}</div>
-          <div class="col-side" style="border-left:1px solid ${themeColor}18;padding-left:14px">${page.side.map(renderOneSection).join('')}</div>
-        </div>
+        ${renderBody(page)}
         ${index === 0 ? emptyState : ''}
       </main>`).join('');
-  } else {
-    bodyHtml = `<div class="layout-single">${mainSections.map(renderOneSection).join('')}</div>`;
-  }
-
-  if (!documentMarkup) {
-    documentMarkup = `<main class="page" data-page="1">${headerHtml}${bodyHtml}${emptyState}</main>`;
-  }
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">

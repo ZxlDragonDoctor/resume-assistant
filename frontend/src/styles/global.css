@@ -405,3 +405,10 @@ button { font-family: inherit; }
     flex: 1 1 320px !important;
   }
 }
+.app-mobile-menu { display: none; }
+@media (max-width: 600px) {
+  .app-header { padding: 0 16px !important; gap: 8px; }
+  .app-header-main { gap: 8px !important; min-width: 0; }
+  .app-desktop-nav { display: none !important; }
+  .app-mobile-menu { display: inline-flex; flex-shrink: 0; }
+}
