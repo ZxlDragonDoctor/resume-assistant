@@ -190,12 +190,15 @@ async function generatePdf(html) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
+    // Chromium can defer font work in background pages; activate this export tab.
+    await page.bringToFront();
     // The rendered HTML is self-contained. Wait for document load and fonts,
     // rather than an unrelated network-idle lifecycle that can stall in Chromium.
     await page.setContent(html, { waitUntil: 'load', timeout: 60000 });
     // 等字体就绪，否则中文可能以 fallback 字体渲染
     await page.evaluate(() => document.fonts && document.fonts.ready);
     await reflowResumePages(page);
+    await page.bringToFront();
     return await page.pdf({
       format: 'A4',
       printBackground: true,
