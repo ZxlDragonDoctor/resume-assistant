@@ -73,6 +73,7 @@ BATCH_PROMPT = ChatPromptTemplate.from_messages([
 ])
 SUMMARY_PROMPT = ChatPromptTemplate.from_messages([
     ("system", FACTS + "依据已有事实写一段简洁的个人总结。身份、年限、专业能力和求职意向仅在输入明确提供时使用。"
+     "任职起止日期仅是日期，不得据此推算工作年限，也不可把日历年份改写为从业年限。"
      "依据输入决定篇幅，不为凑字数编造。只输出总结正文，不输出标题、解释或建议。"),
     ("human", "简历信息：\n{resume_info}"),
 ])

@@ -68,6 +68,15 @@ def test_jd_validates_and_filters_unrecognized_model_fields(model_reply):
     assert "arbitrary" not in result
 
 
+def test_jd_accepts_omitted_optional_model_fields(model_reply):
+    model_reply(json.dumps({"skills": ["活动策划"], "responsibilities": ["负责活动策划"]}))
+    result = run(ai.parse_jd("负责活动策划并要求具备活动策划能力"))
+    assert result["engine"] == "llm"
+    assert result["years"] is None
+    assert result["education"] is None
+    assert result["requirements"] == []
+
+
 def test_batch_calls_model_once_and_restores_request_order(monkeypatch):
     calls = []
     monkeypatch.setattr(settings, "llm_enabled", True)

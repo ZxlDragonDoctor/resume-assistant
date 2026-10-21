@@ -101,11 +101,11 @@ class AtsOutput(ModelOutput):
 
 
 class JdOutput(ModelOutput):
-    skills: Annotated[list[SkillText], Field(max_length=100)]
-    years: Annotated[str, Field(min_length=1, max_length=100)] | None
-    education: Annotated[str, Field(min_length=1, max_length=100)] | None
-    responsibilities: Annotated[list[ShortText], Field(max_length=30)]
-    requirements: Annotated[list[ShortText], Field(max_length=30)]
+    skills: Annotated[list[SkillText], Field(max_length=100)] = Field(default_factory=list)
+    years: Annotated[str, Field(min_length=1, max_length=100)] | None = None
+    education: Annotated[str, Field(min_length=1, max_length=100)] | None = None
+    responsibilities: Annotated[list[ShortText], Field(max_length=30)] = Field(default_factory=list)
+    requirements: Annotated[list[ShortText], Field(max_length=30)] = Field(default_factory=list)
 
 
 class BatchModelItem(ModelOutput):

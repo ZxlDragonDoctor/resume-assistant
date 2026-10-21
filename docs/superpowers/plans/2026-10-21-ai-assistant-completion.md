@@ -72,7 +72,7 @@ Files: `frontend/src/components/editor/AiPanel.tsx`, focused helper components i
 
 ## Local verification results (2026-10-22)
 
-- Python AI API/service and rule suite: **129 passed, 53 subtests passed**.
+- Python AI API/service and rule suite: **130 passed, 53 subtests passed**.
 - Existing local-rule smoke script: **6 capabilities passed** with no configured model.
 - Frontend helper, store, panel and API contract suite: **18 passed**.
 - Real Chromium/Puppeteer flow against the local synthetic API and actual FastAPI routes: **20 browser checks passed**. Covers the four tabs, summary persistence after reload, single/batch save retry, batch selection, independent JD failures and narrow desktop layout.
