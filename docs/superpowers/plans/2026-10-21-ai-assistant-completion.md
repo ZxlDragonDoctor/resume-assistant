@@ -66,15 +66,19 @@ Files: `frontend/src/components/editor/AiPanel.tsx`, focused helper components i
 
 - [x] Run `python -m pytest ai-service/tests`, the existing rule script, `node --test` AI helper/store checks and `npm run build`.
 - [x] Use browser tests with synthetic data to cover four tabs, single/batch application, failures, state retention and reload persistence.
-- [ ] Exercise the configured production model with a small synthetic sample for each capability. Record engines and results without credentials.
-- [ ] Review the complete diff, commit scoped files and push. Build runtime images from existing server dependencies, preserve environment and rollback images, deploy AI/frontend, then repeat public smoke checks.
-- [ ] Remove synthetic accounts/resumes and record real test totals and limitations in the release note.
+- [x] Exercise the configured production model with small synthetic samples and record the selected engine and fallback results without credentials.
+- [x] Review the complete diff, commit and push scoped files, preserve the environment and rollback image, deploy the AI service, and repeat public smoke checks.
+- [x] Remove synthetic accounts/resumes and record test totals and limitations in the release note.
 
 ## Local verification results (2026-10-22)
 
-- Python AI API/service and rule suite: **130 passed, 53 subtests passed**.
+- Python AI API/service and rule suite: **131 passed, 53 subtests passed**; this includes a regression for numeric years returned by the configured model.
 - Existing local-rule smoke script: **6 capabilities passed** with no configured model.
 - Frontend helper, store, panel and API contract suite: **18 passed**.
 - Real Chromium/Puppeteer flow against the local synthetic API and actual FastAPI routes: **20 browser checks passed**. Covers the four tabs, summary persistence after reload, single/batch save retry, batch selection, independent JD failures and narrow desktop layout.
 - `npm run build`: TypeScript check and Vite production bundle succeeded. Vite reports the existing >500 kB chunk advisory.
 - Local browser and backend used synthetic resume data; the API-key setting was forced empty for that run.
+- Production browser flow: **14 checks passed** with a temporary synthetic account/resume, then both records were deleted and the account deletion was verified. Summary and JD analysis used rule fallback during this flow; single and batch optimization, ATS scoring and interview questions used the configured LLM, while skill matching used local rules.
+- Direct production Qwen checks: summary generation returned `engine=llm`; after the numeric-years compatibility fix, JD parsing returned `engine=llm` and `years=5年`.
+- Production deployment: AI container healthy, host port 8086 bound to `127.0.0.1`, anonymous public `/api/ai/health` returned **401**, and the public site returned **200**. The AI release preserves the previous image as a rollback tag and records the source archive checksum in `/root/resume-releases/ai-assistant-20261022-ba87d74/RELEASE.md`.
+- Commits pushed to `codex/ai-assistant-completion`: `d0c25e2`, `27a688c`, and `ba87d74`.
