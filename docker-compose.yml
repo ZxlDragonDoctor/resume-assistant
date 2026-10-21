@@ -268,7 +268,7 @@ services:
       LLM_MODEL: ${LLM_MODEL:-qwen-max}
       REDIS_URL: redis://redis:6379/0
     ports:
-      - "8086:8086"
+      - "127.0.0.1:8086:8086"
     depends_on:
       redis:
         condition: service_healthy

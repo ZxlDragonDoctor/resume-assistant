@@ -6,9 +6,20 @@ AI Service 配置。
 保证功能可用、前端不出现空白。
 """
 import os
+import math
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _bounded_float(name: str, default: float, minimum: float, maximum: float) -> float:
+    try:
+        value = float(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+    if not math.isfinite(value):
+        return default
+    return min(maximum, max(minimum, value))
 
 
 class Settings:
@@ -20,8 +31,9 @@ class Settings:
         "OPENAI_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"
     )
     llm_model: str = os.getenv("LLM_MODEL", "qwen-max")
-    llm_temperature: float = float(os.getenv("LLM_TEMPERATURE", "0.6"))
-    llm_timeout: int = int(os.getenv("LLM_TIMEOUT", "60"))
+    llm_temperature: float = _bounded_float("LLM_TEMPERATURE", 0.3, 0, 2)
+    # This bounds the entire operation, including any provider wait time.
+    llm_timeout: float = _bounded_float("LLM_TIMEOUT", 35, 1, 40)
 
     # ---------------- 缓存 ----------------
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")

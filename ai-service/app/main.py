@@ -5,10 +5,13 @@ AI Service 入口。
 JD 解析、翻译与面试题预测等能力。
 """
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
 from app.api.routes import router
 from app.core.config import settings
@@ -21,10 +24,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    logger.info("AI Service 启动完成，模型状态：%s", ai_service.model_status())
+    yield
+
+
 app = FastAPI(
     title="Resume AI Service",
     version="2.0.0",
     description="简历智能优化 / ATS 评分 / JD 解析 / 翻译 / 面试题预测",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -40,23 +51,30 @@ app.include_router(router, prefix="/api/ai")
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(_request, exc: Exception):
-    """兜底异常处理，保证前端始终拿到结构化响应而不是 500 HTML"""
-    logger.exception("未处理异常: %s", exc)
+    # Exception strings can contain provider credentials or resume contents.
+    logger.error("未处理的 AI 服务异常：%s", type(exc).__name__)
     return JSONResponse(
-        status_code=200,
-        content={"code": 500, "message": str(exc), "data": None},
+        status_code=500,
+        content={"code": 500, "message": "服务暂时不可用，请稍后重试。", "data": None},
     )
 
 
-@app.on_event("startup")
-async def on_startup():
-    engine = "LLM" if ai_service.llm_available() else "本地规则引擎"
-    logger.info("AI Service 启动完成，当前引擎：%s", engine)
-    if not ai_service.llm_available():
-        logger.info(
-            "未检测到 OPENAI_API_KEY，AI 接口将使用本地规则引擎。"
-            "在 .env 中配置 Key 即可启用大模型能力。"
-        )
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request, _exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"code": 422, "message": "请求参数无效，请检查必填内容、长度与格式。", "data": None},
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(_request, exc: HTTPException):
+    message = "请求路径不存在。" if exc.status_code == 404 else "请求无法处理，请检查请求方式。"
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"code": exc.status_code, "message": message, "data": None},
+        headers=exc.headers,
+    )
 
 
 if __name__ == "__main__":

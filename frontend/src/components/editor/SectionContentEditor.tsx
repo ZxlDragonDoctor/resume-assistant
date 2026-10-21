@@ -86,7 +86,7 @@ interface Props {
   /** 供「AI 优化」使用：目标岗位 */
   jobTitle?: string;
   /** 请求 AI 优化某段文本，返回优化后的文本（由上层弹窗处理） */
-  onOptimize?: (text: string, apply: (result: string) => void) => void;
+  onOptimize?: (text: string, produce: (result: string) => SectionData) => void;
 }
 
 // ==================================================================
@@ -98,6 +98,7 @@ function AiButton({ onClick, tip }: { onClick: () => void; tip?: string }) {
   return (
     <Tooltip title={tip || 'AI 优化这段描述'} mouseEnterDelay={0.35}>
       <button
+        aria-label={tip || 'AI 优化这段描述'}
         onClick={onClick}
         style={{
           border: 'none',
@@ -547,7 +548,7 @@ function BulletsEditor({
             {onOptimize && bullet.trim().length > 6 && (
               <AiButton
                 onClick={() =>
-                  onOptimize(bullet, (result) => onChange(patchBullet(data, itemIndex, bi, result)))
+                  onOptimize(bullet, (result) => patchBullet(data, itemIndex, bi, result))
                 }
               />
             )}
@@ -786,7 +787,7 @@ function TextEditor({
               <AiButton
                 tip="AI 润色这段内容"
                 onClick={() =>
-                  onOptimize(content, (result) => onChange({ ...d, content: result }))
+                  onOptimize(content, (result) => ({ ...d, content: result }))
                 }
               />
             )}

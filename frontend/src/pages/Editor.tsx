@@ -62,6 +62,8 @@ import { message } from '../utils/antdStatic';
 import { DEFAULT_LAYOUT, parseLayout } from '../components/viewer/ResumePreviewEngine';
 import { clearConfigKeys, readConfig, writeConfig } from '../components/editor/sectionData';
 import { brand, neutral, radius, semantic, shadow, transition } from '../styles/tokens';
+import { planBulletChanges, resolveTargetJob, type AiBulletChange } from '../utils/aiResume';
+import { plainText } from '../utils/thumbnail';
 
 // ==================================================================
 // 主组件
@@ -106,7 +108,7 @@ export default function Editor() {
   const [titleDraft, setTitleDraft] = useState('');
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [optimize, setOptimize] = useState<{ text: string; apply: (r: string) => void } | null>(
+  const [optimize, setOptimize] = useState<{ text: string; sectionId: string; resumeId: string; sourceData: Record<string, unknown>; produce: (r: string) => Record<string, unknown> } | null>(
     null
   );
   const [templateConfig, setTemplateConfig] = useState<TemplateConfig | undefined>();
@@ -367,48 +369,30 @@ export default function Editor() {
     [resolvedLayout, saveLayout]
   );
 
-  /** 批量写回某个模块的 data（AI 应用、批量优化用） */
-  const applyToSection = useCallback(
-    (sectionId: string, producer: (data: Record<string, unknown>) => Record<string, unknown>) => {
-      const target = sections.find((s) => s.id === sectionId);
-      if (!target) return false;
-      const next = producer(normalizeSectionData(target.data));
-      updateSectionData(sectionId, next);
-      persistSection(sectionId).catch(() => undefined);
-      return true;
-    },
-    [sections, updateSectionData, persistSection]
-  );
+  /** AI results are applied against the latest original and await the real save. */
+  const handleApplySummary = useCallback(async (text: string, expectedBefore?: string) => {
+    const state = useResumeStore.getState();
+    if (!state.current || state.current.id !== id) throw new Error('简历已切换，请重新生成建议');
+    if (!text.trim()) throw new Error('总结内容为空，无法应用');
+    let target = state.current.sections.find(section => section.sectionType === 'summary');
+    const original = target ? normalizeSectionData(target.data) : {};
+    if (expectedBefore !== undefined && plainText(original.content) !== plainText(expectedBefore)) {
+      throw new Error('个人总结已修改，请重新生成后再应用');
+    }
+    if (!target) target = await state.addSection('summary');
+    if (!target || useResumeStore.getState().current?.id !== id) throw new Error('简历已切换，请重新打开后重试');
+    const data = normalizeSectionData(target.data);
+    await useResumeStore.getState().applyAiSection(target.id, { ...data, content: text.trim() }, data, true);
+    setSelectedId(target.id);
+  }, [id]);
 
-  /** AI：把生成的总结写入「个人总结」模块 */
-  const handleApplySummary = useCallback(
-    (text: string) => {
-      let target = sections.find((s) => s.sectionType === 'summary');
-      if (target) {
-        applyToSection(target.id, (data) => ({ ...data, content: text }));
-        setSelectedId(target.id);
-        message.success('已写入「个人总结」模块');
-        return;
-      }
-      // 没有该模块则先创建，再写入
-      addSection('summary')
-        .then(() => {
-          const created = useResumeStore
-            .getState()
-            .current?.sections.find((s) => s.sectionType === 'summary');
-          if (!created) return;
-          updateSectionData(created.id, {
-            ...normalizeSectionData(created.data),
-            content: text,
-          });
-          persistSection(created.id).catch(() => undefined);
-          setSelectedId(created.id);
-          message.success('已创建「个人总结」模块并写入内容');
-        })
-        .catch(() => message.error('写入失败'));
-    },
-    [sections, applyToSection, addSection, updateSectionData, persistSection]
-  );
+  const handleApplyBullets = useCallback(async (changes: AiBulletChange[]) => {
+    const state = useResumeStore.getState();
+    if (!state.current || state.current.id !== id) throw new Error('简历已切换，请重新优化');
+    const [patch] = planBulletChanges(state.current, changes);
+    await state.applyAiSection(patch.sectionId, patch.data, patch.beforeData);
+    setSelectedId(patch.sectionId);
+  }, [id]);
 
   // ---------------------------------------------------------------
   // 模块操作
@@ -915,7 +899,10 @@ export default function Editor() {
                     jobTitle={current?.targetJob || String(normalizeSectionData(
                       sections.find((s) => s.sectionType === 'basic')?.data
                     ).jobTitle || '')}
-                    onOptimize={(text, apply) => setOptimize({ text, apply })}
+                    onOptimize={(text, produce) => {
+                      if (!selectedSection || !current) return;
+                      setOptimize({ text, produce, sectionId: selectedSection.id, resumeId: current.id, sourceData: normalizeSectionData(selectedSection.data) });
+                    }}
                   />
                 </div>
               </div>
@@ -1096,12 +1083,12 @@ export default function Editor() {
               </div>
             )}
 
-            {rightTab === 'ai' && (
-              <div key="ai" style={{ height: '100%' }}>
+            {current && (
+              <div key={`ai-${current.id}`} hidden={rightTab !== 'ai'} style={{ height: '100%' }}>
                 <AiPanel
                   resume={current}
                   onApplySummary={handleApplySummary}
-                  onApplyBullets={() => undefined}
+                  onApplyBullets={handleApplyBullets}
                 />
               </div>
             )}
@@ -1173,9 +1160,17 @@ export default function Editor() {
       <AiOptimizeModal
         open={!!optimize}
         source={optimize?.text || ''}
-        jobTitle={current?.targetJob}
+        jobTitle={resolveTargetJob(current)}
         onClose={() => setOptimize(null)}
-        onApply={(text) => optimize?.apply(text)}
+        onApply={async (text) => {
+          if (!optimize || useResumeStore.getState().current?.id !== optimize.resumeId) throw new Error('简历已切换，请重新优化');
+          if (draftRef.current?.sectionId === optimize.sectionId) {
+            if (timerRef.current) window.clearTimeout(timerRef.current);
+            timerRef.current = null;
+            draftRef.current = null;
+          }
+          await useResumeStore.getState().applyAiSection(optimize.sectionId, optimize.produce(text), optimize.sourceData);
+        }}
       />
     </div>
   );

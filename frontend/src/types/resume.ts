@@ -255,7 +255,12 @@ export interface AtsScores {
   overall: number;
 }
 
-export interface AtsScoreResponse {
+export interface AiResultMeta {
+  notice?: string;
+  fallbackReason?: string;
+}
+
+export interface AtsScoreResponse extends AiResultMeta {
   scores: AtsScores;
   suggestions: string[];
   matchedSkills?: string[];
@@ -263,12 +268,26 @@ export interface AtsScoreResponse {
   engine?: AiEngine;
 }
 
-export interface AiTextResponse {
+export interface AiTextResponse extends AiResultMeta {
   result: string;
+  engine: AiEngine;
+  suggestions?: string[];
+}
+
+export interface AiBatchItem {
+  id: string;
+  before: string;
+  after: string;
+  engine: AiEngine;
+  suggestions?: string[];
+}
+
+export interface AiBatchResponse extends AiResultMeta {
+  items: AiBatchItem[];
   engine: AiEngine;
 }
 
-export interface JdParseResponse {
+export interface JdParseResponse extends AiResultMeta {
   skills: string[];
   years: string | null;
   education: string | null;
@@ -277,7 +296,7 @@ export interface JdParseResponse {
   engine: AiEngine;
 }
 
-export interface SkillMatchResponse {
+export interface SkillMatchResponse extends AiResultMeta {
   matched: string[];
   missing: string[];
   extra: string[];
@@ -285,7 +304,7 @@ export interface SkillMatchResponse {
   engine: AiEngine;
 }
 
-export interface InterviewQuestionsResponse {
+export interface InterviewQuestionsResponse extends AiResultMeta {
   questions: string[];
   engine: AiEngine;
 }
@@ -294,6 +313,7 @@ export interface AiHealth {
   status: string;
   llmEnabled: boolean;
   engine: AiEngine;
+  modelStatus?: 'unconfigured' | 'configured' | 'available' | 'unavailable';
 }
 
 /** 当前 AI 使用的引擎：大模型 or 本地规则 */

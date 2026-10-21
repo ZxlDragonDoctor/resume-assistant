@@ -7,6 +7,7 @@
 import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { message } from 'antd';
 import type {
+  AiBatchResponse,
   AiHealth,
   AiTextResponse,
   ApiResponse,
@@ -17,6 +18,7 @@ import type {
   LayoutConfig,
   Resume,
   ResumeDetail,
+  ResumeSection,
   ResumeStats,
   ResumeVersion,
   SectionType,
@@ -96,6 +98,7 @@ const exportHttp: AxiosInstance = axios.create({
 http.interceptors.response.use(
   (res) => res,
   (err: AxiosError<ApiResponse<unknown>>) => {
+    if (axios.isCancel(err) || err.code === 'ERR_CANCELED') return Promise.reject(err);
     const status = err.response?.status;
     const body = err.response?.data;
 
@@ -114,9 +117,9 @@ http.interceptors.response.use(
     if (bizMessage) {
       message.error(bizMessage);
     } else if (err.code === 'ECONNABORTED') {
-      message.error('请求超时，请检查服务是否已启动');
+      message.error('请求超时，请稍后重试');
     } else if (!err.response) {
-      message.error('无法连接到服务，请确认网关已启动（端口 8080）');
+      message.error('暂时无法连接服务，请稍后重试');
     } else {
       message.error('请求失败，请稍后重试');
     }
@@ -127,7 +130,16 @@ http.interceptors.response.use(
 /** 解包 R<T>，返回 data */
 async function unwrap<T>(promise: Promise<{ data: ApiResponse<T> }>): Promise<T> {
   const res = await promise;
-  return res.data?.data as T;
+  if (!res.data || res.data.code !== 200) {
+    const errorMessage = res.data?.message || '服务返回异常，请稍后重试';
+    if (res.data?.code === 401) {
+      auth.clear();
+      if (!window.location.pathname.startsWith('/login')) window.location.href = '/login';
+    }
+    message.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+  return res.data.data;
 }
 
 // ==================================================================
@@ -184,7 +196,7 @@ export const resumeApi = {
   addSection: (
     resumeId: string,
     payload: { sectionType: SectionType | string; sortOrder: number; data: string; layout?: string }
-  ) => unwrap(http.post(`/resumes/${resumeId}/sections`, payload)),
+  ) => unwrap<ResumeSection>(http.post(`/resumes/${resumeId}/sections`, payload)),
 
   updateSection: (
     sectionId: string,
@@ -263,30 +275,33 @@ export const fileApi = {
 // ==================================================================
 
 export const aiApi = {
-  health: () => unwrap<AiHealth>(http.get('/ai/health')),
+  health: (signal?: AbortSignal) => unwrap<AiHealth>(http.get('/ai/health', { signal, timeout: 60000 })),
 
-  optimizeBullet: (content: string, jobTitle?: string) =>
-    unwrap<AiTextResponse>(http.post('/ai/optimize-bullet', { content, job_title: jobTitle })),
+  optimizeBullet: (content: string, jobTitle?: string, signal?: AbortSignal) =>
+    unwrap<AiTextResponse>(http.post('/ai/optimize-bullet', { content, job_title: jobTitle || '' }, { signal, timeout: 60000 })),
 
-  generateSummary: (resumeInfo: string) =>
-    unwrap<AiTextResponse>(http.post('/ai/generate-summary', { resume_info: resumeInfo })),
+  optimizeBullets: (bullets: { id: string; content: string }[], jobTitle?: string, signal?: AbortSignal) =>
+    unwrap<AiBatchResponse>(http.post('/ai/optimize-bullets', { bullets, job_title: jobTitle || '' }, { signal, timeout: 60000 })),
 
-  atsScore: (jobDescription: string, resumeContent: string) =>
+  generateSummary: (resumeInfo: string, signal?: AbortSignal) =>
+    unwrap<AiTextResponse>(http.post('/ai/generate-summary', { resume_info: resumeInfo }, { signal, timeout: 60000 })),
+
+  atsScore: (jobDescription: string, resumeContent: string, signal?: AbortSignal) =>
     unwrap<AtsScoreResponse>(
-      http.post('/ai/ats-score', { job_description: jobDescription, resume_content: resumeContent })
+      http.post('/ai/ats-score', { job_description: jobDescription, resume_content: resumeContent }, { signal, timeout: 60000 })
     ),
 
-  parseJd: (jobDescription: string) =>
-    unwrap<JdParseResponse>(http.post('/ai/parse-jd', { job_description: jobDescription })),
+  parseJd: (jobDescription: string, signal?: AbortSignal) =>
+    unwrap<JdParseResponse>(http.post('/ai/parse-jd', { job_description: jobDescription }, { signal, timeout: 60000 })),
 
-  matchSkills: (resumeContent: string, jobDescription: string) =>
+  matchSkills: (resumeContent: string, jobDescription: string, signal?: AbortSignal) =>
     unwrap<SkillMatchResponse>(
-      http.post('/ai/match-skills', { resume_content: resumeContent, job_description: jobDescription })
+      http.post('/ai/match-skills', { resume_content: resumeContent, job_description: jobDescription }, { signal, timeout: 60000 })
     ),
 
-  interviewQuestions: (jobTitle: string, resumeContent: string) =>
+  interviewQuestions: (jobTitle: string, resumeContent: string, signal?: AbortSignal) =>
     unwrap<InterviewQuestionsResponse>(
-      http.post('/ai/interview-questions', { job_title: jobTitle, resume_content: resumeContent })
+      http.post('/ai/interview-questions', { job_title: jobTitle, resume_content: resumeContent }, { signal, timeout: 60000 })
     ),
 };
 

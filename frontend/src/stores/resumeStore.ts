@@ -75,7 +75,8 @@ interface ResumeState {
   persistMeta: (patch: Record<string, unknown>) => Promise<void>;
   saveLayout: (layout: LayoutConfig) => Promise<void>;
 
-  addSection: (type: SectionType) => Promise<void>;
+  addSection: (type: SectionType) => Promise<ResumeSection | undefined>;
+  applyAiSection: (sectionId: string, data: Record<string, unknown>, expectedData: Record<string, unknown>, makeVisible?: boolean) => Promise<void>;
   updateSectionData: (sectionId: string, data: Record<string, unknown>) => void;
   persistSection: (sectionId: string) => Promise<void>;
   renameSection: (sectionId: string, name: string) => void;
@@ -218,16 +219,16 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
     set({ saving: true });
     try {
-      await resumeApi.addSection(current.id, {
+      const created = await resumeApi.addSection(current.id, {
         sectionType: type,
         sortOrder: maxOrder + 1,
         data: JSON.stringify(payload),
       });
-      const detail = await resumeApi.detail(current.id);
-      set({
-        current: { ...detail, sections: normalizeSections(detail.sections || []) },
-        lastSavedAt: Date.now(),
-      });
+      const latest = get().current;
+      if (!latest || latest.id !== current.id) return;
+      const section = normalizeSections([created])[0];
+      set({ current: { ...latest, sections: [...latest.sections, section] }, lastSavedAt: Date.now() });
+      return section;
     } finally {
       set({ saving: false });
     }
@@ -240,6 +241,35 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       s.id === sectionId ? { ...s, data: { ...data } } : s
     );
     set({ current: { ...current, sections }, dirty: true });
+  },
+
+  applyAiSection: async (sectionId, data, expectedData, makeVisible = false) => {
+    const current = get().current;
+    const previous = current?.sections.find(section => section.id === sectionId);
+    if (!current || !previous) throw new Error('原模块不存在，请重新打开简历');
+    if (JSON.stringify(previous.data) !== JSON.stringify(expectedData)) throw new Error('原文已修改，请重新生成建议');
+    if (get().saving) throw new Error('正在保存，请稍后再应用');
+    const wasDirty = get().dirty;
+    const nextSection = { ...previous, data, isVisible: makeVisible ? true : previous.isVisible };
+    const optimistic = { ...current, sections: current.sections.map(section => section.id === sectionId ? nextSection : section) };
+    set({ current: optimistic, saving: true, dirty: true });
+    try {
+      await resumeApi.updateSection(sectionId, {
+        sectionType: nextSection.sectionType, sortOrder: nextSection.sortOrder,
+        isVisible: nextSection.isVisible, layout: nextSection.layout, data: JSON.stringify(data),
+      });
+      const latest = get().current;
+      if (!latest || latest.id !== current.id) throw new Error('简历已切换，请重新打开后查看保存结果');
+      set({ dirty: latest === optimistic ? wasDirty : true, lastSavedAt: Date.now() });
+    } catch (error) {
+      const latest = get().current;
+      if (latest?.id === current.id && latest.sections.find(section => section.id === sectionId)?.data === data) {
+        set({ current: { ...latest, sections: latest.sections.map(section => section.id === sectionId ? previous : section) }, dirty: wasDirty || latest !== optimistic });
+      }
+      throw error;
+    } finally {
+      set({ saving: false });
+    }
   },
 
   persistSection: async (sectionId) => {
