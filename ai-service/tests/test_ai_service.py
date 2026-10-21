@@ -77,6 +77,13 @@ def test_jd_accepts_omitted_optional_model_fields(model_reply):
     assert result["requirements"] == []
 
 
+def test_jd_normalizes_integer_years_from_model(model_reply):
+    model_reply(json.dumps({"skills": ["产品规划"], "years": 5, "education": "本科"}))
+    result = run(ai.parse_jd("高级产品经理，5年以上经验，本科及以上"))
+    assert result["engine"] == "llm"
+    assert result["years"] == "5年"
+
+
 def test_batch_calls_model_once_and_restores_request_order(monkeypatch):
     calls = []
     monkeypatch.setattr(settings, "llm_enabled", True)

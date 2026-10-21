@@ -284,7 +284,10 @@ async def ats_score(job_description: str, resume_content: str) -> dict:
 
 async def parse_jd(job_description: str) -> dict:
     def validate(raw: str) -> dict:
-        data = JdOutput.model_validate(_parse_json_block(raw)).model_dump()
+        payload = _parse_json_block(raw)
+        if type(payload.get("years")) is int:
+            payload["years"] = f"{payload['years']}年"
+        data = JdOutput.model_validate(payload).model_dump()
         if not any(data.values()):
             raise ValueError("Model returned no job information")
         return data
