@@ -20,4 +20,4 @@ minio:
   secret-key: ${MINIO_SECRET_KEY:minioadmin123}
   bucket: resume-files
   # 浏览器可访问的 MinIO 外网地址（容器部署时用环境变量 MINIO_PUBLIC_ENDPOINT 覆盖）
-  public-endpoint: ${MINIO_PUBLIC_ENDPOINT:http://localhost:9010}
+  public-endpoint: ${MINIO_PUBLIC_ENDPOINT:/minio}

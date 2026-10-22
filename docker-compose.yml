@@ -214,7 +214,7 @@ services:
     environment:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
       # MinIO 对外 URL（浏览器访问用）；容器内网地址见 MINIO_ENDPOINT（minio:9000）
-      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9010}
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-/minio}
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}

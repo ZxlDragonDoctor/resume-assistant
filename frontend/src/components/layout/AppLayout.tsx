@@ -17,6 +17,7 @@ import {
 
 import Logo from './Logo';
 import { useAuthStore } from '../../stores/authStore';
+import { publicFileUrl } from '../../utils/fileUrl';
 import { brand, layout as layoutTokens, neutral, radius, transition, zIndex } from '../../styles/tokens';
 
 const NAV_ITEMS = [
@@ -184,7 +185,7 @@ export default function AppLayout({ children }: Props) {
               >
                 <Avatar
                   size={28}
-                  src={user.avatarUrl || undefined}
+                  src={publicFileUrl(user.avatarUrl)}
                   style={{ background: brand.gradient, fontSize: 13, fontWeight: 600 }}
                 >
                   {user.name?.[0]?.toUpperCase()}

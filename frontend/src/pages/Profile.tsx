@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, Button, Input, message, Upload } from 'antd';
 import {
   CameraOutlined,
+  LoadingOutlined,
   CheckOutlined,
   LockOutlined,
   MailOutlined,
@@ -15,8 +16,8 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
-import AppLayout from '../components/layout/AppLayout';
 import { fileApi } from '../services/api';
+import { publicFileUrl } from '../utils/fileUrl';
 import { useAuthStore } from '../stores/authStore';
 import { brand, layout as layoutTokens, neutral, radius, semantic, shadow, transition } from '../styles/tokens';
 
@@ -33,6 +34,7 @@ export default function Profile() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // ---- 密码 ----
   const [oldPwd, setOldPwd] = useState('');
@@ -57,19 +59,23 @@ export default function Profile() {
       await updateProfile({ name: name.trim(), phone: phone.trim() });
       message.success('资料已更新');
     } catch {
-      message.error('保存失败，请稍后重试');
+      /* API 拦截器保留后端的具体错误提示。 */
     } finally {
       setSavingProfile(false);
     }
   };
 
   const handleUploadAvatar = async (file: File) => {
+    if (uploadingAvatar) return;
+    setUploadingAvatar(true);
     try {
       const { url } = await fileApi.uploadAvatar(file);
       await updateProfile({ avatarUrl: url });
       message.success('头像已更新');
     } catch {
-      message.error('头像上传失败');
+      /* 失败时不更新资料状态，具体错误由 API 拦截器显示。 */
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -85,7 +91,7 @@ export default function Profile() {
     setSavingPwd(true);
     try {
       await changePassword(oldPwd, newPwd);
-      message.success('密码已修改，请用新密码重新登录');
+      message.success('密码已修改');
       setOldPwd('');
       setNewPwd('');
       setConfirmPwd('');
@@ -97,7 +103,6 @@ export default function Profile() {
   };
 
   return (
-    <AppLayout>
       <div
         style={{
           maxWidth: layoutTokens.contentMaxWidth,
@@ -128,8 +133,13 @@ export default function Profile() {
           >
             <Upload
               showUploadList={false}
-              accept="image/*"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              disabled={uploadingAvatar}
               beforeUpload={(file) => {
+                if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+                  message.warning('请选择 JPG、PNG、GIF 或 WebP 图片');
+                  return Upload.LIST_IGNORE;
+                }
                 if (file.size > 5 * 1024 * 1024) {
                   message.warning('图片不要超过 5MB');
                   return Upload.LIST_IGNORE;
@@ -138,10 +148,16 @@ export default function Profile() {
                 return false;
               }}
             >
-              <div style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
+              <button
+                type="button"
+                aria-label={uploadingAvatar ? '正在上传头像' : '上传头像'}
+                aria-busy={uploadingAvatar}
+                disabled={uploadingAvatar}
+                style={{ position: 'relative', display: 'inline-block', cursor: uploadingAvatar ? 'wait' : 'pointer', border: 0, padding: 0, background: 'transparent' }}
+              >
                 <Avatar
                   size={88}
-                  src={user?.avatarUrl}
+                  src={publicFileUrl(user?.avatarUrl)}
                   style={{
                     background: brand.gradient,
                     fontSize: 32,
@@ -170,10 +186,13 @@ export default function Profile() {
                     boxShadow: shadow.sm,
                   }}
                 >
-                  <CameraOutlined />
+                  {uploadingAvatar ? <LoadingOutlined /> : <CameraOutlined />}
                 </span>
-              </div>
+              </button>
             </Upload>
+            <div role="status" style={{ fontSize: 11.5, color: neutral[500], marginTop: 10 }}>
+              {uploadingAvatar ? '正在上传并保存头像…' : '点击头像更换 · JPG / PNG / GIF / WebP，最大 5MB'}
+            </div>
 
             <div
               style={{
@@ -284,7 +303,7 @@ export default function Profile() {
                     />
                   </Field>
 
-                  <Field label="手机号" hint="用于接收面试提醒（可选）">
+                  <Field label="手机号" hint="个人联系信息（可选）">
                     <Input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -407,7 +426,6 @@ export default function Profile() {
           </div>
         </div>
       </div>
-    </AppLayout>
   );
 }
 

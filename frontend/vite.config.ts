@@ -24,6 +24,17 @@ export default defineConfig({
         target: 'http://localhost:8085',
         changeOrigin: true,
       },
+      '/minio': {
+        target: 'http://localhost:9010',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/minio/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyRes', (response) => {
+            response.headers['content-security-policy'] = "sandbox; default-src 'none'; style-src 'unsafe-inline'";
+            response.headers['x-content-type-options'] = 'nosniff';
+          });
+        },
+      },
     },
   },
 });

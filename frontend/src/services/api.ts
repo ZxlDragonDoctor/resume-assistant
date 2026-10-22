@@ -265,7 +265,7 @@ export const fileApi = {
     const form = new FormData();
     form.append('file', file);
     return unwrap<{ url: string }>(
-      http.post('/files/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      http.post('/files/avatar', form)
     );
   },
 };
