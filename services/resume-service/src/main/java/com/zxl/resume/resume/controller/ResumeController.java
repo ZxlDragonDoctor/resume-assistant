@@ -21,6 +21,12 @@ public class ResumeController {
 
     private final ResumeService resumeService;
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    @ResponseStatus(org.springframework.http.HttpStatus.BAD_REQUEST)
+    public R<Void> invalidContent(org.springframework.http.converter.HttpMessageNotReadableException error) {
+        return R.badRequest("请求内容格式不正确或包含不支持的字段");
+    }
+
     // ---------------- 列表 / 详情 ----------------
 
     @GetMapping
@@ -69,6 +75,12 @@ public class ResumeController {
     }
 
     // ---------------- 分享 ----------------
+
+    @PutMapping("/{id}/content")
+    public R<ResumeDetailResponse> saveContent(@PathVariable UUID id, @UserId UUID userId,
+                                               @Valid @RequestBody SaveResumeContentRequest req) {
+        return R.ok(resumeService.saveContent(id, userId, req));
+    }
 
     @PostMapping("/{id}/share")
     public R<Map<String, Object>> enableShare(@PathVariable UUID id, @UserId UUID userId) {
@@ -131,6 +143,12 @@ public class ResumeController {
                                                    @UserId UUID userId,
                                                    @Valid @RequestBody CreateVersionRequest req) {
         return R.ok(resumeService.createVersion(id, userId, req));
+    }
+
+    @GetMapping("/{id}/versions/{versionId}")
+    public R<VersionDetailResponse> versionDetail(@PathVariable UUID id, @PathVariable UUID versionId,
+                                                 @UserId UUID userId) {
+        return R.ok(resumeService.getVersionDetail(id, userId, versionId));
     }
 
     @PostMapping("/{id}/versions/{versionId}/restore")

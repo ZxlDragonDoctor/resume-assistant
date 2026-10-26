@@ -15,6 +15,10 @@ import com.zxl.resume.resume.repository.TemplateCategoryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -529,7 +533,7 @@ public class ResumeService {
 
     @Transactional
     public void delete(UUID id, UUID userId) {
-        Resume resume = requireOwned(id, userId);
+        Resume resume = requireOwnedForUpdate(id, userId);
         sectionMapper.deleteByResumeId(resume.getId());
         resumeMapper.deleteById(resume.getId());
     }
@@ -540,7 +544,7 @@ public class ResumeService {
 
     @Transactional
     public ResumeSection addSection(UUID resumeId, UUID userId, UpdateSectionRequest req) {
-        requireOwned(resumeId, userId);
+        requireOwnedForUpdate(resumeId, userId);
         ResumeSection section = new ResumeSection();
         section.setId(UUID.randomUUID());
         section.setResumeId(resumeId);
@@ -550,6 +554,7 @@ public class ResumeService {
         section.setLayout(req.getLayout() != null ? req.getLayout() : "single-column");
         section.setData(req.getData());
         sectionMapper.insert(section);
+        resumeMapper.touchContent(resumeId);
         return section;
     }
 
@@ -562,12 +567,14 @@ public class ResumeService {
         if (req.getLayout() != null) section.setLayout(req.getLayout());
         section.setData(req.getData());
         sectionMapper.updateById(section);
+        resumeMapper.touchContent(section.getResumeId());
     }
 
     @Transactional
     public void deleteSection(UUID sectionId, UUID userId) {
         ResumeSection section = requireSectionOwned(sectionId, userId);
         sectionMapper.deleteById(section.getId());
+        resumeMapper.touchContent(section.getResumeId());
     }
 
     @Transactional
@@ -575,11 +582,12 @@ public class ResumeService {
         ResumeSection section = requireSectionOwned(sectionId, userId);
         section.setIsVisible(section.getIsVisible() == null || !section.getIsVisible());
         sectionMapper.updateById(section);
+        resumeMapper.touchContent(section.getResumeId());
     }
 
     @Transactional
     public void reorderSections(UUID resumeId, UUID userId, List<Map<String, Object>> orderList) {
-        requireOwned(resumeId, userId);
+        requireOwnedForUpdate(resumeId, userId);
         for (int i = 0; i < orderList.size(); i++) {
             Object rawId = orderList.get(i).get("id");
             if (rawId == null) continue;
@@ -590,6 +598,7 @@ public class ResumeService {
                 sectionMapper.updateById(section);
             }
         }
+        resumeMapper.touchContent(resumeId);
     }
 
     /** 新增「实习经历/项目经历」等列表型模块的快捷入口，直接写入一条空记录 */
@@ -600,6 +609,7 @@ public class ResumeService {
             throw new IllegalArgumentException("模块不属于该简历");
         }
         sectionMapper.updateById(section);
+        resumeMapper.touchContent(resumeId);
         return section;
     }
 
@@ -607,9 +617,181 @@ public class ResumeService {
     // 元信息更新
     // ---------------------------------------------------------------
 
+    /** One explicit save is one transaction and one new revision. */
+    @Transactional
+    public ResumeDetailResponse saveContent(UUID id, UUID userId, SaveResumeContentRequest req) {
+        validateContent(req);
+        Resume resume = requireOwnedForUpdate(id, userId);
+        if (!Objects.equals(req.getExpectedUpdatedAt(), resume.getUpdatedAt())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "简历已在其他窗口更新，请重新加载后保存");
+        }
+        Set<UUID> ids = new HashSet<>();
+        for (SaveResumeContentRequest.Section section : req.getSections()) {
+            if (!ids.add(section.getId())) throw new IllegalArgumentException("模块 ID 重复");
+            ResumeSection existing = sectionMapper.selectById(section.getId());
+            if (existing != null && !id.equals(existing.getResumeId())) {
+                throw new IllegalArgumentException("模块 ID 已被其他简历使用");
+            }
+        }
+
+        ResumeDetailResponse before = toDetail(resume);
+        List<ResumeVersion> versions = versionMapper.findByResumeId(id);
+        ResumeVersion latest = versions.stream().max(Comparator.comparing(ResumeVersion::getVersionNum)).orElse(null);
+        int number = latest == null ? 0 : latest.getVersionNum();
+        if (latest == null || !sameEditableContent(before, latest.getSnapshot())) {
+            insertSnapshot(id, ++number, "保存前的版本", "保留此次保存前已持久化的内容", before);
+        }
+
+        resume.setTitle(req.getTitle()); resume.setTemplateId(req.getTemplateId());
+        resume.setTargetJob(req.getTargetJob()); resume.setTargetCompany(req.getTargetCompany());
+        resume.setFontFamily(req.getFontFamily()); resume.setFontSize(req.getFontSize());
+        resume.setThemeColor(req.getThemeColor()); resume.setLineSpacing(req.getLineSpacing());
+        resume.setLayoutConfig(req.getLayoutConfig());
+        resumeMapper.replaceContent(resume);
+        sectionMapper.deleteByResumeId(id);
+        for (SaveResumeContentRequest.Section input : req.getSections()) {
+            ResumeSection section = new ResumeSection();
+            section.setId(input.getId()); section.setResumeId(id); section.setSectionType(input.getSectionType());
+            section.setSortOrder(input.getSortOrder()); section.setIsVisible(input.getIsVisible());
+            section.setLayout(input.getLayout()); section.setData(input.getData().toString());
+            sectionMapper.insert(section);
+        }
+        // Reload database timestamps (PostgreSQL has an updated_at trigger).
+        ResumeDetailResponse saved = toDetail(resumeMapper.selectById(id));
+        insertSnapshot(id, ++number, req.getLabel() == null || req.getLabel().isBlank() ? "手动保存" : req.getLabel(),
+                req.getDescription(), saved);
+        return saved;
+    }
+
+    private void validateContent(SaveResumeContentRequest req) {
+        if (req == null) throw new IllegalArgumentException("保存内容不能为空");
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            if (!factory.getValidator().validate(req).isEmpty()) throw new IllegalArgumentException("保存内容字段格式或长度不正确");
+        }
+        long size = req.getLayoutConfig().length();
+        try {
+            JsonNode layout = objectMapper.readTree(req.getLayoutConfig());
+            if (layout == null || !layout.isObject()) throw new IllegalArgumentException("版式配置必须是 JSON 对象");
+            for (SaveResumeContentRequest.Section section : req.getSections()) {
+                if (!section.getData().isObject()) throw new IllegalArgumentException("模块内容必须是 JSON 对象");
+                int length = section.getData().toString().length();
+                if (length > 262144) throw new IllegalArgumentException("单个模块内容过大");
+                size += length;
+            }
+            if (size > 2097152) throw new IllegalArgumentException("简历内容过大");
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("版式配置不是有效 JSON", e);
+        }
+    }
+
+    private boolean sameEditableContent(ResumeDetailResponse current, String snapshot) {
+        try {
+            JsonNode prior = objectMapper.readTree(snapshot);
+            JsonNode now = objectMapper.valueToTree(current);
+            for (String field : List.of("title", "templateId", "targetJob", "targetCompany", "fontFamily", "fontSize",
+                    "themeColor", "lineSpacing", "sections")) {
+                if (!Objects.equals(now.path(field), prior.path(field))) return false;
+            }
+            // JSON object property order and spacing are not content changes.
+            return Objects.equals(parseJsonNode(current.getLayoutConfig()), parseJsonNode(prior.path("layoutConfig").asText(null)));
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private ResumeVersion insertSnapshot(UUID resumeId, int number, String label, String description, ResumeDetailResponse detail) {
+        ResumeVersion version = new ResumeVersion();
+        version.setId(UUID.randomUUID()); version.setResumeId(resumeId); version.setVersionNum(number);
+        version.setLabel(label); version.setDescription(description); version.setCreatedAt(Instant.now());
+        try {
+            version.setSnapshot(objectMapper.writeValueAsString(detail));
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("快照序列化失败", e);
+        }
+        versionMapper.insert(version);
+        return version;
+    }
+
+    public VersionDetailResponse getVersionDetail(UUID resumeId, UUID userId, UUID versionId) {
+        requireOwned(resumeId, userId);
+        ResumeVersion version = versionMapper.selectById(versionId);
+        if (version == null || !resumeId.equals(version.getResumeId())) throw new IllegalArgumentException("版本不存在");
+        VersionDetailResponse response = new VersionDetailResponse();
+        response.setId(version.getId()); response.setVersionNum(version.getVersionNum()); response.setLabel(version.getLabel());
+        response.setDescription(version.getDescription()); response.setCreatedAt(version.getCreatedAt());
+        response.setSnapshot(readSnapshot(version));
+        return response;
+    }
+
+    /** Old snapshots may contain data encoded as strings or missing section defaults. */
+    private ResumeDetailResponse readSnapshot(ResumeVersion version) {
+        try {
+            JsonNode root = objectMapper.readTree(version.getSnapshot());
+            if (root == null || !root.isObject()) throw new IllegalArgumentException("快照必须是对象");
+            ResumeDetailResponse detail = new ResumeDetailResponse();
+            detail.setId(version.getResumeId());
+            detail.setTitle(snapshotText(root, "title", "历史简历", 200));
+            try { detail.setTemplateId(UUID.fromString(root.path("templateId").asText())); } catch (IllegalArgumentException ignored) { }
+            detail.setTargetJob(snapshotText(root, "targetJob", null, 200));
+            detail.setTargetCompany(snapshotText(root, "targetCompany", null, 200));
+            detail.setFontFamily(snapshotText(root, "fontFamily", "system-ui", 100));
+            int fontSize = root.path("fontSize").asInt(14);
+            detail.setFontSize(fontSize >= 8 && fontSize <= 72 ? fontSize : 14);
+            double spacing = root.path("lineSpacing").asDouble(1.6);
+            detail.setLineSpacing(Double.isFinite(spacing) && spacing >= 1 && spacing <= 3 ? spacing : 1.6);
+            String color = root.path("themeColor").asText("");
+            detail.setThemeColor(color.matches("#[0-9a-fA-F]{6}") ? color : "#2563eb");
+            Object layout = root.path("layoutConfig").isObject() ? root.path("layoutConfig")
+                    : parseJsonNode(root.path("layoutConfig").asText(null));
+            detail.setLayoutConfig(layout instanceof JsonNode node && node.isObject() ? node.toString() : "{}");
+            detail.setShareEnabled(root.path("shareEnabled").asBoolean(false));
+            detail.setShareToken(snapshotText(root, "shareToken", null, 64));
+            detail.setViewCount(Math.max(0, root.path("viewCount").asInt(0)));
+            detail.setStatus(snapshotText(root, "status", "draft", 20));
+            detail.setCreatedAt(snapshotInstant(root.path("createdAt"), version.getCreatedAt()));
+            detail.setUpdatedAt(snapshotInstant(root.path("updatedAt"), version.getCreatedAt()));
+            List<ResumeDetailResponse.SectionResponse> sections = new ArrayList<>();
+            Set<UUID> ids = new HashSet<>();
+            JsonNode rawSections = root.path("sections");
+            if (rawSections.isArray()) for (JsonNode raw : rawSections) {
+                if (!raw.isObject() || sections.size() >= 100) continue;
+                ResumeDetailResponse.SectionResponse section = new ResumeDetailResponse.SectionResponse();
+                UUID id;
+                try { id = UUID.fromString(raw.path("id").asText()); } catch (Exception ignored) { id = UUID.randomUUID(); }
+                if (!ids.add(id)) { id = UUID.randomUUID(); ids.add(id); }
+                section.setId(id); section.setSectionType(snapshotText(raw, "sectionType", "custom", 50));
+                int sort = raw.path("sortOrder").asInt(sections.size());
+                section.setSortOrder(sort >= 0 && sort <= 10000 ? sort : sections.size());
+                section.setIsVisible(raw.path("isVisible").asBoolean(true));
+                section.setLayout(snapshotText(raw, "layout", "single-column", 20));
+                JsonNode data = raw.path("data");
+                if (data.isTextual()) {
+                    try { data = objectMapper.readTree(data.asText()); } catch (JsonProcessingException ignored) { data = null; }
+                }
+                section.setData(data != null && data.isObject() ? data : objectMapper.createObjectNode());
+                sections.add(section);
+            }
+            detail.setSections(sections);
+            return detail;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "历史版本数据损坏，无法读取", e);
+        }
+    }
+
+    private String snapshotText(JsonNode root, String field, String fallback, int maxLength) {
+        JsonNode value = root.path(field);
+        if (!value.isTextual() || value.asText().isBlank()) return fallback;
+        String text = value.asText();
+        return text.length() > maxLength ? text.substring(0, maxLength) : text;
+    }
+
+    private Instant snapshotInstant(JsonNode value, Instant fallback) {
+        try { return Instant.parse(value.asText()); } catch (RuntimeException ignored) { return fallback; }
+    }
+
     @Transactional
     public void updateResume(UUID id, UUID userId, UpdateResumeRequest req) {
-        Resume resume = requireOwned(id, userId);
+        Resume resume = requireOwnedForUpdate(id, userId);
         if (req.getTitle() != null && !req.getTitle().isBlank()) resume.setTitle(req.getTitle());
         if (req.getTemplateId() != null) resume.setTemplateId(req.getTemplateId());
         if (req.getTargetJob() != null) resume.setTargetJob(req.getTargetJob());
@@ -635,7 +817,7 @@ public class ResumeService {
 
     @Transactional
     public Map<String, Object> enableShare(UUID id, UUID userId) {
-        Resume resume = requireOwned(id, userId);
+        Resume resume = requireOwnedForUpdate(id, userId);
         if (resume.getShareToken() == null || resume.getShareToken().isBlank()) {
             resume.setShareToken(randomToken(24));
         }
@@ -646,7 +828,7 @@ public class ResumeService {
 
     @Transactional
     public void disableShare(UUID id, UUID userId) {
-        Resume resume = requireOwned(id, userId);
+        Resume resume = requireOwnedForUpdate(id, userId);
         resume.setShareEnabled(false);
         resumeMapper.updateById(resume);
     }
@@ -657,7 +839,7 @@ public class ResumeService {
 
     @Transactional
     public VersionSummaryResponse createVersion(UUID resumeId, UUID userId, CreateVersionRequest req) {
-        Resume resume = requireOwned(resumeId, userId);
+        Resume resume = requireOwnedForUpdate(resumeId, userId);
         ResumeDetailResponse detail = toDetail(resume);
 
         ResumeVersion version = new ResumeVersion();
@@ -699,7 +881,7 @@ public class ResumeService {
     /** 将指定历史版本回滚为当前内容（回滚前自动保留一份当前快照） */
     @Transactional
     public void restoreVersion(UUID resumeId, UUID userId, UUID versionId) {
-        Resume resume = requireOwned(resumeId, userId);
+        Resume resume = requireOwnedForUpdate(resumeId, userId);
         ResumeVersion version = versionMapper.selectById(versionId);
         if (version == null || !version.getResumeId().equals(resumeId)) {
             throw new IllegalArgumentException("版本不存在");
@@ -814,13 +996,20 @@ public class ResumeService {
         return resume;
     }
 
+    private Resume requireOwnedForUpdate(UUID id, UUID userId) {
+        Resume resume = resumeMapper.findByIdForUpdate(id);
+        if (resume == null || !userId.equals(resume.getUserId())) throw new IllegalArgumentException("简历不存在或无权访问");
+        return resume;
+    }
+
     private ResumeSection requireSectionOwned(UUID sectionId, UUID userId) {
         ResumeSection section = sectionMapper.selectById(sectionId);
         if (section == null) throw new IllegalArgumentException("模块不存在");
-        Resume resume = resumeMapper.selectById(section.getResumeId());
-        if (resume == null || !resume.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("无权操作该模块");
-        }
+        UUID resumeId = section.getResumeId();
+        requireOwnedForUpdate(resumeId, userId);
+        // A concurrent full save may have replaced/deleted this section before we acquired the lock.
+        section = sectionMapper.selectById(sectionId);
+        if (section == null || !resumeId.equals(section.getResumeId())) throw new IllegalArgumentException("模块不存在");
         return section;
     }
 

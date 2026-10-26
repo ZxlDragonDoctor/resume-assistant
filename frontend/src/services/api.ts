@@ -184,6 +184,9 @@ export const resumeApi = {
   update: (id: string, data: Partial<LayoutConfig> & Record<string, unknown>) =>
     unwrap<void>(http.patch(`/resumes/${id}`, data)),
 
+  saveContent: (id: string, data: Record<string, unknown>) =>
+    unwrap<ResumeDetail>(http.put(`/resumes/${id}/content`, data)),
+
   // ---- 分享 ----
   enableShare: (id: string) =>
     unwrap<{ shareToken: string; shareEnabled: boolean }>(http.post(`/resumes/${id}/share`)),
@@ -213,6 +216,9 @@ export const resumeApi = {
 
   // ---- 版本 ----
   versions: (id: string) => unwrap<ResumeVersion[]>(http.get(`/resumes/${id}/versions`)),
+
+  versionDetail: (id: string, versionId: string) =>
+    unwrap<ResumeVersion & { snapshot: ResumeDetail }>(http.get(`/resumes/${id}/versions/${versionId}`)),
 
   createVersion: (id: string, label: string, description?: string) =>
     unwrap<ResumeVersion>(http.post(`/resumes/${id}/versions`, { label, description })),

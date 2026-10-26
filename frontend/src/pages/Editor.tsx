@@ -10,15 +10,13 @@
  * 本页是唯一的状态编排者：
  *   - 从 resumeStore 拉取简历详情
  *   - 把 store action 接到各个子面板
- *   - 统一做「本地乐观更新 + 防抖落库」，避免每次敲键盘都打接口
+ *   - 统一维护草稿，只有显式保存才提交整份简历
  *
- * 自动保存策略：
- *   内容编辑 → 本地更新（脏标记）→ 800ms 静默后落库
- *   样式调整 → 立即本地更新 + 落库（参数少、改动明确）
+ * 编辑、样式、模块和 AI 建议均先进入可撤销草稿；保存后生成历史版本。
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Dropdown, Result, Spin, Tooltip } from 'antd';
+import { useBlocker, useNavigate, useParams } from 'react-router-dom';
+import { Alert, Button, Dropdown, Modal, Result, Spin, Tooltip } from 'antd';
 import {
   ArrowLeftOutlined,
   CheckCircleFilled,
@@ -32,6 +30,7 @@ import {
   MoreOutlined,
   PhoneOutlined,
   RedoOutlined,
+  UndoOutlined,
   SaveOutlined,
   ShareAltOutlined,
   SlidersOutlined,
@@ -57,8 +56,8 @@ import {
   type SectionType,
   type TemplateConfig,
 } from '../types/resume';
-import { templateApi } from '../services/api';
-import { message } from '../utils/antdStatic';
+import { resumeApi, templateApi } from '../services/api';
+import { message, modal } from '../utils/antdStatic';
 import { DEFAULT_LAYOUT, parseLayout } from '../components/viewer/ResumePreviewEngine';
 import { clearConfigKeys, readConfig, writeConfig } from '../components/editor/sectionData';
 import { brand, neutral, radius, semantic, shadow, transition } from '../styles/tokens';
@@ -80,15 +79,18 @@ export default function Editor() {
   const lastSavedAt = useResumeStore((s) => s.lastSavedAt);
   const dirty = useResumeStore((s) => s.dirty);
   const versions = useResumeStore((s) => s.versions);
+  const versionsLoading = useResumeStore(s => s.versionsLoading);
+  const versionsError = useResumeStore(s => s.versionsError);
+  const canUndo = useResumeStore(s => s.past.length > 0);
+  const canRedo = useResumeStore(s => s.future.length > 0);
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => (useResumeStore.getState().dirty || useResumeStore.getState().saving) && currentLocation.pathname !== nextLocation.pathname);
 
   const fetchDetail = useResumeStore((s) => s.fetchDetail);
   const clearCurrent = useResumeStore((s) => s.clearCurrent);
   const updateMeta = useResumeStore((s) => s.updateMeta);
-  const persistMeta = useResumeStore((s) => s.persistMeta);
   const saveLayout = useResumeStore((s) => s.saveLayout);
   const addSection = useResumeStore((s) => s.addSection);
   const updateSectionData = useResumeStore((s) => s.updateSectionData);
-  const persistSection = useResumeStore((s) => s.persistSection);
   const renameSection = useResumeStore((s) => s.renameSection);
   const toggleSectionVisible = useResumeStore((s) => s.toggleSectionVisible);
   const deleteSection = useResumeStore((s) => s.deleteSection);
@@ -105,7 +107,7 @@ export default function Editor() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'style' | 'ai' | 'version'>('style');
   const [titleEditing, setTitleEditing] = useState(false);
-  const [titleDraft, setTitleDraft] = useState('');
+  const originalTitle = useRef('');
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [optimize, setOptimize] = useState<{ text: string; sectionId: string; resumeId: string; sourceData: Record<string, unknown>; produce: (r: string) => Record<string, unknown> } | null>(
@@ -155,10 +157,6 @@ export default function Editor() {
   const leftWidth = !leftOpen ? 0 : isVeryNarrow ? 200 : isNarrow ? 200 : 232;
   const rightWidth = !rightOpen ? 0 : isNarrow ? 280 : 320;
 
-  /** 正在编辑的内容（本地草稿），用于防抖保存 */
-  const draftRef = useRef<{ sectionId: string; data: Record<string, unknown> } | null>(null);
-  const timerRef = useRef<number | null>(null);
-
   // ---------------------------------------------------------------
   // 加载
   // ---------------------------------------------------------------
@@ -170,7 +168,6 @@ export default function Editor() {
     fetchVersions(id);
     return () => {
       clearCurrent();
-      if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, [id, fetchDetail, fetchVersions, clearCurrent]);
 
@@ -205,33 +202,14 @@ export default function Editor() {
   // 离开页面前提醒未保存
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (dirty) {
+      if (dirty || saving) {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
-
-  // 快捷键
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const meta = e.ctrlKey || e.metaKey;
-      if (meta && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        flushSave();
-        message.success('已保存');
-      }
-      if (meta && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        setExportOpen(true);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dirty, saving]);
 
   // ---------------------------------------------------------------
   // 数据派生
@@ -275,91 +253,45 @@ export default function Editor() {
   // 保存
   // ---------------------------------------------------------------
 
-  /** 立即把草稿落库 */
-  const flushSave = useCallback(() => {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    const draft = draftRef.current;
-    if (draft) {
-      draftRef.current = null;
-      persistSection(draft.sectionId).catch(() => undefined);
-    }
-    if (dirty) {
-      persistMeta({}).catch(() => undefined);
-    }
-  }, [dirty, persistMeta, persistSection]);
-
-  /** 立即把本地内容同步到 store（用于切换模块 / 关闭页面） */
-  const flushLocal = useCallback(() => {
-    const draft = draftRef.current;
-    if (!draft) return;
-    draftRef.current = null;
-    updateSectionData(draft.sectionId, draft.data);
-  }, [updateSectionData]);
-
-  /** 内容编辑：本地立即更新 + 防抖落库 */
-  const handleContentChange = useCallback(
-    (sectionId: string, data: Record<string, unknown>) => {
-      const withConfig = { ...data };
-      updateSectionData(sectionId, withConfig);
-      draftRef.current = { sectionId, data: withConfig };
-
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      timerRef.current = window.setTimeout(() => {
-        draftRef.current = null;
-        timerRef.current = null;
-        persistSection(sectionId).catch(() => undefined);
-      }, 800);
-    },
-    [updateSectionData, persistSection]
-  );
-
-  /** 样式调整：本地立即更新 + 落库（改动明确，不必防抖太久） */
-  const handleSectionStyleChange = useCallback(
-    (patch: Partial<SectionConfig>) => {
-      if (!selectedSection) return;
-      const next = writeConfig(selectedSection.data, patch);
-      updateSectionData(selectedSection.id, next);
-      // 复用同一把定时器，避免与内容保存竞争
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      timerRef.current = window.setTimeout(() => {
-        timerRef.current = null;
-        persistSection(selectedSection.id).catch(() => undefined);
-      }, 400);
-    },
-    [selectedSection, updateSectionData, persistSection]
-  );
-
-  const handleSectionLayoutChange = useCallback(
-    (sectionId: string, sectionLayout: 'auto' | 'left' | 'right') => {
-      patchSectionLocal(sectionId, (section) => ({ ...section, layout: sectionLayout }));
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      timerRef.current = window.setTimeout(() => {
-        timerRef.current = null;
-        persistSection(sectionId).catch(() => undefined);
-      }, 250);
-    },
-    [patchSectionLocal, persistSection]
-  );
-
+  const flushSave = useCallback(async () => {
+    const state = useResumeStore.getState();
+    if (!state.current?.title.trim()) { message.warning('请填写简历标题'); throw new Error('请填写简历标题'); }
+    if (!state.dirty) { message.info('没有未保存的修改'); return; }
+    const resumeId = state.current.id;
+    await state.saveCurrent();
+    if (useResumeStore.getState().current?.id === resumeId) message.success(useResumeStore.getState().dirty ? '已保存，仍有新的未保存修改' : '已保存');
+  }, []);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      const key = e.key.toLowerCase();
+      if (key === 's') { e.preventDefault(); e.stopPropagation(); void flushSave().catch(() => undefined); }
+      if (key === 'p') { e.preventDefault(); e.stopPropagation(); setExportOpen(true); }
+      if ((key === 'z' || key === 'y') && !(e.target as HTMLElement)?.closest('.ai-panel, .ant-modal')) {
+        e.preventDefault(); e.stopPropagation();
+        if (key === 'y' || e.shiftKey) useResumeStore.getState().redo(); else useResumeStore.getState().undo();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [flushSave]);
+  const handleContentChange = useCallback((sectionId: string, data: Record<string, unknown>) => updateSectionData(sectionId, data), [updateSectionData]);
+  const handleSectionStyleChange = useCallback((patch: Partial<SectionConfig>) => {
+    if (selectedSection) updateSectionData(selectedSection.id, writeConfig(selectedSection.data, patch));
+  }, [selectedSection, updateSectionData]);
+  const handleSectionLayoutChange = useCallback((sectionId: string, layout: 'auto' | 'left' | 'right') => {
+    patchSectionLocal(sectionId, section => ({ ...section, layout }));
+  }, [patchSectionLocal]);
   const handleSectionStyleReset = useCallback(() => {
     if (!selectedSection) return;
-    const next = clearConfigKeys(selectedSection.data, [
-      'titleFontSize',
-      'contentFontSize',
-      'titleColor',
-      'textColor',
-      'lineSpacing',
-      'textAlign',
-      'titleStyle',
-      'hideTitle',
-    ]);
-    updateSectionData(selectedSection.id, next);
-    persistSection(selectedSection.id).catch(() => undefined);
-    message.success('已恢复默认样式');
-  }, [selectedSection, updateSectionData, persistSection]);
+    updateSectionData(selectedSection.id, clearConfigKeys(selectedSection.data, ['titleFontSize','contentFontSize','titleColor','textColor','lineSpacing','textAlign','titleStyle','hideTitle']));
+    message.success('默认样式已应用到草稿');
+  }, [selectedSection, updateSectionData]);
+  const loadVersion = useCallback((versionId: string) => {
+    const resumeId = useResumeStore.getState().current?.id;
+    if (!resumeId) return Promise.reject(new Error('简历未加载'));
+    return resumeApi.versionDetail(resumeId, versionId);
+  }, []);
 
   /** 全局样式 */
   const handleGlobalStyleChange = useCallback(
@@ -400,7 +332,6 @@ export default function Editor() {
 
   const handleAddSection = useCallback(
     (type: SectionType) => {
-      flushLocal();
       addSection(type)
         .then(() => {
           // 新建后自动选中该模块，便于直接开始输入
@@ -413,17 +344,15 @@ export default function Editor() {
         })
         .catch(() => message.error('添加模块失败'));
     },
-    [addSection, flushLocal]
+    [addSection]
   );
 
   const handleSelect = useCallback(
     (nextId: string) => {
       if (nextId === selectedId) return;
-      flushLocal();
-      flushSave();
       setSelectedId(nextId);
     },
-    [selectedId, flushLocal, flushSave]
+    [selectedId]
   );
 
   const handleDelete = useCallback(
@@ -444,29 +373,19 @@ export default function Editor() {
     if (basic) handleSelect(basic.id);
   }, [sections, handleSelect]);
 
-  const handleRenameSection = useCallback(
-    (name: string) => {
-      if (!selectedSection) return;
-      renameSection(selectedSection.id, name);
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      timerRef.current = window.setTimeout(() => {
-        timerRef.current = null;
-        persistSection(selectedSection.id).catch(() => undefined);
-      }, 400);
-    },
-    [selectedSection, renameSection, persistSection]
-  );
+  const handleRenameSection = useCallback((name: string) => {
+    if (selectedSection) renameSection(selectedSection.id, name);
+  }, [selectedSection, renameSection]);
 
   // ---------------------------------------------------------------
   // 标题重命名
   // ---------------------------------------------------------------
 
   const commitTitle = () => {
-    const next = titleDraft.trim();
+    const next = current?.title.trim();
     setTitleEditing(false);
     if (!next || next === current?.title) return;
     updateMeta({ title: next });
-    persistMeta({ title: next }).catch(() => message.error('重命名失败'));
   };
 
   // ---------------------------------------------------------------
@@ -563,12 +482,12 @@ export default function Editor() {
         {titleEditing ? (
           <input
             autoFocus
-            value={titleDraft}
-            onChange={(e) => setTitleDraft(e.target.value)}
+            value={current?.title || ''}
+            onChange={(e) => updateMeta({ title: e.target.value })}
             onBlur={commitTitle}
             onKeyDown={(e) => {
               if (e.key === 'Enter') commitTitle();
-              if (e.key === 'Escape') setTitleEditing(false);
+              if (e.key === 'Escape') { updateMeta({ title: originalTitle.current }); setTitleEditing(false); }
             }}
             style={{
               fontSize: 14,
@@ -585,7 +504,7 @@ export default function Editor() {
           <Tooltip title="点击重命名" mouseEnterDelay={0.4}>
             <button
               onClick={() => {
-                setTitleDraft(current?.title || '');
+                originalTitle.current = current?.title || '';
                 setTitleEditing(true);
               }}
               style={{
@@ -610,6 +529,9 @@ export default function Editor() {
 
         {/* 保存状态 */}
         <SaveIndicator saving={saving} dirty={dirty} lastSavedAt={lastSavedAt} />
+        <Tooltip title="撤销（Ctrl+Z）"><button aria-label="撤销" disabled={!canUndo} onClick={() => useResumeStore.getState().undo()} style={{ ...iconBtn, opacity: canUndo ? 1 : .35 }}><UndoOutlined /></button></Tooltip>
+        <Tooltip title="重做（Ctrl+Shift+Z / Ctrl+Y）"><button aria-label="重做" disabled={!canRedo} onClick={() => useResumeStore.getState().redo()} style={{ ...iconBtn, opacity: canRedo ? 1 : .35 }}><RedoOutlined /></button></Tooltip>
+        {dirty && <button disabled={saving} style={textBtn} onClick={() => modal.confirm({ title: '放弃当前未保存的修改？', content: '将恢复到最近一次保存的内容。', okText: '放弃修改', cancelText: '继续编辑', onOk: () => useResumeStore.getState().discardChanges() })}>放弃修改</button>}
 
         <span style={{ flex: 1 }} />
 
@@ -680,10 +602,9 @@ export default function Editor() {
         </Tooltip>
 
         <button
-          onClick={() => {
-            flushSave();
-            message.success('已保存');
-          }}
+          aria-label="保存简历"
+          disabled={saving || !dirty}
+          onClick={() => void flushSave().catch(() => undefined)}
           style={{
             ...textBtn,
             background: brand.gradient,
@@ -695,7 +616,7 @@ export default function Editor() {
           }}
         >
           <CloudUploadOutlined style={{ fontSize: 13 }} />
-          保存
+          {saving ? '保存中…' : '保存'}
         </button>
 
         <Dropdown
@@ -723,8 +644,7 @@ export default function Editor() {
                 icon: <ArrowLeftOutlined />,
                 label: '返回我的简历',
                 onClick: () => {
-                  flushSave();
-                  navigate('/dashboard');
+                              navigate('/dashboard');
                 },
               },
             ],
@@ -987,14 +907,13 @@ export default function Editor() {
             <MenuFoldOutlined style={{ fontSize: 11, transform: 'none' }} />
           </button>
         )}
-        {rightOpen && (
         <aside
           style={{
             width: rightWidth,
             flexShrink: 0,
             background: '#fff',
             borderLeft: `1px solid ${neutral[150]}`,
-            display: 'flex',
+            display: rightOpen ? 'flex' : 'none',
             flexDirection: 'column',
             minHeight: 0,
             position: 'relative',
@@ -1095,7 +1014,11 @@ export default function Editor() {
 
             {rightTab === 'version' && (
               <div key="version" style={{ height: '100%' }}>
+                {versionsError && <Alert type="error" message={versionsError} action={<Button size="small" onClick={() => id && fetchVersions(id)}>重试</Button>} />}
                 <VersionPanel
+                  current={current}
+                  onLoadVersion={loadVersion}
+                  loading={versionsLoading}
                   versions={versions}
                   saving={saving}
                   onCreate={createVersion}
@@ -1137,10 +1060,17 @@ export default function Editor() {
             }}
           />
         </aside>
-        )}
       </div>
 
       {/* ============ 弹层 ============ */}
+      <Modal title="有未保存的修改" open={blocker.state === 'blocked'} onCancel={() => blocker.state === 'blocked' && blocker.reset()}
+        footer={[
+          <Button key="stay" onClick={() => blocker.state === 'blocked' && blocker.reset()}>继续编辑</Button>,
+          <Button key="discard" danger disabled={saving} onClick={() => { useResumeStore.getState().discardChanges(); if (blocker.state === 'blocked') blocker.proceed(); }}>放弃修改并离开</Button>,
+          <Button key="save" type="primary" loading={saving} onClick={async () => { try { await flushSave(); if (!useResumeStore.getState().dirty && blocker.state === 'blocked') blocker.proceed(); } catch { /* keep draft and dialog */ } }}>保存并离开</Button>,
+        ]}>
+        {saving ? '正在保存，请等待本次保存完成后再离开。' : '当前修改还未保存。你可以继续编辑、放弃草稿，或保存后离开。'}
+      </Modal>
       <ExportDialog
         open={exportOpen}
         resume={current}
@@ -1153,7 +1083,7 @@ export default function Editor() {
         resume={current}
         onClose={() => setShareOpen(false)}
         onChanged={(patch) => {
-          if (current) setCurrent({ ...current, ...patch });
+          if (current) { setCurrent({ ...useResumeStore.getState().current!, ...patch }); void useResumeStore.getState().syncPublishedState().catch(() => undefined); }
         }}
       />
 
@@ -1164,11 +1094,6 @@ export default function Editor() {
         onClose={() => setOptimize(null)}
         onApply={async (text) => {
           if (!optimize || useResumeStore.getState().current?.id !== optimize.resumeId) throw new Error('简历已切换，请重新优化');
-          if (draftRef.current?.sectionId === optimize.sectionId) {
-            if (timerRef.current) window.clearTimeout(timerRef.current);
-            timerRef.current = null;
-            draftRef.current = null;
-          }
           await useResumeStore.getState().applyAiSection(optimize.sectionId, optimize.produce(text), optimize.sourceData);
         }}
       />
@@ -1203,7 +1128,7 @@ function SaveIndicator({
       ? '有未保存的修改'
       : lastSavedAt
         ? `已保存 · ${relativeTime(lastSavedAt)}`
-        : '已自动保存';
+        : '已保存';
 
   const color = saving ? neutral[400] : dirty ? semantic.warning : semantic.success;
 

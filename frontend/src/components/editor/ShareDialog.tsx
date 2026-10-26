@@ -2,7 +2,7 @@
  * 分享对话框
  * ------------------------------------------------------------------
  * 生成公开只读链接（/share/:token），HR 无需登录即可查看，
- * 简历始终实时反映最新内容。
+ * 链接展示最近一次手动保存的内容。
  */
 import { useEffect, useState } from 'react';
 import { Button, Modal, Switch, Tooltip } from 'antd';
@@ -128,8 +128,8 @@ export default function ShareDialog({ open, resume, onClose, onChanged }: Props)
             </div>
             <div style={{ fontSize: 11.5, color: neutral[500], lineHeight: 1.7 }}>
               {enabled
-                ? `访问次数 ${resume?.viewCount ?? 0} 次，内容实时更新`
-                : '开启后会生成一个只读链接，任何人可访问'}
+                ? `访问次数 ${resume?.viewCount ?? 0} 次，展示最近保存的内容`
+                : '开启后分享最近保存的简历，未保存的草稿不会公开'}
             </div>
           </div>
           <Switch checked={enabled} loading={loading} onChange={toggle} />

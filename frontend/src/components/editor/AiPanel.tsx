@@ -77,8 +77,8 @@ function SummaryGenerator({ resume, role, onApply }: SummaryProps) {
   const apply = async () => {
     if (!request.data || applying.current || applied || snapshot.input !== input) return;
     applying.current = true; setSaving(true); setApplyError('');
-    try { await onApply(request.data.result, snapshot.before); setApplied(true); message.success('个人总结已保存'); }
-    catch (error) { setApplyError(aiErrorMessage(error, '保存失败，请重试')); }
+    try { await onApply(request.data.result, snapshot.before); setApplied(true); message.success('个人总结已应用到草稿，请点击顶部保存'); }
+    catch (error) { setApplyError(aiErrorMessage(error, '应用失败，请重试')); }
     finally { applying.current = false; setSaving(false); }
   };
   return <section className="ai-section">
@@ -95,7 +95,7 @@ function SummaryGenerator({ resume, role, onApply }: SummaryProps) {
       <div className="ai-comparison"><div><h4>现有个人总结</h4><p>{snapshot.before || '尚未填写'}</p></div><div><h4>建议稿</h4><p>{request.data.result}</p></div></div>
       <ErrorMessage error={applyError} />
       <div className="ai-actions"><Button type="primary" loading={saving} disabled={applied || snapshot.input !== input || request.data.engine === 'none'} onClick={() => void apply()}>
-        {applied ? '已应用并保存' : '应用到简历'}</Button><Button icon={<CopyOutlined />} onClick={() => void copyText(request.data!.result)}>复制</Button></div>
+        {applied ? '已应用到草稿' : '应用到简历'}</Button><Button icon={<CopyOutlined />} onClick={() => void copyText(request.data!.result)}>复制</Button></div>
       <p className="ai-hint">应用会替换个人总结。原文在生成后被编辑时，会要求重新生成，避免覆盖新内容。</p>
     </div>}
   </section>;
@@ -140,8 +140,8 @@ function BatchOptimizer({ resume, role, onApply }: { resume: ResumeDetail | null
     const changes = request.data?.changes.filter((change) => checkedIds.includes(change.id)) || [];
     if (!changes.length || applying.current || applied || stale) return;
     applying.current = true; setSaving(true); setApplyError('');
-    try { await onApply(changes); setApplied(true); message.success(`已保存 ${changes.length} 条要点`); }
-    catch (error) { setApplyError(aiErrorMessage(error, '保存失败，请重试')); }
+    try { await onApply(changes); setApplied(true); message.success(`已应用 ${changes.length} 条要点到草稿，请点击顶部保存`); }
+    catch (error) { setApplyError(aiErrorMessage(error, '应用失败，请重试')); }
     finally { applying.current = false; setSaving(false); }
   };
   const changeSection = (value: string) => {
@@ -175,7 +175,7 @@ function BatchOptimizer({ resume, role, onApply }: { resume: ResumeDetail | null
           </article>;
         })}<ErrorMessage error={applyError} />
         <Button type="primary" block loading={saving} disabled={applied || stale || !checkedIds.length} onClick={() => void apply()}>
-          {applied ? '已应用并保存' : `应用所选 ${checkedIds.length} 条建议`}</Button>
+          {applied ? '已应用到草稿' : `应用所选 ${checkedIds.length} 条建议`}</Button>
       </div>}
     </>}
   </section>;
@@ -334,8 +334,8 @@ export function AiOptimizeModal({ open, source, jobTitle, onClose, onApply }: {
   const close = () => { if (saving) return; clear(); onClose(); };
   const apply = async () => {
     if (!data || applying.current || loading) return; applying.current = true; setSaving(true); setApplyError('');
-    try { await onApply(data.result); clear(); onClose(); message.success('优化结果已保存'); }
-    catch (failure) { setApplyError(aiErrorMessage(failure, '保存失败，请重试')); }
+    try { await onApply(data.result); clear(); onClose(); message.success('优化结果已应用到草稿，请点击顶部保存'); }
+    catch (failure) { setApplyError(aiErrorMessage(failure, '应用失败，请重试')); }
     finally { applying.current = false; setSaving(false); }
   };
   return <Modal open={open} onCancel={close} title="AI 优化这段描述" width={720} closable={!saving} maskClosable={!saving}
@@ -343,7 +343,7 @@ export function AiOptimizeModal({ open, source, jobTitle, onClose, onApply }: {
       <Button type="primary" loading={saving} disabled={!data || loading || data.engine === 'none'} onClick={() => void apply()}>应用优化结果</Button></div>}>
     <div className="ai-modal-content"><ErrorMessage error={error || applyError} />{data && <ResultMeta result={data} />}
       <div className="ai-comparison ai-modal-comparison"><div><h4>原文</h4><p>{source}</p></div><div><h4>优化后</h4><p aria-live="polite">{loading ? '正在优化…' : data?.result || '暂无建议'}</p></div></div>
-      <p className="ai-hint">核对职责、技能和数字是否准确，再应用建议。保存失败时可直接重试。</p>
+      <p className="ai-hint">核对职责、技能和数字是否准确，再应用建议。应用后请点击顶部保存。</p>
     </div>
   </Modal>;
 }

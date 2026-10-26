@@ -5,7 +5,7 @@
  *   - 简历列表与统计（Dashboard）
  *   - 当前编辑的简历（含 sections），支持乐观更新
  *   - 模块的增删改、排序、显隐
- *   - 元信息与布局配置的自动保存（带去抖）
+ *   - 所有编辑保留为草稿，显式保存时整份原子提交
  */
 import { create } from 'zustand';
 import { resumeApi } from '../services/api';
@@ -46,23 +46,22 @@ export const NEW_ITEM_TEMPLATE: Partial<Record<string, Record<string, unknown> |
 };
 
 interface ResumeState {
-  // ---- 列表 ----
   resumes: Resume[];
   stats: ResumeStats | null;
   listLoading: boolean;
-
-  // ---- 详情 ----
   current: ResumeDetail | null;
+  saved: ResumeDetail | null;
   detailLoading: boolean;
-  /** 是否有未同步到服务端的本地修改 */
   dirty: boolean;
   saving: boolean;
   lastSavedAt: number | null;
-
-  // ---- 版本 ----
+  past: ResumeDetail[];
+  future: ResumeDetail[];
+  historyGroup: string | null;
+  historyAt: number;
   versions: ResumeVersion[];
-
-  // ---- 动作 ----
+  versionsLoading: boolean;
+  versionsError: string | null;
   fetchList: () => Promise<void>;
   fetchStats: () => Promise<void>;
   fetchDetail: (id: string) => Promise<void>;
@@ -70,347 +69,154 @@ interface ResumeState {
   duplicateResume: (id: string) => Promise<string>;
   deleteResume: (id: string) => Promise<void>;
   clearCurrent: () => void;
-
   updateMeta: (patch: Partial<Resume> & { layoutConfig?: string }) => void;
-  persistMeta: (patch: Record<string, unknown>) => Promise<void>;
   saveLayout: (layout: LayoutConfig) => Promise<void>;
-
+  saveCurrent: (label?: string, description?: string) => Promise<void>;
+  undo: () => void;
+  redo: () => void;
+  discardChanges: () => void;
   addSection: (type: SectionType) => Promise<ResumeSection | undefined>;
-  applyAiSection: (sectionId: string, data: Record<string, unknown>, expectedData: Record<string, unknown>, makeVisible?: boolean) => Promise<void>;
-  updateSectionData: (sectionId: string, data: Record<string, unknown>) => void;
-  persistSection: (sectionId: string) => Promise<void>;
-  renameSection: (sectionId: string, name: string) => void;
-  toggleSectionVisible: (sectionId: string) => Promise<void>;
-  deleteSection: (sectionId: string) => Promise<void>;
-  reorderSections: (orderedIds: string[]) => Promise<void>;
-  duplicateSection: (sectionId: string) => Promise<void>;
-
+  updateSectionData: (id: string, data: Record<string, unknown>) => void;
+  applyAiSection: (id: string, data: Record<string, unknown>, expectedData: Record<string, unknown>, makeVisible?: boolean) => Promise<void>;
+  renameSection: (id: string, name: string) => void;
+  toggleSectionVisible: (id: string) => Promise<void>;
+  deleteSection: (id: string) => Promise<void>;
+  reorderSections: (ids: string[]) => Promise<void>;
+  duplicateSection: (id: string) => Promise<void>;
   fetchVersions: (id: string) => Promise<void>;
   createVersion: (label: string, description?: string) => Promise<void>;
-  restoreVersion: (versionId: string) => Promise<void>;
-  deleteVersion: (versionId: string) => Promise<void>;
-
+  restoreVersion: (id: string) => Promise<void>;
+  deleteVersion: (id: string) => Promise<void>;
   setCurrent: (resume: ResumeDetail | null) => void;
-  patchSectionLocal: (sectionId: string, updater: (s: ResumeSection) => ResumeSection) => void;
+  patchSectionLocal: (id: string, updater: (s: ResumeSection) => ResumeSection) => void;
+  syncPublishedState: () => Promise<void>;
 }
 
-/** section 校验：确保 data 始终是对象 */
-function normalizeSections(sections: ResumeSection[]): ResumeSection[] {
-  return sections.map((s) => ({ ...s, data: normalizeSectionData(s.data) }));
+function normalize(detail: ResumeDetail): ResumeDetail {
+  return { ...detail, sections: (detail.sections || []).map(s => ({ ...s, data: normalizeSectionData(s.data) })) };
+}
+/** Keep sharing, timestamps, counters and transport-only fields out of content history. */
+function contentOf(resume: ResumeDetail) {
+  const { title, templateId, targetJob, targetCompany, fontFamily, fontSize, themeColor, lineSpacing, layoutConfig } = resume;
+  return { title, templateId, targetJob, targetCompany, fontFamily, fontSize, themeColor, lineSpacing, layoutConfig,
+    sections: resume.sections.map(({ id, sectionType, sortOrder, isVisible, layout, data }) => ({ id, sectionType, sortOrder, isVisible, layout, data })) };
+}
+function sameContent(a: ResumeDetail | null, b: ResumeDetail | null) {
+  const stable = (value: ResumeDetail | null) => JSON.stringify(value && contentOf(value), (_key, item) =>
+    item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
+  return stable(a) === stable(b);
 }
 
-export const useResumeStore = create<ResumeState>((set, get) => ({
-  resumes: [],
-  stats: null,
-  listLoading: false,
-
-  current: null,
-  detailLoading: false,
-  dirty: false,
-  saving: false,
-  lastSavedAt: null,
-
-  versions: [],
-
-  // ---------------------------------------------------------------
-  // 列表
-  // ---------------------------------------------------------------
-
-  fetchList: async () => {
-    set({ listLoading: true });
-    try {
-      const resumes = await resumeApi.list();
-      set({ resumes });
-    } finally {
-      set({ listLoading: false });
-    }
-  },
-
-  fetchStats: async () => {
-    try {
-      const stats = await resumeApi.stats();
-      set({ stats });
-    } catch {
-      /* 统计失败不阻断页面 */
-    }
-  },
-
-  // ---------------------------------------------------------------
-  // 详情
-  // ---------------------------------------------------------------
-
-  fetchDetail: async (id) => {
-    set({ detailLoading: true });
-    try {
-      const detail = await resumeApi.detail(id);
-      set({
-        current: { ...detail, sections: normalizeSections(detail.sections || []) },
-        dirty: false,
-      });
-    } finally {
-      set({ detailLoading: false });
-    }
-  },
-
-  createResume: async (title, templateId) => {
-    const resume = await resumeApi.create(title, templateId);
-    await get().fetchList();
-    return resume;
-  },
-
-  duplicateResume: async (id) => {
-    const { id: newId } = await resumeApi.duplicate(id);
-    await get().fetchList();
-    return newId;
-  },
-
-  deleteResume: async (id) => {
-    await resumeApi.remove(id);
-    await get().fetchList();
-  },
-
-  clearCurrent: () => set({ current: null, dirty: false, versions: [] }),
-
-  // ---------------------------------------------------------------
-  // 元信息 / 布局
-  // ---------------------------------------------------------------
-
-  updateMeta: (patch) => {
+export const useResumeStore = create<ResumeState>((set, get) => {
+  let loadSequence = 0;
+  const edit = (next: ResumeDetail, group: string | null = null) => {
+    const state = get();
+    if (!state.current || sameContent(next, state.current)) return;
+    const grouped = group && group === state.historyGroup && Date.now() - state.historyAt < 600;
+    set({ current: next, dirty: !sameContent(next, state.saved),
+      past: grouped ? state.past : [...state.past.slice(-99), structuredClone(state.current)],
+      future: [], historyGroup: group, historyAt: Date.now() });
+  };
+  const patchSection = (id: string, updater: (s: ResumeSection) => ResumeSection, group: string | null = null) => {
     const current = get().current;
-    if (!current) return;
-    set({ current: { ...current, ...patch } as ResumeDetail, dirty: true });
-  },
-
-  persistMeta: async (patch) => {
-    const current = get().current;
-    if (!current) return;
-    set({ saving: true });
-    try {
-      await resumeApi.update(current.id, patch);
-      set({ dirty: false, lastSavedAt: Date.now() });
-    } finally {
-      set({ saving: false });
-    }
-  },
-
-  saveLayout: async (layout) => {
-    const current = get().current;
-    if (!current) return;
-    const json = JSON.stringify(layout);
-    // 先本地更新，保证预览即时响应
-    set({ current: { ...current, layoutConfig: json }, dirty: true, saving: true });
-    try {
-      await resumeApi.update(current.id, { layoutConfig: json });
-      set({ dirty: false, lastSavedAt: Date.now() });
-    } finally {
-      set({ saving: false });
-    }
-  },
-
-  // ---------------------------------------------------------------
-  // 模块
-  // ---------------------------------------------------------------
-
-  addSection: async (type) => {
-    const current = get().current;
-    if (!current) return;
-    const maxOrder = current.sections.reduce((max, s) => Math.max(max, s.sortOrder), -1);
-    const payload = EMPTY_SECTION_DATA[type] ?? { content: '', _config: {} };
-
-    set({ saving: true });
-    try {
-      const created = await resumeApi.addSection(current.id, {
-        sectionType: type,
-        sortOrder: maxOrder + 1,
-        data: JSON.stringify(payload),
-      });
-      const latest = get().current;
-      if (!latest || latest.id !== current.id) return;
-      const section = normalizeSections([created])[0];
-      set({ current: { ...latest, sections: [...latest.sections, section] }, lastSavedAt: Date.now() });
-      return section;
-    } finally {
-      set({ saving: false });
-    }
-  },
-
-  updateSectionData: (sectionId, data) => {
-    const current = get().current;
-    if (!current) return;
-    const sections = current.sections.map((s) =>
-      s.id === sectionId ? { ...s, data: { ...data } } : s
-    );
-    set({ current: { ...current, sections }, dirty: true });
-  },
-
-  applyAiSection: async (sectionId, data, expectedData, makeVisible = false) => {
-    const current = get().current;
-    const previous = current?.sections.find(section => section.id === sectionId);
-    if (!current || !previous) throw new Error('原模块不存在，请重新打开简历');
-    if (JSON.stringify(previous.data) !== JSON.stringify(expectedData)) throw new Error('原文已修改，请重新生成建议');
-    if (get().saving) throw new Error('正在保存，请稍后再应用');
-    const wasDirty = get().dirty;
-    const nextSection = { ...previous, data, isVisible: makeVisible ? true : previous.isVisible };
-    const optimistic = { ...current, sections: current.sections.map(section => section.id === sectionId ? nextSection : section) };
-    set({ current: optimistic, saving: true, dirty: true });
-    try {
-      await resumeApi.updateSection(sectionId, {
-        sectionType: nextSection.sectionType, sortOrder: nextSection.sortOrder,
-        isVisible: nextSection.isVisible, layout: nextSection.layout, data: JSON.stringify(data),
-      });
-      const latest = get().current;
-      if (!latest || latest.id !== current.id) throw new Error('简历已切换，请重新打开后查看保存结果');
-      set({ dirty: latest === optimistic ? wasDirty : true, lastSavedAt: Date.now() });
-    } catch (error) {
-      const latest = get().current;
-      if (latest?.id === current.id && latest.sections.find(section => section.id === sectionId)?.data === data) {
-        set({ current: { ...latest, sections: latest.sections.map(section => section.id === sectionId ? previous : section) }, dirty: wasDirty || latest !== optimistic });
-      }
-      throw error;
-    } finally {
-      set({ saving: false });
-    }
-  },
-
-  persistSection: async (sectionId) => {
-    const current = get().current;
-    if (!current) return;
-    const section = current.sections.find((s) => s.id === sectionId);
-    if (!section) return;
-
-    set({ saving: true });
-    try {
-      await resumeApi.updateSection(sectionId, {
-        sectionType: section.sectionType,
-        sortOrder: section.sortOrder,
-        isVisible: section.isVisible,
-        layout: section.layout,
-        data: JSON.stringify(section.data),
-      });
-      set({ dirty: false, lastSavedAt: Date.now() });
-    } finally {
-      set({ saving: false });
-    }
-  },
-
-  renameSection: (sectionId, name) => {
-    const current = get().current;
-    if (!current) return;
-    const sections = current.sections.map((s) => {
-      if (s.id !== sectionId) return s;
-      const data = normalizeSectionData(s.data);
-      return { ...s, data: { ...data, _config: { ...(data._config || {}), moduleName: name } } };
-    });
-    set({ current: { ...current, sections }, dirty: true });
-  },
-
-  toggleSectionVisible: async (sectionId) => {
-    const current = get().current;
-    if (!current) return;
-    const sections = current.sections.map((s) =>
-      s.id === sectionId ? { ...s, isVisible: !s.isVisible } : s
-    );
-    set({ current: { ...current, sections } });
-    await resumeApi.toggleSection(sectionId);
-  },
-
-  deleteSection: async (sectionId) => {
-    const current = get().current;
-    if (!current) return;
-    // 乐观更新：先移除，再落库
-    const sections = current.sections.filter((s) => s.id !== sectionId);
-    set({ current: { ...current, sections } });
-    await resumeApi.deleteSection(sectionId);
-  },
-
-  reorderSections: async (orderedIds) => {
-    const current = get().current;
-    if (!current) return;
-    const map = new Map(current.sections.map((s) => [s.id, s]));
-    const reordered = orderedIds
-      .map((id, index) => {
-        const s = map.get(id);
-        return s ? { ...s, sortOrder: index } : null;
-      })
-      .filter(Boolean) as ResumeSection[];
-
-    set({ current: { ...current, sections: reordered } });
-    await resumeApi.reorderSections(current.id, orderedIds.map((id) => ({ id })));
-  },
-
-  duplicateSection: async (sectionId) => {
-    const current = get().current;
-    if (!current) return;
-    const src = current.sections.find((s) => s.id === sectionId);
-    if (!src) return;
-    const maxOrder = current.sections.reduce((max, s) => Math.max(max, s.sortOrder), -1);
-
-    // 深拷贝 data，并为自定义模块改名以示区分
-    const cloned = JSON.parse(JSON.stringify(src.data)) as Record<string, unknown>;
-    const cfg = (cloned._config || {}) as Record<string, unknown>;
-    if (cfg.moduleName) cfg.moduleName = `${cfg.moduleName} 副本`;
-    cloned._config = cfg;
-
-    set({ saving: true });
-    try {
-      await resumeApi.addSection(current.id, {
-        sectionType: src.sectionType,
-        sortOrder: maxOrder + 1,
-        layout: src.layout,
-        data: JSON.stringify(cloned),
-      });
-      const detail = await resumeApi.detail(current.id);
-      set({ current: { ...detail, sections: normalizeSections(detail.sections || []) } });
-    } finally {
-      set({ saving: false });
-    }
-  },
-
-  // ---------------------------------------------------------------
-  // 版本
-  // ---------------------------------------------------------------
-
-  fetchVersions: async (id) => {
-    try {
-      const versions = await resumeApi.versions(id);
-      set({ versions });
-    } catch {
-      set({ versions: [] });
-    }
-  },
-
-  createVersion: async (label, description) => {
-    const current = get().current;
-    if (!current) return;
-    const version = await resumeApi.createVersion(current.id, label, description);
-    set({ versions: [version, ...get().versions] });
-  },
-
-  restoreVersion: async (versionId) => {
-    const current = get().current;
-    if (!current) return;
-    await resumeApi.restoreVersion(current.id, versionId);
-    await get().fetchDetail(current.id);
-    await get().fetchVersions(current.id);
-  },
-
-  deleteVersion: async (versionId) => {
-    const current = get().current;
-    if (!current) return;
-    await resumeApi.deleteVersion(current.id, versionId);
-    set({ versions: get().versions.filter((v) => v.id !== versionId) });
-  },
-
-  // ---------------------------------------------------------------
-  // 通用
-  // ---------------------------------------------------------------
-
-  setCurrent: (resume) => set({ current: resume }),
-
-  patchSectionLocal: (sectionId, updater) => {
-    const current = get().current;
-    if (!current) return;
-    const sections = current.sections.map((s) => (s.id === sectionId ? updater(s) : s));
-    set({ current: { ...current, sections }, dirty: true });
-  },
-}));
+    if (current) edit({ ...current, sections: current.sections.map(s => s.id === id ? updater(s) : s) }, group);
+  };
+  return {
+    resumes: [], stats: null, listLoading: false, current: null, saved: null, detailLoading: false,
+    dirty: false, saving: false, lastSavedAt: null, past: [], future: [], historyGroup: null, historyAt: 0,
+    versions: [], versionsLoading: false, versionsError: null,
+    fetchList: async () => { set({ listLoading: true }); try { set({ resumes: await resumeApi.list() }); } finally { set({ listLoading: false }); } },
+    fetchStats: async () => { try { set({ stats: await resumeApi.stats() }); } catch { /* list remains usable */ } },
+    fetchDetail: async (id) => {
+      const sequence = ++loadSequence;
+      set({ current: null, saved: null, detailLoading: true, dirty: false, saving: false, past: [], future: [], lastSavedAt: null, historyGroup: null });
+      try { const detail = normalize(await resumeApi.detail(id)); if (sequence === loadSequence) set({ current: detail, saved: structuredClone(detail) }); }
+      finally { if (sequence === loadSequence) set({ detailLoading: false }); }
+    },
+    createResume: async (title, templateId) => { const result = await resumeApi.create(title, templateId); await get().fetchList(); return result; },
+    duplicateResume: async (id) => { const result = await resumeApi.duplicate(id); await get().fetchList(); return result.id; },
+    deleteResume: async (id) => { await resumeApi.remove(id); await get().fetchList(); },
+    clearCurrent: () => { ++loadSequence; set({ current: null, saved: null, dirty: false, saving: false, versions: [], past: [], future: [], historyGroup: null, versionsError: null, lastSavedAt: null }); },
+    updateMeta: (patch) => { const current = get().current; if (current) edit({ ...current, ...patch }, 'meta'); },
+    saveLayout: async (layout) => { const current = get().current; if (current) edit({ ...current, layoutConfig: JSON.stringify(layout) }, 'layout'); },
+    saveCurrent: async (label, description) => {
+      const { current, saved, saving, dirty } = get();
+      if (!current || !saved) return;
+      if (saving) throw new Error('正在保存，请稍候');
+      if (!dirty && !label) return;
+      const snapshot = structuredClone(current);
+      const sequence = loadSequence;
+      set({ saving: true, historyGroup: null });
+      try {
+        const result = normalize(await resumeApi.saveContent(current.id, { ...contentOf(snapshot), expectedUpdatedAt: saved.updatedAt, label, description }));
+        const latest = get().current;
+        if (sequence !== loadSequence || latest?.id !== current.id) return;
+        const next = sameContent(latest, snapshot) ? result : { ...latest, updatedAt: result.updatedAt };
+        set({ current: next, saved: structuredClone(result), dirty: !sameContent(next, result), lastSavedAt: Date.now() });
+        await get().fetchVersions(current.id);
+      } finally { if (sequence === loadSequence && get().current?.id === current.id) set({ saving: false }); }
+    },
+    undo: () => {
+      const s = get(), previous = s.past[s.past.length - 1]; if (!s.current || !previous) return;
+      const next = { ...structuredClone(previous), updatedAt: s.saved?.updatedAt || previous.updatedAt, shareEnabled: s.current.shareEnabled, shareToken: s.current.shareToken };
+      set({ current: next, past: s.past.slice(0, -1), future: [...s.future, structuredClone(s.current)], dirty: !sameContent(next, s.saved), historyGroup: null });
+    },
+    redo: () => {
+      const s = get(), following = s.future[s.future.length - 1]; if (!s.current || !following) return;
+      const next = { ...structuredClone(following), updatedAt: s.saved?.updatedAt || following.updatedAt, shareEnabled: s.current.shareEnabled, shareToken: s.current.shareToken };
+      set({ current: next, past: [...s.past, structuredClone(s.current)], future: s.future.slice(0, -1), dirty: !sameContent(next, s.saved), historyGroup: null });
+    },
+    discardChanges: () => { const saved = get().saved; if (saved) set({ current: structuredClone(saved), dirty: false, past: [], future: [], historyGroup: null }); },
+    addSection: async (type) => {
+      const current = get().current; if (!current) return;
+      const section: ResumeSection = { id: crypto.randomUUID(), sectionType: type, sortOrder: Math.max(-1, ...current.sections.map(s => s.sortOrder)) + 1, isVisible: true, layout: 'auto', data: structuredClone(EMPTY_SECTION_DATA[type] || EMPTY_SECTION_DATA.custom) };
+      edit({ ...current, sections: [...current.sections, section] }); return section;
+    },
+    updateSectionData: (id, data) => patchSection(id, s => ({ ...s, data: structuredClone(data) }), `section:${id}`),
+    applyAiSection: async (id, data, expectedData, makeVisible = false) => {
+      const section = get().current?.sections.find(s => s.id === id);
+      if (!section) throw new Error('原模块不存在，请重新打开简历');
+      if (JSON.stringify(section.data) !== JSON.stringify(expectedData)) throw new Error('原文已修改，请重新生成建议');
+      patchSection(id, s => ({ ...s, data: structuredClone(data), isVisible: makeVisible ? true : s.isVisible }));
+    },
+    renameSection: (id, name) => patchSection(id, s => ({ ...s, data: { ...s.data, _config: { ...(s.data._config || {}), moduleName: name } } })),
+    toggleSectionVisible: async (id) => patchSection(id, s => ({ ...s, isVisible: !s.isVisible })),
+    deleteSection: async (id) => { const current = get().current; if (current) edit({ ...current, sections: current.sections.filter(s => s.id !== id) }); },
+    reorderSections: async (ids) => {
+      const current = get().current; if (!current) return;
+      if (ids.length !== current.sections.length || new Set(ids).size !== ids.length || ids.some(id => !current.sections.some(s => s.id === id))) throw new Error('模块顺序已变化，请重试');
+      edit({ ...current, sections: ids.map((id, sortOrder) => ({ ...current.sections.find(s => s.id === id)!, sortOrder })) });
+    },
+    duplicateSection: async (id) => {
+      const current = get().current, section = current?.sections.find(s => s.id === id); if (!current || !section) return;
+      const data = structuredClone(section.data); if (data._config?.moduleName) data._config.moduleName += ' 副本';
+      edit({ ...current, sections: [...current.sections, { ...section, id: crypto.randomUUID(), sortOrder: Math.max(...current.sections.map(s => s.sortOrder)) + 1, data }] });
+    },
+    fetchVersions: async (id) => {
+      const sequence = loadSequence; set({ versionsLoading: true, versionsError: null });
+      try { const versions = await resumeApi.versions(id); if (sequence === loadSequence) set({ versions }); }
+      catch { if (sequence === loadSequence) set({ versionsError: '版本记录加载失败，请重试' }); }
+      finally { if (sequence === loadSequence) set({ versionsLoading: false }); }
+    },
+    createVersion: async (label, description) => get().saveCurrent(label, description),
+    restoreVersion: async (id) => {
+      const current = get().current; if (!current) return;
+      const detail = await resumeApi.versionDetail(current.id, id);
+      const latest = get().current; if (!latest || latest.id !== current.id) throw new Error('简历已切换，请重新选择版本');
+      if (!sameContent(latest, current)) throw new Error('编辑内容已变化，请重新确认恢复');
+      const snapshot = normalize(detail.snapshot);
+      edit({ ...latest, ...contentOf(snapshot), id: latest.id, updatedAt: latest.updatedAt } as ResumeDetail);
+    },
+    deleteVersion: async (id) => { const current = get().current; if (!current) return; await resumeApi.deleteVersion(current.id, id); if (get().current?.id === current.id) set({ versions: get().versions.filter(v => v.id !== id) }); },
+    setCurrent: (current) => set({ current }),
+    patchSectionLocal: (id, updater) => patchSection(id, updater),
+    syncPublishedState: async () => {
+      const current = get().current; if (!current) return;
+      const server = normalize(await resumeApi.detail(current.id));
+      const latest = get().current, saved = get().saved;
+      if (!latest || latest.id !== current.id || !saved) return;
+      const share = { shareEnabled: server.shareEnabled, shareToken: server.shareToken };
+      if (sameContent(server, saved)) set({ current: { ...latest, ...share, updatedAt: server.updatedAt }, saved: { ...saved, ...share, updatedAt: server.updatedAt } });
+    },
+  };
+});

@@ -93,10 +93,13 @@ try {
   await clickButton(page, '生成个人总结', '#ai-panel-optimize');
   await waitFor(page, () => [...document.querySelectorAll('#ai-panel-optimize .ai-comparison h4')].some((heading) => heading.innerText === '建议稿'), '总结先生成对照建议');
   await clickButton(page, '应用到简历', '#ai-panel-optimize .ai-section');
-  await waitFor(page, () => document.querySelector('#ai-panel-optimize .ai-section [role="alert"]')?.innerText.includes('测试保存失败'), '总结保存失败时保留错误并允许重试');
-  assert.equal(await page.$eval('#ai-panel-optimize .ai-section .ai-result button.ant-btn-primary', (element) => element.innerText), '应用到简历');
-  await clickButton(page, '应用到简历', '#ai-panel-optimize .ai-section');
-  await waitFor(page, () => document.querySelector('#ai-panel-optimize .ai-section .ai-result button.ant-btn-primary')?.innerText.includes('已应用并保存'), '总结重试后等待保存成功');
+  await waitFor(page, () => document.querySelector('#ai-panel-optimize .ai-section .ai-result button.ant-btn-primary')?.innerText.includes('已应用到草稿'), '总结应用后只进入草稿');
+  assert.equal((await api('/__e2e/state')).writes.length, 0);
+  await page.click('[aria-label="保存简历"]');
+  await waitFor(page, () => document.body.innerText.includes('测试保存失败'), '显式保存失败保留草稿');
+  await page.waitForFunction(() => !document.querySelector('[aria-label="保存简历"]').disabled);
+  await page.click('[aria-label="保存简历"]');
+  await page.waitForFunction(() => { const b = document.querySelector('[aria-label="保存简历"]'); return b.disabled && b.textContent.trim() === '保存'; });
   let state = await api('/__e2e/state');
   const summary = state.resume.sections.find((section) => section.sectionType === 'summary');
   assert.ok(summary?.data?.content?.trim(), 'summary should be persisted by the API');
@@ -122,7 +125,9 @@ try {
   const proposed = await page.$eval('#ai-panel-optimize .ai-batch-item .ai-comparison > div:last-child p', (element) => element.innerText);
   assert.ok(proposed.includes('参与客户访谈') && !proposed.includes('参与了客户访谈'));
   await clickButton(page, '应用所选 1 条建议', '#ai-panel-optimize .ai-batch');
-  await waitFor(page, () => document.querySelector('#ai-panel-optimize .ai-batch button.ant-btn-primary')?.innerText.includes('已应用并保存'), '批量只应用勾选的建议并等待保存');
+  await waitFor(page, () => document.querySelector('#ai-panel-optimize .ai-batch button.ant-btn-primary')?.innerText.includes('已应用到草稿'), '批量只应用勾选建议到草稿');
+  await page.click('[aria-label="保存简历"]');
+  await page.waitForFunction(() => { const b = document.querySelector('[aria-label="保存简历"]'); return b.disabled && b.textContent.trim() === '保存'; });
   state = await api('/__e2e/state');
   const work = state.resume.sections.find((section) => section.sectionType === 'experience');
   assert.equal(work.data.items[0].bullets[0], proposed);
@@ -140,14 +145,15 @@ try {
     const modal = document.querySelector('.ant-modal');
     return modal?.innerText.includes('优化后') && !modal.innerText.includes('暂无建议');
   }, '单条优化弹窗显示原文和建议');
-  await api('/__e2e/control', 'POST', { failSave: 1 });
-  await clickButton(page, '应用优化结果', '.ant-modal');
-  await waitFor(page, () => document.querySelector('.ant-modal [role="alert"]')?.innerText.includes('测试保存失败'), '单条应用失败时保留弹窗结果供重试');
+  const writesBeforeSingle = (await api('/__e2e/state')).writes.length;
   await clickButton(page, '应用优化结果', '.ant-modal');
   await page.waitForSelector('.ant-modal-title', { hidden: true, timeout: 10000 });
-  state = await api('/__e2e/state');
-  assert.ok(state.writes.some((write) => write.operation === 'update' && write.id === work.id));
-  passed.push('单条优化通过失败提示、重试和真实持久化');
+  assert.equal((await api('/__e2e/state')).writes.length, writesBeforeSingle);
+  if (!await page.$eval('[aria-label="保存简历"]', element => element.disabled)) {
+    await page.click('[aria-label="保存简历"]');
+    await page.waitForFunction(() => { const b = document.querySelector('[aria-label="保存简历"]'); return b.disabled && b.textContent.trim() === '保存'; });
+  }
+  passed.push('单条优化应用只进入草稿，显式保存后提交');
 
   const jd = 'B 端产品经理岗位：负责企业产品需求分析、用户访谈和项目协作；要求具备数据分析能力与本科及以上学历。';
   await clickTab(page, 'ATS');

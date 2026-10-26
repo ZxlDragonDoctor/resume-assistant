@@ -38,7 +38,7 @@ import ResumeThumbnail from '../components/dashboard/ResumeThumbnail';
 import StatCards from '../components/dashboard/StatCards';
 import { useResumeStore } from '../stores/resumeStore';
 import { useAuthStore } from '../stores/authStore';
-import { templateApi } from '../services/api';
+import { resumeApi, templateApi } from '../services/api';
 import type { Resume, Template } from '../types/resume';
 import { brand, layout, neutral, radius, shadow, space } from '../styles/tokens';
 
@@ -65,8 +65,6 @@ export default function Dashboard() {
     createResume,
     duplicateResume,
     deleteResume,
-    updateMeta,
-    persistMeta,
   } = useResumeStore();
 
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -171,8 +169,8 @@ export default function Dashboard() {
 
   const handleRename = async () => {
     if (!renameId || !renameValue.trim()) return;
-    updateMeta({ title: renameValue.trim() });
-    await persistMeta({ title: renameValue.trim() });
+    await resumeApi.update(renameId, { title: renameValue.trim() });
+    await fetchList();
     setRenameId(null);
     message.success('已重命名');
   };

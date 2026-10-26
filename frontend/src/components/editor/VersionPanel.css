@@ -1,0 +1,55 @@
+.version-panel { display: flex; flex-direction: column; height: 100%; min-height: 0; color: #334155; }
+.version-panel__header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #e8edf3; flex-shrink: 0; font-size: 13px; }
+.version-panel__header > strong { flex: 1; }
+.version-panel__header > .anticon { color: #2563eb; }
+.version-panel__hint { margin: 0; padding: 12px 14px 4px; font-size: 12px; color: #64748b; line-height: 1.7; }
+.version-panel__list { flex: 1; overflow-y: auto; padding: 12px 14px; }
+.version-panel__status { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; min-height: 180px; color: #64748b; }
+.version-log { list-style: none; margin: 0; padding: 0 0 0 18px; }
+.version-log__item { position: relative; padding-bottom: 12px; border-left: 1px solid #dce5ef; }
+.version-log__item::before { content: ''; position: absolute; left: -5px; top: 17px; width: 9px; height: 9px; background: #fff; border: 2px solid #94a3b8; border-radius: 50%; box-sizing: border-box; }
+.version-log__item:first-child::before, .version-log__item.is-selected::before { background: #2563eb; border-color: #2563eb; }
+.version-log__item:last-child { border-color: transparent; }
+.version-log__select { display: flex; flex-direction: column; gap: 7px; text-align: left; width: calc(100% - 12px); margin-left: 12px; padding: 10px 30px 10px 12px; border: 1px solid #e3eaf2; border-radius: 8px; background: white; color: #334155; cursor: pointer; font: inherit; transition: background .15s, border-color .15s; }
+.version-log__select:hover, .version-log__item.is-selected > .version-log__select { border-color: #93b4f5; background: #f0f6ff; }
+.version-log__select:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+.version-log__heading { display: flex; align-items: flex-start; gap: 4px; font-size: 12px; max-width: 100%; }
+.version-log__heading .ant-tag { margin: 0; font-size: 10px; line-height: 17px; }
+.version-log__heading strong { overflow-wrap: anywhere; }
+.version-log__description { font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap; }
+.version-log time { font-size: 11px; color: #64748b; }
+.version-log__inspect { font-size: 11px; color: #2563eb; }
+.version-log__delete { position: absolute; top: 8px; right: 3px; }
+.version-inspector .ant-modal-body { padding-top: 12px; }
+.version-inspector__layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); height: calc(100dvh - 180px); min-height: 360px; overflow: hidden; border: 1px solid #e3eaf2; border-radius: 10px; }
+.version-inspector__timeline { overflow: auto; padding: 14px 12px; background: #f8fafc; border-right: 1px solid #e3eaf2; }
+.version-inspector__timeline-title { margin: 0 0 14px 6px; font-size: 12px; color: #64748b; }
+.version-log--modal .version-log__select { padding-right: 10px; }
+.version-inspector__content { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+.version-inspector__metadata { padding: 14px 18px; background: white; border-bottom: 1px solid #e3eaf2; max-height: 35%; overflow: auto; flex-shrink: 0; }
+.version-inspector__title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.version-inspector__title h3 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+.version-inspector__title .ant-tag { margin: 0; }
+.version-inspector__date, .version-inspector__resume-meta { font-size: 12px; color: #64748b; margin-top: 7px; line-height: 1.6; overflow-wrap: anywhere; }
+.version-inspector__metadata p { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.version-inspector__changes { margin-top: 10px; font-size: 12px; line-height: 1.8; }
+.version-inspector__changes summary { cursor: pointer; color: #2563eb; }
+.version-inspector__changes ul { padding-left: 20px; margin: 4px 0; }
+.version-inspector__metadata .ant-alert { margin-top: 10px; }
+.version-inspector__preview { flex: 1; min-height: 0; }
+.version-inspector__footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.version-inspector__footer > span { color: #64748b; font-size: 12px; margin-right: auto; }
+.version-panel__save-note { font-size: 13px; color: #64748b; line-height: 1.7; }
+.version-panel__field { display: block; font-size: 13px; margin: 14px 0 6px; }
+@media (max-width: 760px) {
+  .version-inspector .ant-modal-content { padding: 16px 12px; }
+  .version-inspector__layout { grid-template-columns: 1fr; grid-template-rows: 132px minmax(0, 1fr); height: calc(100dvh - 208px); min-height: 300px; }
+  .version-inspector__timeline { border-right: 0; border-bottom: 1px solid #e3eaf2; padding: 8px; }
+  .version-inspector__timeline-title { margin-bottom: 6px; }
+  .version-log--modal { display: flex; padding: 0; gap: 8px; }
+  .version-log--modal .version-log__item { flex: 0 0 200px; border: 0; padding: 0; }
+  .version-log--modal .version-log__item::before { display: none; }
+  .version-log--modal .version-log__select { margin: 0; width: 100%; gap: 4px; }
+  .version-log--modal .version-log__description { display: none; }
+  .version-inspector__metadata { padding: 10px 12px; max-height: 40%; }
+}

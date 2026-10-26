@@ -9,6 +9,7 @@ import os
 import pathlib
 import sys
 import uuid
+from datetime import datetime, timedelta
 
 os.environ['OPENAI_API_KEY'] = ''
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'ai-service'))
@@ -38,7 +39,21 @@ def initial():
                 layoutConfig=json.dumps(catalog['config']), shareEnabled=False, viewCount=0,
                 status='draft', createdAt='2026-10-21T08:00:00', updatedAt='2026-10-21T08:00:00', sections=sections)
 
-state = {'resume': initial(), 'failSave': 0, 'failAi': {}, 'delayAi': {}, 'calls': [], 'writes': []}
+def history_fixture(resume):
+    snapshot = copy.deepcopy(resume)
+    snapshot['title'] = '历史完整简历'
+    snapshot['sections'][0]['data']['name'] = '历史候选人'
+    snapshot['sections'].append(dict(id=str(uuid.uuid4()), sectionType='custom', sortOrder=99,
+        isVisible=True, data={'_config': {'moduleName': '历史项目复盘'},
+        'content': ''.join(f'<p>历史项目第 {i} 项：协调产品设计与研发团队完成需求评审、验证与交付。</p>' for i in range(1, 55)) + '<p>历史末页完整内容标记</p>'}))
+    return [dict(id='history-initial', versionNum=1, label='最初定稿', description='用于完整分页历史预览验收',
+                 createdAt='2026-10-20T08:00:00', snapshot=snapshot)]
+
+def reset_state():
+    resume = initial()
+    return dict(resume=resume, versions=history_fixture(resume), failSave=0, failAi={}, delayAi={}, calls=[], writes=[])
+
+state = reset_state()
 app = FastAPI()
 
 def ok(data=None):
@@ -52,7 +67,8 @@ async def inspect():
 async def control(request: Request):
     value = await request.json()
     if value.pop('reset', False):
-        state.update(resume=initial(), failSave=0, failAi={}, delayAi={}, calls=[], writes=[])
+        state.clear()
+        state.update(reset_state())
     for key in ['failSave', 'failAi', 'delayAi']:
         if key in value:
             state[key] = value[key]
@@ -76,7 +92,41 @@ async def stats():
 
 @app.get('/api/resumes/{resume_id}/versions')
 async def versions(resume_id: str):
-    return ok([])
+    return ok([{key: value for key, value in version.items() if key != 'snapshot'} for version in reversed(state['versions'])])
+
+@app.get('/api/resumes/{resume_id}/versions/{version_id}')
+async def version_detail(resume_id: str, version_id: str):
+    state['calls'].append({'path': f'versions/{version_id}', 'method': 'GET'})
+    version = next((v for v in state['versions'] if v['id'] == version_id), None)
+    if not version:
+        return JSONResponse(status_code=404, content={'code': 404, 'message': '版本不存在', 'data': None})
+    return ok(copy.deepcopy(version))
+
+@app.put('/api/resumes/{resume_id}/content')
+async def save_content(resume_id: str, request: Request):
+    body = await request.json()
+    if state['failSave']:
+        state['failSave'] -= 1
+        return JSONResponse(status_code=503, content={'code': 503, 'message': '测试保存失败', 'data': None})
+    if body.get('expectedUpdatedAt') != state['resume']['updatedAt']:
+        return JSONResponse(status_code=409, content={'code': 409, 'message': '简历已更新，请刷新后重试', 'data': None})
+    for key in ['title', 'targetJob', 'targetCompany', 'templateId', 'fontFamily', 'fontSize', 'themeColor', 'lineSpacing', 'layoutConfig', 'sections']:
+        if key in body:
+            state['resume'][key] = copy.deepcopy(body[key])
+    previous = datetime.fromisoformat(state['resume']['updatedAt'])
+    state['resume']['updatedAt'] = (previous + timedelta(seconds=1)).isoformat()
+    number = max(v['versionNum'] for v in state['versions']) + 1
+    state['versions'].append(dict(id=str(uuid.uuid4()), versionNum=number,
+        label=body.get('label') or f'保存版本 {number}', description=body.get('description'),
+        createdAt=state['resume']['updatedAt'], snapshot=copy.deepcopy(state['resume'])))
+    state['writes'].append({'operation': 'saveContent', 'body': copy.deepcopy(body)})
+    return ok(copy.deepcopy(state['resume']))
+
+@app.delete('/api/resumes/{resume_id}/versions/{version_id}')
+async def delete_version(resume_id: str, version_id: str):
+    state['versions'] = [v for v in state['versions'] if v['id'] != version_id]
+    state['writes'].append({'operation': 'deleteVersion', 'id': version_id})
+    return ok()
 
 @app.get('/api/resumes/{resume_id}')
 async def detail(resume_id: str):
